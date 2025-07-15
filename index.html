@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estética Automotiva - Sistema de Gestão</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="theme-color" content="#1a1a1a">
+</head>
+<body>
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="loading-screen">
+            <div class="loading-spinner">
+                <i class="fas fa-car"></i>
+                <p>Carregando...</p>
+            </div>
+        </div>
+
+        <!-- Login Screen -->
+        <div id="login-screen" class="login-screen hidden">
+            <div class="login-container">
+                <div class="login-header">
+                    <i class="fas fa-car"></i>
+                    <h1>Estética Automotiva</h1>
+                    <p>Sistema de Gestão</p>
+                </div>
+                <form id="login-form" class="login-form">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Senha</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn--primary btn--full-width">
+                        <i class="fas fa-sign-in-alt"></i> Entrar
+                    </button>
+                </form>
+                <div class="login-footer">
+                    <a href="#" id="register-link">Não tem conta? Registre-se</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="main-app" class="main-app hidden">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <i class="fas fa-car"></i>
+                    <h2>Estética Auto</h2>
+                </div>
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-item active" data-page="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="clientes">
+                        <i class="fas fa-users"></i>
+                        <span>Clientes</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="servicos">
+                        <i class="fas fa-tools"></i>
+                        <span>Serviços</span>
+                    </a>
+                    <a href="#" class="nav-item" data-page="orcamentos">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>Orçamentos</span>
+                    </a>
+                </nav>
+                <div class="sidebar-footer">
+                    <button id="logout-btn" class="btn btn--secondary">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <header class="header">
+                    <div class="header-left">
+                        <button id="sidebar-toggle" class="btn btn--secondary">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 id="page-title">Dashboard</h1>
+                    </div>
+                    <div class="header-right">
+                        <div class="user-info">
+                            <span id="user-name">Usuário</span>
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="sync-status">
+                            <i id="sync-icon" class="fas fa-wifi"></i>
+                            <span id="sync-text">Online</span>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="content">
+                    <!-- Dashboard Page -->
+                    <div id="dashboard-page" class="page active">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="total-clientes">0</h3>
+                                    <p>Clientes</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-tools"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="total-servicos">0</h3>
+                                    <p>Serviços</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="total-orcamentos">0</h3>
+                                    <p>Orçamentos</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="total-receita">R$ 0,00</h3>
+                                    <p>Receita</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dashboard-charts">
+                            <div class="card">
+                                <h3>Últimos Orçamentos</h3>
+                                <div id="recent-orcamentos" class="recent-list"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clientes Page -->
+                    <div id="clientes-page" class="page">
+                        <div class="page-header">
+                            <div class="page-header-left">
+                                <h2>Clientes</h2>
+                            </div>
+                            <div class="page-header-right">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="search-clientes" placeholder="Buscar clientes...">
+                                </div>
+                                <button id="add-cliente-btn" class="btn btn--primary">
+                                    <i class="fas fa-plus"></i> Novo Cliente
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="clientes-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Telefone</th>
+                                        <th>Email</th>
+                                        <th>Carro</th>
+                                        <th>Placa</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Serviços Page -->
+                    <div id="servicos-page" class="page">
+                        <div class="page-header">
+                            <div class="page-header-left">
+                                <h2>Serviços</h2>
+                            </div>
+                            <div class="page-header-right">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="search-servicos" placeholder="Buscar serviços...">
+                                </div>
+                                <button id="add-servico-btn" class="btn btn--primary">
+                                    <i class="fas fa-plus"></i> Novo Serviço
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="servicos-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Descrição</th>
+                                        <th>Categoria</th>
+                                        <th>Valor</th>
+                                        <th>Tempo Estimado</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Orçamentos Page -->
+                    <div id="orcamentos-page" class="page">
+                        <div class="page-header">
+                            <div class="page-header-left">
+                                <h2>Orçamentos</h2>
+                            </div>
+                            <div class="page-header-right">
+                                <div class="search-box">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="search-orcamentos" placeholder="Buscar orçamentos...">
+                                </div>
+                                <button id="add-orcamento-btn" class="btn btn--primary">
+                                    <i class="fas fa-plus"></i> Novo Orçamento
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="orcamentos-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>Status</th>
+                                        <th>Valor Total</th>
+                                        <th>Desconto</th>
+                                        <th>Data</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Modal -->
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-title">Modal</h3>
+                    <button id="modal-close" class="btn btn--secondary">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                    <!-- Modal content will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification -->
+        <div id="notification" class="notification">
+            <div class="notification-content">
+                <i class="notification-icon"></i>
+                <span class="notification-text"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
