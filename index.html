@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R.M. Estética Automotiva - Gestor PRO+</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="logo">R.M. Estética Automotiva</h1>
+                    <span class="subtitle">Gestor PRO+</span>
+                </div>
+                <div class="header-right">
+                    <div class="sync-indicator">
+                        <i class="fas fa-sync-alt" id="syncIcon"></i>
+                        <span id="syncStatus">Sincronizado</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav">
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="painel">
+                    <i class="fas fa-chart-line"></i>
+                    Painel
+                </button>
+                <button class="nav-tab" data-tab="clientes">
+                    <i class="fas fa-users"></i>
+                    Clientes
+                </button>
+                <button class="nav-tab" data-tab="servicos">
+                    <i class="fas fa-wrench"></i>
+                    Serviços
+                </button>
+                <button class="nav-tab" data-tab="orcamento">
+                    <i class="fas fa-file-invoice"></i>
+                    Orçamento
+                </button>
+                <button class="nav-tab" data-tab="historico">
+                    <i class="fas fa-history"></i>
+                    Histórico
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Painel Tab -->
+            <div class="tab-content active" id="painel">
+                <div class="page-header">
+                    <h2>Painel de Controle</h2>
+                </div>
+                
+                <div class="dashboard">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalClientes">-</h3>
+                                <p>Clientes</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalPendentes">-</h3>
+                                <p>Pendentes</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="totalAprovados">-</h3>
+                                <p>Aprovados</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="finalizadosMes">-</h3>
+                                <p>Finalizados Mês</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card highlight">
+                            <div class="stat-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="faturamentoTotal">R$ 0,00</h3>
+                                <p>Faturamento Total</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-content">
+                        <div class="chart-container">
+                            <h3>Serviços Finalizados - Últimos 6 Meses</h3>
+                            <canvas id="servicesChart"></canvas>
+                        </div>
+                        
+                        <div class="recent-activity">
+                            <h3>Atividade Recente</h3>
+                            <div class="activity-list" id="activityList">
+                                <div class="loading-skeleton">
+                                    <div class="skeleton-item"></div>
+                                    <div class="skeleton-item"></div>
+                                    <div class="skeleton-item"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clientes Tab -->
+            <div class="tab-content" id="clientes">
+                <div class="page-header">
+                    <h2>Gestão de Clientes</h2>
+                    <button class="btn btn-primary" onclick="toggleClienteForm()">
+                        <i class="fas fa-plus"></i>
+                        Novo Cliente
+                    </button>
+                </div>
+                
+                <div class="cliente-form" id="clienteForm">
+                    <form id="clienteFormElement">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="clienteNome">Nome</label>
+                                <input type="text" id="clienteNome" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="clienteTelefone">Telefone</label>
+                                <input type="text" id="clienteTelefone" placeholder="(00) 00000-0000">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="clienteCarro">Veículo</label>
+                                <input type="text" id="clienteCarro">
+                            </div>
+                            <div class="form-group">
+                                <label for="clientePlaca">Placa</label>
+                                <input type="text" id="clientePlaca" placeholder="ABC-1234">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="cancelarClienteForm()">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Salvar Cliente
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="table-controls">
+                    <div class="search-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchClientes" placeholder="Pesquisar por nome ou placa...">
+                        </div>
+                        <div class="sort-controls">
+                            <select id="sortClientes">
+                                <option value="nome-asc">Nome (A-Z)</option>
+                                <option value="nome-desc">Nome (Z-A)</option>
+                                <option value="carro">Veículo</option>
+                                <option value="placa">Placa</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Telefone</th>
+                                <th>Veículo</th>
+                                <th>Placa</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientesTableBody">
+                            <tr class="loading-skeleton">
+                                <td><div class="skeleton-item"></div></td>
+                                <td><div class="skeleton-item"></div></td>
+                                <td><div class="skeleton-item"></div></td>
+                                <td><div class="skeleton-item"></div></td>
+                                <td><div class="skeleton-item"></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="cliente-details" id="clienteDetails">
+                    <div class="details-header">
+                        <h3 id="clienteDetailsNome">Detalhes do Cliente</h3>
+                        <button class="btn btn-secondary" onclick="closeClienteDetails()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="details-content">
+                        <div class="client-info">
+                            <p><strong>Telefone:</strong> <span id="clienteDetailsTelefone">-</span></p>
+                            <p><strong>Veículo:</strong> <span id="clienteDetailsCarro">-</span></p>
+                            <p><strong>Placa:</strong> <span id="clienteDetailsPlaca">-</span></p>
+                        </div>
+                        <div class="client-history">
+                            <h4>Histórico de Orçamentos</h4>
+                            <div id="clienteHistorico" class="history-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Serviços Tab -->
+            <div class="tab-content" id="servicos">
+                <div class="page-header">
+                    <h2>Catálogo de Serviços</h2>
+                    <button class="btn btn-primary" onclick="toggleServicoForm()">
+                        <i class="fas fa-plus"></i>
+                        Novo Serviço
+                    </button>
+                </div>
+                
+                <div class="servico-form" id="servicoForm">
+                    <form id="servicoFormElement">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="servicoDescricao">Descrição</label>
+                                <input type="text" id="servicoDescricao" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="servicoValor">Valor</label>
+                                <input type="number" id="servicoValor" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="cancelarServicoForm()">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Salvar Serviço
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="table-controls">
+                    <div class="search-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchServicos" placeholder="Pesquisar por descrição...">
+                        </div>
+                        <div class="sort-controls">
+                            <select id="sortServicos">
+                                <option value="descricao-asc">Descrição (A-Z)</option>
+                                <option value="descricao-desc">Descrição (Z-A)</option>
+                                <option value="valor-asc">Valor (Menor)</option>
+                                <option value="valor-desc">Valor (Maior)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="servicosTableBody">
+                            <tr class="loading-skeleton">
+                                <td><div class="skeleton-item"></div></td>
+                                <td><div class="skeleton-item"></div></td>
+                                <td><div class="skeleton-item"></div></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Orçamento Tab -->
+            <div class="tab-content" id="orcamento">
+                <div class="page-header">
+                    <h2>Novo Orçamento</h2>
+                    <button class="btn btn-secondary" onclick="limparOrcamento()">
+                        <i class="fas fa-eraser"></i>
+                        Limpar
+                    </button>
+                </div>
+                
+                <div class="orcamento-form">
+                    <form id="orcamentoForm">
+                        <div class="form-section">
+                            <h3>Dados do Cliente</h3>
+                            <div class="form-group">
+                                <label for="orcamentoCliente">Cliente</label>
+                                <select id="orcamentoCliente" required>
+                                    <option value="">Selecione um cliente</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>Serviços</h3>
+                            <div class="servico-selector">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="servicoSelect">Serviço</label>
+                                        <select id="servicoSelect">
+                                            <option value="">Selecione um serviço</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="servicoQuantidade">Quantidade</label>
+                                        <input type="number" id="servicoQuantidade" min="1" value="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-primary" onclick="adicionarServico()">
+                                            <i class="fas fa-plus"></i>
+                                            Adicionar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="servicos-adicionados" id="servicosAdicionados">
+                                <h4>Serviços Adicionados</h4>
+                                <div class="servicos-list" id="servicosList"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>Valores</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="orcamentoDesconto">Desconto (%)</label>
+                                    <input type="number" id="orcamentoDesconto" min="0" max="100" step="0.01" value="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Valor Total</label>
+                                    <div class="valor-total" id="valorTotal">R$ 0,00</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>Forma de Pagamento</h3>
+                            <div class="payment-options">
+                                <label class="payment-option">
+                                    <input type="checkbox" value="Pix">
+                                    <span>Pix</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="checkbox" value="Dinheiro">
+                                    <span>Dinheiro</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="checkbox" value="Crédito">
+                                    <span>Crédito</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="checkbox" value="Débito">
+                                    <span>Débito</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-large">
+                                <i class="fas fa-save"></i>
+                                <span id="orcamentoSubmitText">Salvar Orçamento</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Histórico Tab -->
+            <div class="tab-content" id="historico">
+                <div class="page-header">
+                    <h2>Histórico de Orçamentos</h2>
+                    <div class="filters">
+                        <select id="filterStatus">
+                            <option value="">Todos os Status</option>
+                            <option value="Orçamento">Orçamento</option>
+                            <option value="Aprovado">Aprovado</option>
+                            <option value="Finalizado">Finalizado</option>
+                            <option value="Cancelado">Cancelado</option>
+                        </select>
+                        <input type="date" id="filterDataInicio" placeholder="Data Início">
+                        <input type="date" id="filterDataFim" placeholder="Data Fim">
+                        <button class="btn btn-secondary" onclick="aplicarFiltros()">
+                            <i class="fas fa-filter"></i>
+                            Filtrar
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="historico-container">
+                    <div class="historico-list" id="historicoList">
+                        <div class="loading-skeleton">
+                            <div class="skeleton-item"></div>
+                            <div class="skeleton-item"></div>
+                            <div class="skeleton-item"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="historico-details" id="historicoDetails">
+                        <div class="details-header">
+                            <h3>Detalhes do Orçamento</h3>
+                            <button class="btn btn-secondary" onclick="closeHistoricoDetails()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="details-content" id="historicoDetailsContent">
+                            <p>Selecione um orçamento para ver os detalhes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="confirmModal">
+            <div class="modal-header">
+                <h3 id="confirmTitle">Confirmar</h3>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Tem certeza que deseja continuar?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-primary" id="confirmButton">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-content">
+            <i class="notification-icon"></i>
+            <span class="notification-message"></span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
