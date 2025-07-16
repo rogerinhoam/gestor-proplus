@@ -4,25 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>R.M. Estética Automotiva - CRM Pro+</title>
-    <meta name="description" content="Sistema completo de CRM para gestão de estética automotiva com pipeline de vendas, controle de clientes, serviços e orçamentos">
+    <meta name="description" content="Sistema completo de CRM para gestão de estética automotiva">
     <meta name="theme-color" content="#ef4444">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="R.M. CRM Pro+">
     
-    <!-- Manifest -->
     <link rel="manifest" href="manifest.json">
-    
-    <!-- Icons -->
     <link rel="icon" href="assets/icons/icon-192x192.png" type="image/png">
     <link rel="apple-touch-icon" href="assets/icons/icon-192x192.png">
-    
-    <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
     
-    <!-- External Resources -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -44,10 +37,10 @@
     <header class="header">
         <div class="header-content">
             <div class="header-left">
-                <a href="#" class="logo">
+                <div class="logo">
                     <i class="fas fa-car"></i>
-                    R.M. CRM Pro+
-                </a>
+                    <span>R.M. CRM Pro+</span>
+                </div>
                 <div class="location-info">
                     <i class="fas fa-map-marker-alt"></i>
                     <span>Angra dos Reis, RJ</span>
@@ -58,9 +51,9 @@
                     <i id="syncIcon" class="fas fa-wifi"></i>
                     <span id="syncStatus">Conectando...</span>
                 </div>
-                <button id="badgeBtn" class="icon-btn">
+                <button id="notificationBtn" class="icon-btn">
                     <i class="fas fa-bell"></i>
-                    <span id="badgeCount" class="badge">0</span>
+                    <span id="notificationCount" class="badge">0</span>
                 </button>
                 <button id="settingsBtn" class="icon-btn">
                     <i class="fas fa-cog"></i>
@@ -73,23 +66,23 @@
     <nav class="desktop-nav">
         <button data-tab="dashboard" class="nav-tab active">
             <i class="fas fa-chart-line"></i>
-            Dashboard
+            <span>Dashboard</span>
         </button>
         <button data-tab="clientes" class="nav-tab">
             <i class="fas fa-users"></i>
-            Clientes
+            <span>Clientes</span>
         </button>
         <button data-tab="servicos" class="nav-tab">
             <i class="fas fa-wrench"></i>
-            Serviços
+            <span>Serviços</span>
         </button>
         <button data-tab="orcamento" class="nav-tab">
             <i class="fas fa-calculator"></i>
-            Orçamentos
+            <span>Orçamentos</span>
         </button>
         <button data-tab="historico" class="nav-tab">
             <i class="fas fa-history"></i>
-            Histórico
+            <span>Histórico</span>
         </button>
     </nav>
 
@@ -102,11 +95,11 @@
                 <div class="quick-actions">
                     <button id="quickClientBtn" class="btn btn-primary">
                         <i class="fas fa-user-plus"></i>
-                        Novo Cliente
+                        <span>Novo Cliente</span>
                     </button>
                     <button id="quickQuoteBtn" class="btn btn-secondary">
                         <i class="fas fa-plus"></i>
-                        Orçamento
+                        <span>Orçamento</span>
                     </button>
                 </div>
             </div>
@@ -152,9 +145,15 @@
             </div>
 
             <!-- Charts -->
-            <div class="charts-box">
-                <canvas id="salesChart" width="400" height="200"></canvas>
-                <canvas id="revenueChart" width="400" height="200"></canvas>
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3>Vendas por Mês</h3>
+                    <canvas id="salesChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Faturamento</h3>
+                    <canvas id="revenueChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -164,19 +163,17 @@
                 <h2>Clientes</h2>
                 <button id="btnAddClient" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
-                    Adicionar Cliente
+                    <span>Adicionar Cliente</span>
                 </button>
             </div>
 
-            <!-- Search -->
             <div class="search-bar">
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchClientes" placeholder="Buscar clientes...">
             </div>
 
-            <!-- Clients Grid -->
             <div id="clientesGrid" class="card-grid">
-                <!-- Clients will be loaded here -->
+                <!-- Clientes serão carregados aqui -->
             </div>
         </div>
 
@@ -186,13 +183,12 @@
                 <h2>Serviços</h2>
                 <button id="btnAddService" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
-                    Adicionar Serviço
+                    <span>Adicionar Serviço</span>
                 </button>
             </div>
 
-            <!-- Services Grid -->
             <div id="servicosGrid" class="card-grid">
-                <!-- Services will be loaded here -->
+                <!-- Serviços serão carregados aqui -->
             </div>
         </div>
 
@@ -202,13 +198,12 @@
                 <h2>Orçamentos</h2>
                 <button id="btnNewQuote" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
-                    Novo Orçamento
+                    <span>Novo Orçamento</span>
                 </button>
             </div>
 
-            <!-- Quotes Grid -->
             <div id="orcamentosGrid" class="card-grid">
-                <!-- Quotes will be loaded here -->
+                <!-- Orçamentos serão carregados aqui -->
             </div>
         </div>
 
@@ -218,10 +213,9 @@
                 <h2>Histórico</h2>
             </div>
 
-            <!-- History Timeline -->
             <div class="timeline">
                 <div id="historicoList">
-                    <!-- History items will be loaded here -->
+                    <!-- Histórico será carregado aqui -->
                 </div>
             </div>
         </div>
@@ -254,8 +248,6 @@
     <div id="notification" class="toast"></div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.51.0/dist/umd/supabase.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/app.js"></script>
     <script src="js/crm.js"></script>
