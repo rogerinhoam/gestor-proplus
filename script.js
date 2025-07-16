@@ -1903,3 +1903,336 @@ document.head.appendChild(styleElement);
 console.log('R.M. Estética Automotiva - Gestor PRO+ inicializado com sucesso!');
 console.log('Versão: 1.0.0 - Correção de Atalhos Aplicada');
 console.log('Problema dos números resolvido: Agora é possível digitar números em campos sem mudar de aba');
+// === INTEGRAÇÕES MOBILE E CRM ===
+
+// Geolocalização
+function getCurrentLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const { latitude, longitude } = position.coords;
+                updateLocationDisplay(latitude, longitude);
+                updateLocationInput(latitude, longitude);
+            },
+            error => {
+                console.error('Erro ao obter localização:', error);
+                showNotification('Erro ao obter localização', 'error');
+            }
+        );
+    } else {
+        showNotification('Geolocalização não suportada', 'error');
+    }
+}
+
+async function updateLocationDisplay(lat, lon) {
+    try {
+        const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lon}&key=YOUR_API_KEY&language=pt&pretty=1`);
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+            const address = data.results[0].formatted;
+            document.getElementById('currentLocation').textContent = address;
+        }
+    } catch (error) {
+        console.error('Erro ao buscar endereço:', error);
+        document.getElementById('currentLocation').textContent = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+    }
+}
+
+function updateLocationInput(lat, lon) {
+    const locationInput = document.getElementById('orcamentoLocal');
+    if (locationInput) {
+        locationInput.value = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+    }
+}
+
+// Camera Integration
+function openCamera() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    
+    input.onchange = function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            handleCameraImage(file);
+        }
+    };
+    
+    input.click();
+}
+
+function handleCameraImage(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const imageData = e.target.result;
+        saveImageToClient(imageData);
+    };
+    reader.readAsDataURL(file);
+}
+
+function saveImageToClient(imageData) {
+    // Save image to localStorage or IndexedDB
+    const images = JSON.parse(localStorage.getItem('client_images') || '[]');
+    images.push({
+        id: Date.now(),
+         imageData,
+        timestamp: new Date().toISOString()
+    });
+    localStorage.setItem('client_images', JSON.stringify(images));
+    
+    showNotification('Imagem salva com sucesso', 'success');
+}
+
+// Enhanced Mobile Functions
+function toggleClienteFilters() {
+    const filters = document.getElementById('clienteFilters');
+    if (filters) {
+        filters.classList.toggle('active');
+    }
+}
+
+function saveAsDraft() {
+    const orcamentoData = {
+        cliente: document.getElementById('orcamentoCliente').value,
+        servicos: servicosOrcamento,
+        desconto: document.getElementById('orcamentoDesconto').value,
+        local: document.getElementById('orcamentoLocal').value,
+        timestamp: new Date().toISOString()
+    };
+    
+    localStorage.setItem('orcamento_draft', JSON.stringify(orcamentoData));
+    showNotification('Rascunho salvo com sucesso', 'success');
+}
+
+function loadDraft() {
+    const draft = localStorage.getItem('orcamento_draft');
+    if (draft) {
+        const data = JSON.parse(draft);
+        
+        document.getElementById('orcamentoCliente').value = data.cliente || '';
+        document.getElementById('orcamentoDesconto').value = data.desconto || '0';
+        document.getElementById('orcamentoLocal').value = data.local || '';
+        
+        servicosOrcamento = data.servicos || [];
+        renderServicosOrcamento();
+        calculateTotal();
+        
+        showNotification('Rascunho carregado', 'success');
+    }
+}
+
+// Quick Actions
+function quickCall() {
+    const phone = prompt('Digite o número de telefone:');
+    if (phone) {
+        window.location.href = `tel:${phone}`;
+    }
+}
+
+function quickEmail() {
+    const email = prompt('Digite o email:');
+    if (email) {
+        window.location.href = `mailto:${email}`;
+    }
+}
+
+function quickVisit() {
+    const address = prompt('Digite o endereço:');
+    if (address) {
+        window.open(`https://maps.google.com/maps?q=${encodeURIComponent(address)}`, '_blank');
+    }
+}
+
+// Advanced Analytics
+function exportAnalytics() {
+    const analytics = {
+        conversions: crmSystem?.analytics?.conversionRate || 0,
+        pipeline: crmSystem?.analytics?.pipelineValue || 0,
+        avgTicket: crmSystem?.analytics?.averageTicket || 0,
+        responseTime: crmSystem?.analytics?.responseTime || 0,
+        exportDate: new Date().toISOString()
+    };
+    
+    const blob = new Blob([JSON.stringify(analytics, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `analytics_${formatDate(new Date()).replace(/\//g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showNotification('Analytics exportado com sucesso', 'success');
+}
+
+function exportAllData() {
+    const allData = {
+        clientes: clientes,
+        servicos: servicos,
+        orcamentos: orcamentos,
+        analytics: crmSystem?.analytics || {},
+        exportDate: new Date().toISOString(),
+        version: '1.0.1'
+    };
+    
+    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rm_crm_backup_${formatDate(new Date()).replace(/\//g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showNotification('Backup completo exportado', 'success');
+}
+
+// Settings Functions
+function toggleNotifications() {
+    const checkbox = document.getElementById('notificationCheckbox');
+    const enabled = checkbox.checked;
+    
+    localStorage.setItem('notifications_enabled', enabled);
+    
+    if (enabled && pwaManager) {
+        pwaManager.requestNotificationPermission();
+    }
+    
+    showNotification(enabled ? 'Notificações ativadas' : 'Notificações desativadas', 'info');
+}
+
+function toggleDarkMode() {
+    const checkbox = document.getElementById('darkModeCheckbox');
+    const enabled = checkbox.checked;
+    
+    document.body.setAttribute('data-theme', enabled ? 'dark' : 'light');
+    localStorage.setItem('theme', enabled ? 'dark' : 'light');
+    
+    showNotification(enabled ? 'Modo escuro ativado' : 'Modo claro ativado', 'info');
+}
+
+// Tutorial System
+function showTutorial() {
+    const tutorial = document.createElement('div');
+    tutorial.className = 'tutorial-overlay';
+    tutorial.innerHTML = `
+        <div class="tutorial-content">
+            <h2>Bem-vindo ao R.M. CRM Pro+</h2>
+            <div class="tutorial-steps">
+                <div class="tutorial-step active">
+                    <h3>Dashboard</h3>
+                    <p>Veja todas as métricas importantes do seu negócio</p>
+                </div>
+                <div class="tutorial-step">
+                    <h3>Pipeline</h3>
+                    <p>Gerencie seus clientes através do funil de vendas</p>
+                </div>
+                <div class="tutorial-step">
+                    <h3>Follow-ups</h3>
+                    <p>Nunca perca uma oportunidade com lembretes automáticos</p>
+                </div>
+            </div>
+            <div class="tutorial-actions">
+                <button class="btn btn-secondary" onclick="closeTutorial()">Pular</button>
+                <button class="btn btn-primary" onclick="nextTutorialStep()">Próximo</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(tutorial);
+}
+
+function closeTutorial() {
+    const tutorial = document.querySelector('.tutorial-overlay');
+    if (tutorial) {
+        tutorial.remove();
+    }
+}
+
+function nextTutorialStep() {
+    // Implementar navegação do tutorial
+    console.log('Próximo passo do tutorial');
+}
+
+// Loading Progress
+function updateLoadingProgress(percentage) {
+    const progress = document.getElementById('loadingProgress');
+    if (progress) {
+        progress.style.width = percentage + '%';
+    }
+}
+
+function hideLoadingScreen() {
+    const loading = document.getElementById('loadingScreen');
+    if (loading) {
+        loading.classList.add('hidden');
+        setTimeout(() => {
+            loading.remove();
+        }, 500);
+    }
+}
+
+// Initialize loading sequence
+document.addEventListener('DOMContentLoaded', function() {
+    let progress = 0;
+    const loadingInterval = setInterval(() => {
+        progress += Math.random() * 30;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(loadingInterval);
+            setTimeout(() => {
+                hideLoadingScreen();
+            }, 500);
+        }
+        updateLoadingProgress(progress);
+    }, 200);
+});
+
+// Enhanced Mobile Navigation
+function handleMobileNavigation() {
+    const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+    
+    mobileNavItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const tab = this.dataset.tab;
+            
+            // Remove active class from all items
+            mobileNavItems.forEach(navItem => {
+                navItem.classList.remove('active');
+            });
+            
+            // Add active class to clicked item
+            this.classList.add('active');
+            
+            // Switch to selected tab
+            switchTab(tab);
+        });
+    });
+}
+
+// Initialize mobile navigation
+document.addEventListener('DOMContentLoaded', function() {
+    handleMobileNavigation();
+});
+
+// Export global functions
+window.getCurrentLocation = getCurrentLocation;
+window.openCamera = openCamera;
+window.saveAsDraft = saveAsDraft;
+window.loadDraft = loadDraft;
+window.exportAnalytics = exportAnalytics;
+window.exportAllData = exportAllData;
+window.toggleNotifications = toggleNotifications;
+window.toggleDarkMode = toggleDarkMode;
+window.showTutorial = showTutorial;
+window.closeTutorial = closeTutorial;
+window.nextTutorialStep = nextTutorialStep;
+window.quickCall = quickCall;
+window.quickEmail = quickEmail;
+window.quickVisit = quickVisit;
