@@ -507,6 +507,64 @@ const CRM = {
 // Estender funcionalidades da aplicação
 App.showClientForm = function() {
     CRM.clients.showForm();
+    /* --- CLIENTES --- */
+clients:{showForm(){
+  openModal('tplCliente');
+  const f=document.getElementById('formCliente');
+  const tel=f.tel||f.querySelector('[name=telefone]');
+  tel.addEventListener('input',e=>e.target.value=formatPhone(e.target.value));
+  f.addEventListener('submit',ev=>{
+    ev.preventDefault();
+    const data=Object.fromEntries(new FormData(f));
+    if(!validateEmail(data.email||'')){showNotification('Email inválido','error');return;}
+    DataManager.saveCliente(data);
+    closeModal(f.closest('[data-modal]'));
+    UIManager.renderClientes();
+    showNotification('Cliente salvo','success');
+  });
+}},
+
+/* --- SERVIÇOS --- */
+services:{showForm(){
+  openModal('tplServico');
+  const f=document.getElementById('formServico');
+  f.addEventListener('submit',ev=>{
+    ev.preventDefault();
+    const data=Object.fromEntries(new FormData(f));
+    data.valor=parseFloat(data.valor);
+    DataManager.saveServico(data);
+    closeModal(f.closest('[data-modal]'));
+    UIManager.renderServicos();
+    showNotification('Serviço salvo','success');
+  });
+}},
+
+/* --- ORÇAMENTOS --- */
+quotes:{showForm(){
+  openModal('tplOrcamento');
+  this.itens=[];
+  const f=document.getElementById('formOrcamento');
+  const selCli=f.cliente_id;
+  selCli.innerHTML=STATE.data.clientes.map(c=>`<option value="${c.id}">${c.nome}</option>`).join('');
+  const list=f.querySelector('#itensOrcamento');
+  const totalEl=f.querySelector('#orcTotal');
+  const addItem=()=>{ /* cria linha */ };
+  const calcTotal=()=>{ /* atualiza totalEl */ };
+  addItem(); // primeira linha
+  f.querySelector('#btnAddItem').onclick=addItem;
+  f.addEventListener('submit',ev=>{
+    ev.preventDefault();
+    const data=Object.fromEntries(new FormData(f));
+    data.itens=this.itens.filter(i=>i.servico_id);
+    data.desconto=parseFloat(data.desconto||0);
+    data.valor_total=this.itens.reduce((s,i)=>s+i.total,0)*(1-data.desconto/100);
+    DataManager.saveOrcamento(data);
+    UIManager.renderOrcamentos();UIManager.renderHistorico();
+    closeModal(f.closest('[data-modal]'));
+    showNotification('Orçamento salvo','success');
+  });
+}}
+
 };
 
 App.showServiceForm = function() {
