@@ -898,7 +898,24 @@ h1, h2, h3, h4, h5, h6 {
 /* ===== UTILITÁRIOS ===== */
 .hidden {
     display: none !important;
-}
+} 
+/* ==== MODAL ==== */
+.modal-backdrop{
+  position:fixed;top:0;left:0;width:100vw;height:100vh;
+  background:rgba(0,0,0,.6);display:flex;align-items:center;
+  justify-content:center;z-index:1000;animation:fade .3s}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{background:var(--bg-secondary);width:100%;max-width:500px;
+  border-radius:var(--border-radius);padding:var(--spacing-lg);position:relative}
+.modal-lg{max-width:750px}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.modal-body{display:grid;gap:1rem}
+.modal-body label{display:flex;flex-direction:column;font-size:.875rem;color:var(--text-primary)}
+.modal-body input,.modal-body select{margin-top:.25rem;padding:.5rem;border-radius:.25rem;border:1px solid var(--border-color);background:var(--bg-tertiary);color:var(--text-primary)}
+.full{grid-column:1/-1}
+.modal-footer{display:flex;justify-content:space-between;align-items:center;margin-top:1rem}
+.btn-close{background:none;border:none;font-size:1.5rem;color:var(--text-secondary);cursor:pointer}
+
 
 .sr-only {
     position: absolute;
