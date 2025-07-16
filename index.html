@@ -31,6 +31,25 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     
     <link rel="stylesheet" href="styles.css">
+    <script>
+// Verificar se todas as dependências carregaram
+window.addEventListener('load', function() {
+    const dependencies = [
+        { name: 'Supabase', check: () => window.supabase },
+        { name: 'Chart.js', check: () => window.Chart },
+        { name: 'jsPDF', check: () => window.jspdf },
+        { name: 'Sortable', check: () => window.Sortable }
+    ];
+    
+    const missing = dependencies.filter(dep => !dep.check());
+    
+    if (missing.length > 0) {
+        console.error('Dependências não carregadas:', missing.map(d => d.name));
+        alert('Erro: Algumas bibliotecas não carregaram. Verifique sua conexão.');
+    }
+});
+</script>
+
 </head>
 <body>
     <!-- Loading Screen -->
