@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R.M. CRM Pro+ - Offline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .offline-container {
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .offline-icon {
+            font-size: 4rem;
+            color: #ef4444;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #f1f5f9;
+        }
+        
+        p {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .retry-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            font-size: 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .retry-btn:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+        
+        .features {
+            margin-top: 3rem;
+            text-align: left;
+        }
+        
+        .features h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #f1f5f9;
+        }
+        
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .features li {
+            padding: 0.5rem 0;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .features li::before {
+            content: "✓";
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .features li.disabled::before {
+            content: "✗";
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📡</div>
+        <h1>Sem Conexão</h1>
+        <p>Você está offline. Verifique sua conexão com a internet e tente novamente.</p>
+        
+        <button class="retry-btn" onclick="window.location.reload()">
+            Tentar Novamente
+        </button>
+        
+        <div class="features">
+            <h3>Recursos Disponíveis Offline</h3>
+            <ul>
+                <li>Visualizar dados salvos localmente</li>
+                <li>Criar novos registros (salvos automaticamente)</li>
+                <li>Editar informações existentes</li>
+                <li class="disabled">Sincronização com o servidor</li>
+                <li class="disabled">Backup automático na nuvem</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
