@@ -1,3 +1,54 @@
+// Adicionar antes da função loadInitialData()
+async function verifyDatabase() {
+    try {
+        // Testar conexão básica
+        const {  testData, error: testError } = await db
+            .from('clientes')
+            .select('count')
+            .limit(1);
+        
+        if (testError) {
+            console.error('Erro de conexão com o banco:', testError);
+            showNotification('Erro na conexão com o banco de dados', 'error');
+            return false;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Erro ao verificar banco:', error);
+        showNotification('Erro ao conectar com o banco', 'error');
+        return false;
+    }
+}
+
+// Modificar a função loadInitialData
+async function loadInitialData() {
+    showLoading();
+    
+    // Verificar banco antes de carregar dados
+    const dbOk = await verifyDatabase();
+    if (!dbOk) {
+        hideLoading();
+        return;
+    }
+    
+    try {
+        await Promise.all([
+            loadClientes(),
+            loadServicos(),
+            loadOrcamentos()
+        ]);
+        
+        populateSelects();
+        updateDashboard();
+        hideLoading();
+    } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        showNotification('Erro ao carregar dados', 'error');
+        hideLoading();
+    }
+}
+
 // Configuração do Supabase
 const supabaseUrl = 'https://bezbszbkaifcanqsmdbi.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlemJzemJrYWlmY2FucXNtZGJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MTM5MTksImV4cCI6MjA2ODE4OTkxOX0.zLXAuQz7g5ym3Bd5pkhg5vsnf_3rdJFRAXI_kX8tM18';
