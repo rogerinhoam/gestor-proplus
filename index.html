@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R.M. Estética Automotiva - CRM Pro+</title>
+    <meta name="description" content="Sistema completo de CRM para gestão de estética automotiva com pipeline de vendas, controle de clientes, serviços e orçamentos">
+    <meta name="theme-color" content="#ef4444">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="R.M. CRM Pro+">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" href="assets/icons/icon-192x192.png" type="image/png">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- External Resources -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <i class="fas fa-car"></i>
+            </div>
+            <h2>R.M. CRM Pro+</h2>
+            <p>Carregando sistema...</p>
+            <div class="loading-bar">
+                <div id="loadingProgress" class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <a href="#" class="logo">
+                    <i class="fas fa-car"></i>
+                    R.M. CRM Pro+
+                </a>
+                <div class="location-info">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Angra dos Reis, RJ</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="sync-status">
+                    <i id="syncIcon" class="fas fa-wifi"></i>
+                    <span id="syncStatus">Conectando...</span>
+                </div>
+                <button id="badgeBtn" class="icon-btn">
+                    <i class="fas fa-bell"></i>
+                    <span id="badgeCount" class="badge">0</span>
+                </button>
+                <button id="settingsBtn" class="icon-btn">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Desktop Navigation -->
+    <nav class="desktop-nav">
+        <button data-tab="dashboard" class="nav-tab active">
+            <i class="fas fa-chart-line"></i>
+            Dashboard
+        </button>
+        <button data-tab="clientes" class="nav-tab">
+            <i class="fas fa-users"></i>
+            Clientes
+        </button>
+        <button data-tab="servicos" class="nav-tab">
+            <i class="fas fa-wrench"></i>
+            Serviços
+        </button>
+        <button data-tab="orcamento" class="nav-tab">
+            <i class="fas fa-calculator"></i>
+            Orçamentos
+        </button>
+        <button data-tab="historico" class="nav-tab">
+            <i class="fas fa-history"></i>
+            Histórico
+        </button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="page-header">
+                <h2>Dashboard</h2>
+                <div class="quick-actions">
+                    <button id="quickClientBtn" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        Novo Cliente
+                    </button>
+                    <button id="quickQuoteBtn" class="btn btn-secondary">
+                        <i class="fas fa-plus"></i>
+                        Orçamento
+                    </button>
+                </div>
+            </div>
+
+            <!-- Metrics -->
+            <div class="metric-grid">
+                <div class="metric-card blue">
+                    <div class="metric-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="metric-body">
+                        <h3 id="metricTotalClients">0</h3>
+                        <p>Total de Clientes</p>
+                    </div>
+                </div>
+                <div class="metric-card green">
+                    <div class="metric-icon">
+                        <i class="fas fa-wrench"></i>
+                    </div>
+                    <div class="metric-body">
+                        <h3 id="metricServices">0</h3>
+                        <p>Serviços Cadastrados</p>
+                    </div>
+                </div>
+                <div class="metric-card orange">
+                    <div class="metric-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <div class="metric-body">
+                        <h3 id="metricQuotes">0</h3>
+                        <p>Orçamentos Criados</p>
+                    </div>
+                </div>
+                <div class="metric-card purple">
+                    <div class="metric-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="metric-body">
+                        <h3 id="metricRevenue">R$ 0,00</h3>
+                        <p>Faturamento Total</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-box">
+                <canvas id="salesChart" width="400" height="200"></canvas>
+                <canvas id="revenueChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Clientes Tab -->
+        <div id="clientes" class="tab-content">
+            <div class="page-header">
+                <h2>Clientes</h2>
+                <button id="btnAddClient" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Cliente
+                </button>
+            </div>
+
+            <!-- Search -->
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchClientes" placeholder="Buscar clientes...">
+            </div>
+
+            <!-- Clients Grid -->
+            <div id="clientesGrid" class="card-grid">
+                <!-- Clients will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Serviços Tab -->
+        <div id="servicos" class="tab-content">
+            <div class="page-header">
+                <h2>Serviços</h2>
+                <button id="btnAddService" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Adicionar Serviço
+                </button>
+            </div>
+
+            <!-- Services Grid -->
+            <div id="servicosGrid" class="card-grid">
+                <!-- Services will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Orçamentos Tab -->
+        <div id="orcamento" class="tab-content">
+            <div class="page-header">
+                <h2>Orçamentos</h2>
+                <button id="btnNewQuote" class="btn btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Novo Orçamento
+                </button>
+            </div>
+
+            <!-- Quotes Grid -->
+            <div id="orcamentosGrid" class="card-grid">
+                <!-- Quotes will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Histórico Tab -->
+        <div id="historico" class="tab-content">
+            <div class="page-header">
+                <h2>Histórico</h2>
+            </div>
+
+            <!-- History Timeline -->
+            <div class="timeline">
+                <div id="historicoList">
+                    <!-- History items will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav">
+        <button data-tab="dashboard" class="mobile-nav-item active">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+        </button>
+        <button data-tab="clientes" class="mobile-nav-item">
+            <i class="fas fa-users"></i>
+            <span>Clientes</span>
+        </button>
+        <button id="quickAddBtn" class="mobile-nav-item plus">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button data-tab="orcamento" class="mobile-nav-item">
+            <i class="fas fa-calculator"></i>
+            <span>Orçamentos</span>
+        </button>
+        <button data-tab="historico" class="mobile-nav-item">
+            <i class="fas fa-history"></i>
+            <span>Histórico</span>
+        </button>
+    </nav>
+
+    <!-- Toast Notification -->
+    <div id="notification" class="toast"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.51.0/dist/umd/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/crm.js"></script>
+    <script src="js/pwa.js"></script>
+</body>
+</html>
