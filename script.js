@@ -1773,4 +1773,97 @@ styleElement.textContent = additionalStyles;
 document.head.appendChild(styleElement);
 
 // Log de inicialização
-console.log('R.M. CRM Pro+ Script carregado - Versão 1.0.2 Corrigida');
+console.log('R.M. CRM Pro+ Script carregado - Versão 1.0.2 // ===== CORREÇÃO DE EVENT LISTENERS =====
+
+// Função para reconfigurar todos os event listeners
+function reconfigureEventListeners() {
+    console.log('Reconfigurando event listeners...');
+    
+    // Remover event listeners antigos para evitar duplicação
+    document.querySelectorAll('*').forEach(el => {
+        el.onclick = null;
+    });
+    
+    // Reconfigurar navegação
+    document.querySelectorAll('.nav-tab, .mobile-nav-item').forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tabName = this.dataset.tab;
+            if (tabName) {
+                switchTab(tabName);
+            }
+        });
+    });
+    
+    // Reconfigurar botões principais
+    const mainButtons = [
+        { id: 'clienteFormElement', handler: handleClienteSubmit },
+        { id: 'servicoFormElement', handler: handleServicoSubmit },
+        { id: 'orcamentoForm', handler: handleOrcamentoSubmit }
+    ];
+    
+    mainButtons.forEach(({ id, handler }) => {
+        const form = document.getElementById(id);
+        if (form) {
+            form.addEventListener('submit', handler);
+        }
+    });
+    
+    // Reconfigurar botões de ação
+    setupActionButtons();
+    
+    console.log('Event listeners reconfigurados com sucesso!');
+}
+
+// Configurar botões de ação
+function setupActionButtons() {
+    // Botão novo cliente
+    const newClientBtn = document.querySelector('button[onclick="toggleClienteForm()"]');
+    if (newClientBtn) {
+        newClientBtn.onclick = toggleClienteForm;
+    }
+    
+    // Botão novo serviço
+    const newServiceBtn = document.querySelector('button[onclick="toggleServicoForm()"]');
+    if (newServiceBtn) {
+        newServiceBtn.onclick = toggleServicoForm;
+    }
+    
+    // Botão adicionar serviço
+    const addServiceBtn = document.querySelector('button[onclick="adicionarServico()"]');
+    if (addServiceBtn) {
+        addServiceBtn.onclick = adicionarServico;
+    }
+    
+    // Botão limpar orçamento
+    const clearBtn = document.querySelector('button[onclick="limparOrcamento()"]');
+    if (clearBtn) {
+        clearBtn.onclick = limparOrcamento;
+    }
+    
+    // Botões de ação rápida
+    const quickBtns = document.querySelectorAll('.quick-actions button');
+    quickBtns.forEach(btn => {
+        if (btn.onclick) return; // Já configurado
+        
+        if (btn.textContent.includes('Cliente')) {
+            btn.onclick = quickAddClient;
+        } else if (btn.textContent.includes('Orçamento')) {
+            btn.onclick = quickOrcamento;
+        }
+    });
+}
+
+// Executar reconfiguração após carregamento
+document.addEventListener('DOMContentLoaded', function() {
+    // Aguardar um pouco para garantir que tudo carregou
+    setTimeout(() => {
+        reconfigureEventListeners();
+    }, 2000);
+});
+
+// Também executar quando o sistema for inicializado
+setTimeout(() => {
+    reconfigureEventListeners();
+}, 3000);
+
