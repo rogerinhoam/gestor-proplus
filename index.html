@@ -17,39 +17,29 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Sortable.js para drag-and-drop -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-    
+    <!-- Estilos -->
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- Verificação de Dependências -->
     <script>
-// Verificar se todas as dependências carregaram
-window.addEventListener('load', function() {
-    const dependencies = [
-        { name: 'Supabase', check: () => window.supabase },
-        { name: 'Chart.js', check: () => window.Chart },
-        { name: 'jsPDF', check: () => window.jspdf },
-        { name: 'Sortable', check: () => window.Sortable }
-    ];
-    
-    const missing = dependencies.filter(dep => !dep.check());
-    
-    if (missing.length > 0) {
-        console.error('Dependências não carregadas:', missing.map(d => d.name));
-        alert('Erro: Algumas bibliotecas não carregaram. Verifique sua conexão.');
-    }
-});
-</script>
-
+        // Verificar se as dependências carregaram corretamente
+        window.dependenciesLoaded = {};
+        
+        function checkDependency(name, condition) {
+            window.dependenciesLoaded[name] = condition;
+            console.log(`${name}: ${condition ? 'Carregado' : 'Falhou'}`);
+        }
+        
+        // Timeout para evitar loading infinito
+        setTimeout(() => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen && !loadingScreen.classList.contains('hidden')) {
+                console.warn('Loading timeout - forçando inicialização');
+                loadingScreen.classList.add('hidden');
+                initializeBasicSystem();
+            }
+        }, 15000); // 15 segundos
+    </script>
 </head>
 <body>
     <!-- Loading Screen -->
@@ -59,9 +49,12 @@ window.addEventListener('load', function() {
                 <i class="fas fa-car"></i>
             </div>
             <h2>R.M. Estética Automotiva</h2>
-            <p>Carregando sistema CRM...</p>
+            <p id="loadingMessage">Carregando sistema CRM...</p>
             <div class="loading-bar">
                 <div class="loading-progress" id="loadingProgress"></div>
+            </div>
+            <div class="loading-details">
+                <small id="loadingDetails">Inicializando...</small>
             </div>
         </div>
     </div>
@@ -74,7 +67,7 @@ window.addEventListener('load', function() {
                     <h1 class="logo">R.M. CRM Pro+</h1>
                     <div class="location-info" id="locationInfo">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span id="currentLocation">Localizando...</span>
+                        <span id="currentLocation">Angra dos Reis, RJ</span>
                     </div>
                 </div>
                 <div class="header-right">
@@ -141,10 +134,6 @@ window.addEventListener('load', function() {
                     <i class="fas fa-history"></i>
                     Histórico
                 </button>
-                <button class="nav-tab" data-tab="analytics">
-                    <i class="fas fa-chart-pie"></i>
-                    Analytics
-                </button>
             </div>
         </nav>
 
@@ -175,7 +164,7 @@ window.addEventListener('load', function() {
                         <div class="metric-content">
                             <h3 id="conversionRate">0%</h3>
                             <p>Taxa de Conversão</p>
-                            <small class="trend positive" id="conversionTrend">+5% vs mês anterior</small>
+                            <small class="trend positive" id="conversionTrend">Calculando...</small>
                         </div>
                     </div>
                     
@@ -186,7 +175,7 @@ window.addEventListener('load', function() {
                         <div class="metric-content">
                             <h3 id="pipelineValue">R$ 0</h3>
                             <p>Pipeline Total</p>
-                            <small class="trend" id="pipelineTrend">R$ 0 em negociação</small>
+                            <small class="trend" id="pipelineTrend">Carregando...</small>
                         </div>
                     </div>
                     
@@ -206,7 +195,7 @@ window.addEventListener('load', function() {
                             <i class="fas fa-clock"></i>
                         </div>
                         <div class="metric-content">
-                            <h3 id="responseTime">0h</h3>
+                            <h3 id="responseTime">2h</h3>
                             <p>Tempo Resposta</p>
                             <small class="trend" id="responseTrend">Média de resposta</small>
                         </div>
@@ -230,9 +219,14 @@ window.addEventListener('load', function() {
                 <div class="followup-section">
                     <h3>Alertas de Follow-up</h3>
                     <div class="followup-list" id="followupList">
-                        <div class="loading-skeleton">
-                            <div class="skeleton-item"></div>
-                            <div class="skeleton-item"></div>
+                        <div class="followup-item">
+                            <div class="followup-icon">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="followup-content">
+                                <h4>Sistema Carregando</h4>
+                                <p>Aguardando dados do servidor...</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -298,7 +292,7 @@ window.addEventListener('load', function() {
                 </div>
             </div>
 
-            <!-- Clientes Tab (Mobile Optimized) -->
+            <!-- Clientes Tab -->
             <div class="tab-content" id="clientes">
                 <div class="page-header">
                     <h2>Clientes</h2>
@@ -377,17 +371,78 @@ window.addEventListener('load', function() {
                     </form>
                 </div>
                 
-                <!-- Clientes List (Mobile Cards) -->
+                <!-- Clientes List -->
                 <div class="clientes-grid" id="clientesGrid">
-                    <div class="loading-skeleton">
-                        <div class="skeleton-card"></div>
-                        <div class="skeleton-card"></div>
-                        <div class="skeleton-card"></div>
+                    <div class="cliente-card">
+                        <div class="cliente-card-header">
+                            <div class="cliente-name">Sistema carregando...</div>
+                            <div class="cliente-status active">Ativo</div>
+                        </div>
+                        <div class="cliente-info">
+                            <div class="cliente-info-item">
+                                <i class="fas fa-phone"></i>
+                                <span>Aguardando dados</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Orçamento Tab (Enhanced) -->
+            <!-- Serviços Tab -->
+            <div class="tab-content" id="servicos">
+                <div class="page-header">
+                    <h2>Catálogo de Serviços</h2>
+                    <button class="btn btn-primary" onclick="toggleServicoForm()">
+                        <i class="fas fa-plus"></i>
+                        Novo Serviço
+                    </button>
+                </div>
+                
+                <div class="servico-form" id="servicoForm">
+                    <form id="servicoFormElement">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="servicoDescricao">Descrição</label>
+                                <input type="text" id="servicoDescricao" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="servicoValor">Valor</label>
+                                <input type="number" id="servicoValor" step="0.01" min="0" required>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="cancelarServicoForm()">
+                                Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Salvar Serviço
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="servicosTableBody">
+                            <tr>
+                                <td>Carregando serviços...</td>
+                                <td>R$ 0,00</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Orçamento Tab -->
             <div class="tab-content" id="orcamento">
                 <div class="page-header">
                     <h2>Novo Orçamento</h2>
@@ -403,7 +458,6 @@ window.addEventListener('load', function() {
                     </div>
                 </div>
                 
-                <!-- Orçamento Form with Location -->
                 <div class="orcamento-form">
                     <form id="orcamentoForm">
                         <div class="form-section">
@@ -427,7 +481,6 @@ window.addEventListener('load', function() {
                             </div>
                         </div>
                         
-                        <!-- Services Section (Enhanced) -->
                         <div class="form-section">
                             <h3>Serviços</h3>
                             <div class="servico-selector">
@@ -453,11 +506,12 @@ window.addEventListener('load', function() {
                             
                             <div class="servicos-adicionados" id="servicosAdicionados">
                                 <h4>Serviços Adicionados</h4>
-                                <div class="servicos-list" id="servicosList"></div>
+                                <div class="servicos-list" id="servicosList">
+                                    <p>Nenhum serviço adicionado</p>
+                                </div>
                             </div>
                         </div>
                         
-                        <!-- Enhanced Values Section -->
                         <div class="form-section">
                             <h3>Valores</h3>
                             <div class="form-row">
@@ -486,7 +540,6 @@ window.addEventListener('load', function() {
                             </div>
                         </div>
                         
-                        <!-- Payment Options -->
                         <div class="form-section">
                             <h3>Forma de Pagamento</h3>
                             <div class="payment-options">
@@ -519,49 +572,47 @@ window.addEventListener('load', function() {
                 </div>
             </div>
 
-            <!-- Analytics Tab -->
-            <div class="tab-content" id="analytics">
+            <!-- Histórico Tab -->
+            <div class="tab-content" id="historico">
                 <div class="page-header">
-                    <h2>Analytics Avançado</h2>
-                    <div class="analytics-controls">
-                        <select id="analyticsperiod">
-                            <option value="7">Últimos 7 dias</option>
-                            <option value="30">Últimos 30 dias</option>
-                            <option value="90">Últimos 90 dias</option>
-                            <option value="365">Último ano</option>
+                    <h2>Histórico de Orçamentos</h2>
+                    <div class="filters">
+                        <select id="filterStatus">
+                            <option value="">Todos os Status</option>
+                            <option value="Orçamento">Orçamento</option>
+                            <option value="Aprovado">Aprovado</option>
+                            <option value="Finalizado">Finalizado</option>
+                            <option value="Cancelado">Cancelado</option>
                         </select>
-                        <button class="btn btn-primary" onclick="exportAnalytics()">
-                            <i class="fas fa-download"></i>
-                            Exportar
+                        <input type="date" id="filterDataInicio">
+                        <input type="date" id="filterDataFim">
+                        <button class="btn btn-secondary" onclick="aplicarFiltros()">
+                            <i class="fas fa-filter"></i>
+                            Filtrar
                         </button>
                     </div>
                 </div>
                 
-                <!-- Advanced Analytics -->
-                <div class="analytics-grid">
-                    <div class="analytics-card">
-                        <h3>Análise de Conversão</h3>
-                        <canvas id="conversionAnalyticsChart"></canvas>
+                <div class="historico-container">
+                    <div class="historico-list" id="historicoList">
+                        <p>Carregando histórico...</p>
                     </div>
                     
-                    <div class="analytics-card">
-                        <h3>Origem dos Clientes</h3>
-                        <canvas id="clientOriginChart"></canvas>
-                    </div>
-                    
-                    <div class="analytics-card">
-                        <h3>Serviços Mais Vendidos</h3>
-                        <canvas id="topServicesChart"></canvas>
-                    </div>
-                    
-                    <div class="analytics-card">
-                        <h3>Lifetime Value</h3>
-                        <canvas id="lifetimeValueChart"></canvas>
+                    <div class="historico-details" id="historicoDetails">
+                        <div class="details-header">
+                            <h3>Detalhes do Orçamento</h3>
+                            <button class="btn btn-secondary" onclick="closeHistoricoDetails()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="details-content" id="historicoDetailsContent">
+                            <p>Selecione um orçamento para ver os detalhes</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Mais Tab (Mobile Menu) -->
+            <!-- Mais Tab -->
             <div class="tab-content" id="mais">
                 <div class="page-header">
                     <h2>Mais Opções</h2>
@@ -573,11 +624,6 @@ window.addEventListener('load', function() {
                         <div class="option-item" onclick="switchTab('servicos')">
                             <i class="fas fa-wrench"></i>
                             <span>Gerenciar Serviços</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                        <div class="option-item" onclick="switchTab('historico')">
-                            <i class="fas fa-history"></i>
-                            <span>Histórico Completo</span>
                             <i class="fas fa-chevron-right"></i>
                         </div>
                         <div class="option-item" onclick="exportAllData()">
@@ -606,38 +652,28 @@ window.addEventListener('load', function() {
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="option-group">
-                        <h3>Suporte</h3>
-                        <div class="option-item" onclick="showTutorial()">
-                            <i class="fas fa-play-circle"></i>
-                            <span>Tutorial</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                        <div class="option-item" onclick="showFeedbackForm()">
-                            <i class="fas fa-comment"></i>
-                            <span>Feedback</span>
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- PWA Install Prompt -->
-    <div class="pwa-install-prompt" id="pwaInstallPrompt">
-        <div class="prompt-content">
-            <div class="prompt-icon">
-                <i class="fas fa-mobile-alt"></i>
+    <!-- Cliente Details Panel -->
+    <div class="cliente-details" id="clienteDetails">
+        <div class="details-header">
+            <h3 id="clienteDetailsNome">Detalhes do Cliente</h3>
+            <button class="btn btn-secondary" onclick="closeClienteDetails()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="details-content">
+            <div class="client-info">
+                <p><strong>Telefone:</strong> <span id="clienteDetailsTelefone">-</span></p>
+                <p><strong>Veículo:</strong> <span id="clienteDetailsCarro">-</span></p>
+                <p><strong>Placa:</strong> <span id="clienteDetailsPlaca">-</span></p>
             </div>
-            <div class="prompt-text">
-                <h3>Instalar App</h3>
-                <p>Instale o R.M. CRM Pro+ no seu dispositivo para acesso rápido</p>
-            </div>
-            <div class="prompt-actions">
-                <button class="btn btn-secondary" onclick="dismissPWAPrompt()">Agora não</button>
-                <button class="btn btn-primary" onclick="installPWA()">Instalar</button>
+            <div class="client-history">
+                <h4>Histórico de Orçamentos</h4>
+                <div id="clienteHistorico" class="history-list"></div>
             </div>
         </div>
     </div>
@@ -658,31 +694,6 @@ window.addEventListener('load', function() {
         </div>
     </div>
 
-    <!-- Quick Action Modal -->
-    <div class="quick-action-modal" id="quickActionModal">
-        <div class="modal-content">
-            <h3>Ações Rápidas</h3>
-            <div class="quick-actions-grid">
-                <button class="quick-action-btn" onclick="quickCall()">
-                    <i class="fas fa-phone"></i>
-                    <span>Ligar</span>
-                </button>
-                <button class="quick-action-btn" onclick="quickWhatsApp()">
-                    <i class="fab fa-whatsapp"></i>
-                    <span>WhatsApp</span>
-                </button>
-                <button class="quick-action-btn" onclick="quickEmail()">
-                    <i class="fas fa-envelope"></i>
-                    <span>Email</span>
-                </button>
-                <button class="quick-action-btn" onclick="quickVisit()">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span>Visita</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Notification -->
     <div class="notification" id="notification">
         <div class="notification-content">
@@ -691,9 +702,23 @@ window.addEventListener('load', function() {
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Carregamento de Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.51.0/dist/umd/supabase.js" 
+            onload="checkDependency('Supabase', !!window.supabase)" 
+            onerror="checkDependency('Supabase', false)"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js" 
+            onload="checkDependency('Chart.js', !!window.Chart)" 
+            onerror="checkDependency('Chart.js', false)"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" 
+            onload="checkDependency('jsPDF', !!window.jspdf)" 
+            onerror="checkDependency('jsPDF', false)"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js" 
+            onload="checkDependency('jsPDF-AutoTable', true)" 
+            onerror="checkDependency('jsPDF-AutoTable', false)"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" 
+            onload="checkDependency('Sortable', !!window.Sortable)" 
+            onerror="checkDependency('Sortable', false)"></script>
+    
     <script src="script.js"></script>
-    <script src="pwa.js"></script>
-    <script src="crm.js"></script>
 </body>
 </html>
