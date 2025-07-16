@@ -15,152 +15,23 @@ const STATE = {
     db: null,
     currentTab: 'dashboard',
     isOnline: navigator.onLine,
-    data: {
+    currentEdit: {
+        cliente: null,
+        servico: null,
+        orcamento: null
+    },
+     {
         clientes: [],
         servicos: [],
         orcamentos: []
     },
-    ui: {
-        loading: false,
-        modals: {},
-        notifications: []
+    orcamentoBuild: {
+        cliente_id: null,
+        itens: [],
+        desconto: 0,
+        subtotal: 0,
+        total: 0
     }
-};
-
-// ===== DADOS DE EXEMPLO =====
-const SAMPLE_DATA = {
-    clientes: [
-        {
-            id: 'c1',
-            nome: 'João Silva',
-            telefone: '(24) 99999-9999',
-            email: 'joao.silva@email.com',
-            carro: 'Honda Civic 2020',
-            placa: 'ABC-1234',
-            endereco: 'Rua das Flores, 123',
-            created_at: '2024-01-15T10:00:00Z',
-            updated_at: '2024-01-15T10:00:00Z'
-        },
-        {
-            id: 'c2',
-            nome: 'Maria Santos',
-            telefone: '(24) 88888-8888',
-            email: 'maria.santos@email.com',
-            carro: 'Toyota Corolla 2019',
-            placa: 'DEF-5678',
-            endereco: 'Avenida Central, 456',
-            created_at: '2024-01-10T14:30:00Z',
-            updated_at: '2024-01-10T14:30:00Z'
-        },
-        {
-            id: 'c3',
-            nome: 'Pedro Oliveira',
-            telefone: '(24) 77777-7777',
-            email: 'pedro.oliveira@email.com',
-            carro: 'Volkswagen Gol 2018',
-            placa: 'GHI-9012',
-            endereco: 'Travessa do Porto, 789',
-            created_at: '2024-01-05T09:15:00Z',
-            updated_at: '2024-01-05T09:15:00Z'
-        }
-    ],
-    servicos: [
-        {
-            id: 's1',
-            descricao: 'Lavagem Completa',
-            valor: 35.00,
-            duracao: 60,
-            categoria: 'Lavagem',
-            ativo: true,
-            created_at: '2024-01-01T08:00:00Z',
-            updated_at: '2024-01-01T08:00:00Z'
-        },
-        {
-            id: 's2',
-            descricao: 'Enceramento',
-            valor: 45.00,
-            duracao: 90,
-            categoria: 'Proteção',
-            ativo: true,
-            created_at: '2024-01-01T08:00:00Z',
-            updated_at: '2024-01-01T08:00:00Z'
-        },
-        {
-            id: 's3',
-            descricao: 'Lavagem + Enceramento',
-            valor: 75.00,
-            duracao: 120,
-            categoria: 'Combo',
-            ativo: true,
-            created_at: '2024-01-01T08:00:00Z',
-            updated_at: '2024-01-01T08:00:00Z'
-        },
-        {
-            id: 's4',
-            descricao: 'Aspiração Completa',
-            valor: 20.00,
-            duracao: 30,
-            categoria: 'Interno',
-            ativo: true,
-            created_at: '2024-01-01T08:00:00Z',
-            updated_at: '2024-01-01T08:00:00Z'
-        },
-        {
-            id: 's5',
-            descricao: 'Pneu Pretinho',
-            valor: 25.00,
-            duracao: 15,
-            categoria: 'Detalhamento',
-            ativo: true,
-            created_at: '2024-01-01T08:00:00Z',
-            updated_at: '2024-01-01T08:00:00Z'
-        }
-    ],
-    orcamentos: [
-        {
-            id: 'o1',
-            cliente_id: 'c1',
-            valor_total: 110.00,
-            desconto: 0,
-            status: 'Finalizado',
-            observacoes: 'Serviço executado com excelência',
-            created_at: '2024-01-15T10:30:00Z',
-            updated_at: '2024-01-15T11:30:00Z',
-            itens: [
-                { servico_id: 's3', quantidade: 1, valor: 75.00 },
-                { servico_id: 's4', quantidade: 1, valor: 20.00 },
-                { servico_id: 's5', quantidade: 1, valor: 25.00 }
-            ]
-        },
-        {
-            id: 'o2',
-            cliente_id: 'c2',
-            valor_total: 80.00,
-            desconto: 0,
-            status: 'Orçamento',
-            observacoes: 'Aguardando aprovação do cliente',
-            created_at: '2024-01-14T15:00:00Z',
-            updated_at: '2024-01-14T15:00:00Z',
-            itens: [
-                { servico_id: 's1', quantidade: 1, valor: 35.00 },
-                { servico_id: 's2', quantidade: 1, valor: 45.00 }
-            ]
-        },
-        {
-            id: 'o3',
-            cliente_id: 'c3',
-            valor_total: 60.00,
-            desconto: 5,
-            status: 'Aprovado',
-            observacoes: 'Cliente pediu desconto, aprovado',
-            created_at: '2024-01-12T11:00:00Z',
-            updated_at: '2024-01-12T11:15:00Z',
-            itens: [
-                { servico_id: 's1', quantidade: 1, valor: 35.00 },
-                { servico_id: 's4', quantidade: 1, valor: 20.00 }
-            ]
-        }
-    ]
 };
 
 // ===== UTILITÁRIOS =====
@@ -170,7 +41,7 @@ const Utils = {
         return new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: 'BRL'
-        }).format(value);
+        }).format(value || 0);
     },
 
     // Formatação de data
@@ -228,6 +99,16 @@ const Utils = {
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
+    },
+
+    // Criar elemento a partir de template
+    createFromTemplate: (templateId) => {
+        const template = document.getElementById(templateId);
+        if (!template) {
+            console.error(`Template ${templateId} não encontrado`);
+            return null;
+        }
+        return template.content.cloneNode(true);
     }
 };
 
@@ -279,7 +160,31 @@ const DataManager = {
 
     // Carregar dados de exemplo
     loadSampleData() {
-        STATE.data = { ...SAMPLE_DATA };
+        STATE.data.clientes = [
+            { id: '1', nome: 'João Silva', telefone: '(24) 99999-9999', email: 'joao@email.com', carro: 'Honda Civic', placa: 'ABC-1234' },
+            { id: '2', nome: 'Maria Santos', telefone: '(24) 88888-8888', email: 'maria@email.com', carro: 'Toyota Corolla', placa: 'DEF-5678' },
+            { id: '3', nome: 'Pedro Oliveira', telefone: '(24) 77777-7777', email: 'pedro@email.com', carro: 'VW Gol', placa: 'GHI-9012' }
+        ];
+        
+        STATE.data.servicos = [
+            { id: '1', descricao: 'Lavagem Completa', valor: 35.00, categoria: 'Lavagem' },
+            { id: '2', descricao: 'Enceramento', valor: 45.00, categoria: 'Proteção' },
+            { id: '3', descricao: 'Lavagem + Enceramento', valor: 75.00, categoria: 'Combo' },
+            { id: '4', descricao: 'Aspiração Completa', valor: 20.00, categoria: 'Interno' },
+            { id: '5', descricao: 'Pneu Pretinho', valor: 25.00, categoria: 'Detalhamento' }
+        ];
+        
+        STATE.data.orcamentos = [
+            {
+                id: '1',
+                numero_orcamento: 'ORC-2024-000001',
+                cliente_id: '1',
+                valor_total: 100.00,
+                status: 'finalizado',
+                created_at: '2024-01-15T10:30:00Z'
+            }
+        ];
+        
         console.log('📋 Dados de exemplo carregados');
     },
 
@@ -295,7 +200,7 @@ const DataManager = {
             STATE.data.clientes = data || [];
         } catch (error) {
             console.error('❌ Erro ao carregar clientes:', error);
-            STATE.data.clientes = SAMPLE_DATA.clientes;
+            STATE.data.clientes = [];
         }
     },
 
@@ -311,7 +216,7 @@ const DataManager = {
             STATE.data.servicos = data || [];
         } catch (error) {
             console.error('❌ Erro ao carregar serviços:', error);
-            STATE.data.servicos = SAMPLE_DATA.servicos;
+            STATE.data.servicos = [];
         }
     },
 
@@ -324,10 +229,11 @@ const DataManager = {
                     *,
                     clientes(nome, carro, placa),
                     orcamento_itens(
-                        servico_id,
+                        id,
+                        descricao_servico,
+                        valor_unitario,
                         quantidade,
-                        valor_cobrado,
-                        servicos(descricao)
+                        valor_total
                     )
                 `)
                 .order('created_at', { ascending: false });
@@ -336,30 +242,61 @@ const DataManager = {
             STATE.data.orcamentos = data || [];
         } catch (error) {
             console.error('❌ Erro ao carregar orçamentos:', error);
-            STATE.data.orcamentos = SAMPLE_DATA.orcamentos;
+            STATE.data.orcamentos = [];
         }
     },
 
     // Salvar cliente
-    async saveCliente(cliente) {
+    async saveCliente(clienteData) {
         try {
             if (STATE.db) {
-                const { data, error } = await STATE.db
-                    .from('clientes')
-                    .insert([cliente])
-                    .select()
-                    .single();
+                let result;
+                if (STATE.currentEdit.cliente) {
+                    result = await STATE.db
+                        .from('clientes')
+                        .update(clienteData)
+                        .eq('id', STATE.currentEdit.cliente)
+                        .select()
+                        .single();
+                } else {
+                    result = await STATE.db
+                        .from('clientes')
+                        .insert([clienteData])
+                        .select()
+                        .single();
+                }
                 
-                if (error) throw error;
+                if (result.error) throw result.error;
                 
-                STATE.data.clientes.push(data);
-                return data;
+                // Atualizar lista local
+                if (STATE.currentEdit.cliente) {
+                    const index = STATE.data.clientes.findIndex(c => c.id === STATE.currentEdit.cliente);
+                    if (index !== -1) {
+                        STATE.data.clientes[index] = result.data;
+                    }
+                } else {
+                    STATE.data.clientes.push(result.data);
+                }
+                
+                return result.data;
             } else {
-                cliente.id = Utils.generateId();
-                cliente.created_at = new Date().toISOString();
-                cliente.updated_at = new Date().toISOString();
-                STATE.data.clientes.push(cliente);
-                return cliente;
+                // Modo offline
+                const newCliente = {
+                    id: STATE.currentEdit.cliente || Utils.generateId(),
+                    ...clienteData,
+                    created_at: new Date().toISOString()
+                };
+                
+                if (STATE.currentEdit.cliente) {
+                    const index = STATE.data.clientes.findIndex(c => c.id === STATE.currentEdit.cliente);
+                    if (index !== -1) {
+                        STATE.data.clientes[index] = newCliente;
+                    }
+                } else {
+                    STATE.data.clientes.push(newCliente);
+                }
+                
+                return newCliente;
             }
         } catch (error) {
             console.error('❌ Erro ao salvar cliente:', error);
@@ -368,25 +305,56 @@ const DataManager = {
     },
 
     // Salvar serviço
-    async saveServico(servico) {
+    async saveServico(servicoData) {
         try {
             if (STATE.db) {
-                const { data, error } = await STATE.db
-                    .from('servicos')
-                    .insert([servico])
-                    .select()
-                    .single();
+                let result;
+                if (STATE.currentEdit.servico) {
+                    result = await STATE.db
+                        .from('servicos')
+                        .update(servicoData)
+                        .eq('id', STATE.currentEdit.servico)
+                        .select()
+                        .single();
+                } else {
+                    result = await STATE.db
+                        .from('servicos')
+                        .insert([servicoData])
+                        .select()
+                        .single();
+                }
                 
-                if (error) throw error;
+                if (result.error) throw result.error;
                 
-                STATE.data.servicos.push(data);
-                return data;
+                // Atualizar lista local
+                if (STATE.currentEdit.servico) {
+                    const index = STATE.data.servicos.findIndex(s => s.id === STATE.currentEdit.servico);
+                    if (index !== -1) {
+                        STATE.data.servicos[index] = result.data;
+                    }
+                } else {
+                    STATE.data.servicos.push(result.data);
+                }
+                
+                return result.data;
             } else {
-                servico.id = Utils.generateId();
-                servico.created_at = new Date().toISOString();
-                servico.updated_at = new Date().toISOString();
-                STATE.data.servicos.push(servico);
-                return servico;
+                // Modo offline
+                const newServico = {
+                    id: STATE.currentEdit.servico || Utils.generateId(),
+                    ...servicoData,
+                    created_at: new Date().toISOString()
+                };
+                
+                if (STATE.currentEdit.servico) {
+                    const index = STATE.data.servicos.findIndex(s => s.id === STATE.currentEdit.servico);
+                    if (index !== -1) {
+                        STATE.data.servicos[index] = newServico;
+                    }
+                } else {
+                    STATE.data.servicos.push(newServico);
+                }
+                
+                return newServico;
             }
         } catch (error) {
             console.error('❌ Erro ao salvar serviço:', error);
@@ -395,25 +363,94 @@ const DataManager = {
     },
 
     // Salvar orçamento
-    async saveOrcamento(orcamento) {
+    async saveOrcamento(orcamentoData, itens) {
         try {
             if (STATE.db) {
-                const { data, error } = await STATE.db
-                    .from('orcamentos')
-                    .insert([orcamento])
-                    .select()
-                    .single();
+                let result;
+                if (STATE.currentEdit.orcamento) {
+                    result = await STATE.db
+                        .from('orcamentos')
+                        .update(orcamentoData)
+                        .eq('id', STATE.currentEdit.orcamento)
+                        .select()
+                        .single();
+                } else {
+                    result = await STATE.db
+                        .from('orcamentos')
+                        .insert([orcamentoData])
+                        .select()
+                        .single();
+                }
                 
-                if (error) throw error;
+                if (result.error) throw result.error;
                 
-                STATE.data.orcamentos.unshift(data);
-                return data;
+                const orcamentoId = result.data.id;
+                
+                // Deletar itens antigos se editando
+                if (STATE.currentEdit.orcamento) {
+                    await STATE.db
+                        .from('orcamento_itens')
+                        .delete()
+                        .eq('orcamento_id', STATE.currentEdit.orcamento);
+                }
+                
+                // Inserir novos itens
+                if (itens.length > 0) {
+                    const itensData = itens.map(item => ({
+                        orcamento_id: orcamentoId,
+                        servico_id: item.servico_id,
+                        descricao_servico: item.descricao_servico,
+                        valor_unitario: item.valor_unitario,
+                        quantidade: item.quantidade,
+                        valor_total: item.valor_total
+                    }));
+                    
+                    const { error: itensError } = await STATE.db
+                        .from('orcamento_itens')
+                        .insert(itensData);
+                    
+                    if (itensError) throw itensError;
+                }
+                
+                // Atualizar lista local
+                const cliente = STATE.data.clientes.find(c => c.id === orcamentoData.cliente_id);
+                const novoOrcamento = {
+                    ...result.data,
+                    clientes: cliente,
+                    orcamento_itens: itens
+                };
+                
+                if (STATE.currentEdit.orcamento) {
+                    const index = STATE.data.orcamentos.findIndex(o => o.id === STATE.currentEdit.orcamento);
+                    if (index !== -1) {
+                        STATE.data.orcamentos[index] = novoOrcamento;
+                    }
+                } else {
+                    STATE.data.orcamentos.unshift(novoOrcamento);
+                }
+                
+                return novoOrcamento;
             } else {
-                orcamento.id = Utils.generateId();
-                orcamento.created_at = new Date().toISOString();
-                orcamento.updated_at = new Date().toISOString();
-                STATE.data.orcamentos.unshift(orcamento);
-                return orcamento;
+                // Modo offline
+                const novoOrcamento = {
+                    id: STATE.currentEdit.orcamento || Utils.generateId(),
+                    numero_orcamento: `ORC-${new Date().getFullYear()}-${String(STATE.data.orcamentos.length + 1).padStart(6, '0')}`,
+                    ...orcamentoData,
+                    created_at: new Date().toISOString(),
+                    clientes: STATE.data.clientes.find(c => c.id === orcamentoData.cliente_id),
+                    orcamento_itens: itens
+                };
+                
+                if (STATE.currentEdit.orcamento) {
+                    const index = STATE.data.orcamentos.findIndex(o => o.id === STATE.currentEdit.orcamento);
+                    if (index !== -1) {
+                        STATE.data.orcamentos[index] = novoOrcamento;
+                    }
+                } else {
+                    STATE.data.orcamentos.unshift(novoOrcamento);
+                }
+                
+                return novoOrcamento;
             }
         } catch (error) {
             console.error('❌ Erro ao salvar orçamento:', error);
@@ -467,12 +504,7 @@ const UIManager = {
         const loading = document.getElementById('loadingScreen');
         if (loading) {
             loading.classList.remove('hidden');
-            if (message) {
-                const p = loading.querySelector('p');
-                if (p) p.textContent = message;
-            }
         }
-        STATE.ui.loading = true;
     },
 
     // Esconder loading
@@ -484,7 +516,6 @@ const UIManager = {
                 loading.style.display = 'none';
             }, 500);
         }
-        STATE.ui.loading = false;
     },
 
     // Atualizar progresso do loading
@@ -519,6 +550,8 @@ const UIManager = {
 
     // Alternar tab
     switchTab(tabName) {
+        console.log('🔄 Mudando para aba:', tabName);
+        
         // Atualizar navegação
         document.querySelectorAll('.nav-tab, .mobile-nav-item').forEach(item => {
             item.classList.remove('active');
@@ -554,7 +587,7 @@ const UIManager = {
             case 'servicos':
                 this.renderServicos();
                 break;
-            case 'orcamento':
+            case 'orcamentos':
                 this.renderOrcamentos();
                 break;
             case 'historico':
@@ -570,17 +603,14 @@ const UIManager = {
         const totalOrcamentos = STATE.data.orcamentos.length;
         
         const faturamento = STATE.data.orcamentos
-            .filter(o => o.status === 'Finalizado')
-            .reduce((sum, o) => sum + o.valor_total, 0);
+            .filter(o => o.status === 'finalizado')
+            .reduce((sum, o) => sum + (parseFloat(o.valor_total) || 0), 0);
 
         // Atualizar métricas
         this.updateElement('metricTotalClients', totalClientes);
         this.updateElement('metricServices', totalServicos);
         this.updateElement('metricQuotes', totalOrcamentos);
         this.updateElement('metricRevenue', Utils.formatCurrency(faturamento));
-
-        // Renderizar gráficos
-        this.renderCharts();
     },
 
     // Renderizar clientes
@@ -647,19 +677,13 @@ const UIManager = {
             <article class="card">
                 <header class="card-header">
                     <h3 class="card-title">${Utils.sanitizeHtml(servico.descricao)}</h3>
-                    <span class="card-badge ${servico.ativo ? 'active' : 'inactive'}">
-                        ${servico.ativo ? 'Ativo' : 'Inativo'}
-                    </span>
+                    <span class="card-badge active">Ativo</span>
                 </header>
                 <div class="card-body">
                     <div class="card-info">
                         <div class="card-info-item">
                             <i class="fas fa-dollar-sign"></i>
                             <span>${Utils.formatCurrency(servico.valor)}</span>
-                        </div>
-                        <div class="card-info-item">
-                            <i class="fas fa-clock"></i>
-                            <span>${servico.duracao || 60} min</span>
                         </div>
                         <div class="card-info-item">
                             <i class="fas fa-tag"></i>
@@ -690,22 +714,26 @@ const UIManager = {
         }
 
         container.innerHTML = STATE.data.orcamentos.map(orcamento => {
-            const cliente = STATE.data.clientes.find(c => c.id === orcamento.cliente_id);
-            const statusColor = {
-                'Orçamento': 'warning',
-                'Aprovado': 'info',
-                'Finalizado': 'success',
-                'Cancelado': 'danger'
-            }[orcamento.status] || 'secondary';
+            const cliente = STATE.data.clientes.find(c => c.id === orcamento.cliente_id) || orcamento.clientes;
+            const statusColors = {
+                'orcamento': 'warning',
+                'aprovado': 'info',
+                'finalizado': 'success',
+                'cancelado': 'danger'
+            };
 
             return `
                 <article class="card">
                     <header class="card-header">
                         <h3 class="card-title">${Utils.sanitizeHtml(cliente?.nome || 'Cliente não encontrado')}</h3>
-                        <span class="card-badge ${statusColor}">${orcamento.status}</span>
+                        <span class="card-badge ${statusColors[orcamento.status] || 'secondary'}">${orcamento.status}</span>
                     </header>
                     <div class="card-body">
                         <div class="card-info">
+                            <div class="card-info-item">
+                                <i class="fas fa-hashtag"></i>
+                                <span>${orcamento.numero_orcamento || 'N/A'}</span>
+                            </div>
                             <div class="card-info-item">
                                 <i class="fas fa-calendar"></i>
                                 <span>${Utils.formatDate(orcamento.created_at)}</span>
@@ -713,10 +741,6 @@ const UIManager = {
                             <div class="card-info-item">
                                 <i class="fas fa-dollar-sign"></i>
                                 <span>${Utils.formatCurrency(orcamento.valor_total)}</span>
-                            </div>
-                            <div class="card-info-item">
-                                <i class="fas fa-list"></i>
-                                <span>${orcamento.itens?.length || 0} itens</span>
                             </div>
                         </div>
                     </div>
@@ -747,7 +771,7 @@ const UIManager = {
         }
 
         container.innerHTML = STATE.data.orcamentos.map(orcamento => {
-            const cliente = STATE.data.clientes.find(c => c.id === orcamento.cliente_id);
+            const cliente = STATE.data.clientes.find(c => c.id === orcamento.cliente_id) || orcamento.clientes;
             
             return `
                 <article class="timeline-item">
@@ -757,10 +781,10 @@ const UIManager = {
                             <time class="timeline-date">${Utils.formatDateTime(orcamento.created_at)}</time>
                         </header>
                         <div class="timeline-body">
+                            <p><strong>Orçamento:</strong> ${orcamento.numero_orcamento || 'N/A'}</p>
                             <p><strong>Status:</strong> ${orcamento.status}</p>
                             <p><strong>Valor:</strong> ${Utils.formatCurrency(orcamento.valor_total)}</p>
-                            <p><strong>Itens:</strong> ${orcamento.itens?.length || 0}</p>
-                            ${orcamento.observacoes ? `<p><strong>Observações:</strong> ${Utils.sanitizeHtml(orcamento.observacoes)}</p>` : ''}
+                            <p><strong>Itens:</strong> ${orcamento.orcamento_itens?.length || 0}</p>
                         </div>
                     </div>
                 </article>
@@ -772,18 +796,11 @@ const UIManager = {
     getEmptyState(title, description) {
         return `
             <div class="empty-state">
-                <i class="fas fa-inbox" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
-                <h3 style="color: var(--text-secondary); margin-bottom: 0.5rem;">${title}</h3>
-                <p style="color: var(--text-muted);">${description}</p>
+                <i class="fas fa-inbox"></i>
+                <h3>${title}</h3>
+                <p>${description}</p>
             </div>
         `;
-    },
-
-    // Renderizar gráficos
-    renderCharts() {
-        // Implementação dos gráficos seria aqui
-        // Por enquanto, apenas placeholder
-        console.log('📊 Gráficos renderizados');
     },
 
     // Atualizar elemento
@@ -792,30 +809,462 @@ const UIManager = {
         if (element) {
             element.textContent = value;
         }
-    },
+    }
+};
 
-    // Filtrar clientes
-    filterClientes(searchTerm) {
-        const filteredClientes = STATE.data.clientes.filter(cliente => 
-            cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            cliente.telefone?.includes(searchTerm) ||
-            cliente.carro?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            cliente.placa?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+// ===== GERENCIADOR DE MODAIS =====
+const ModalManager = {
+    // Abrir modal de cliente
+    openClienteModal(clienteId = null) {
+        const modal = Utils.createFromTemplate('tplModalCliente');
+        if (!modal) return;
 
-        const container = document.getElementById('clientesGrid');
-        if (!container) return;
+        const modalElement = modal.querySelector('.modal-overlay');
+        const form = modal.querySelector('#clienteForm');
+        const title = modal.querySelector('#modalClienteTitle');
 
-        if (filteredClientes.length === 0) {
-            container.innerHTML = this.getEmptyState('Nenhum cliente encontrado', `Nenhum resultado para "${searchTerm}"`);
-            return;
+        // Configurar estado
+        STATE.currentEdit.cliente = clienteId;
+        
+        if (clienteId) {
+            const cliente = STATE.data.clientes.find(c => c.id === clienteId);
+            if (cliente) {
+                title.textContent = 'Editar Cliente';
+                modal.querySelector('#clienteNome').value = cliente.nome || '';
+                modal.querySelector('#clienteTelefone').value = cliente.telefone || '';
+                modal.querySelector('#clienteEmail').value = cliente.email || '';
+                modal.querySelector('#clienteCarro').value = cliente.carro || '';
+                modal.querySelector('#clientePlaca').value = cliente.placa || '';
+            }
+        } else {
+            title.textContent = 'Novo Cliente';
         }
 
-        // Renderizar clientes filtrados usando a mesma lógica
-        const originalClientes = STATE.data.clientes;
-        STATE.data.clientes = filteredClientes;
-        this.renderClientes();
-        STATE.data.clientes = originalClientes;
+        // Configurar eventos
+        form.addEventListener('submit', this.handleClienteSubmit);
+        
+        // Configurar máscaras
+        const telefoneInput = modal.querySelector('#clienteTelefone');
+        const placaInput = modal.querySelector('#clientePlaca');
+        
+        telefoneInput.addEventListener('input', (e) => {
+            e.target.value = Utils.formatPhone(e.target.value);
+        });
+        
+        placaInput.addEventListener('input', (e) => {
+            e.target.value = Utils.formatPlate(e.target.value);
+        });
+
+        // Adicionar ao DOM e mostrar
+        document.body.appendChild(modalElement);
+        this.setupModalEvents(modalElement);
+        modal.querySelector('#clienteNome').focus();
+    },
+
+    // Abrir modal de serviço
+    openServicoModal(servicoId = null) {
+        const modal = Utils.createFromTemplate('tplModalServico');
+        if (!modal) return;
+
+        const modalElement = modal.querySelector('.modal-overlay');
+        const form = modal.querySelector('#servicoForm');
+        const title = modal.querySelector('#modalServicoTitle');
+
+        // Configurar estado
+        STATE.currentEdit.servico = servicoId;
+        
+        if (servicoId) {
+            const servico = STATE.data.servicos.find(s => s.id === servicoId);
+            if (servico) {
+                title.textContent = 'Editar Serviço';
+                modal.querySelector('#servicoDescricao').value = servico.descricao || '';
+                modal.querySelector('#servicoValor').value = servico.valor || '';
+                modal.querySelector('#servicoCategoria').value = servico.categoria || '';
+            }
+        } else {
+            title.textContent = 'Novo Serviço';
+        }
+
+        // Configurar eventos
+        form.addEventListener('submit', this.handleServicoSubmit);
+
+        // Adicionar ao DOM e mostrar
+        document.body.appendChild(modalElement);
+        this.setupModalEvents(modalElement);
+        modal.querySelector('#servicoDescricao').focus();
+    },
+
+    // Abrir modal de orçamento
+    openOrcamentoModal(orcamentoId = null) {
+        const modal = Utils.createFromTemplate('tplModalOrcamento');
+        if (!modal) return;
+
+        const modalElement = modal.querySelector('.modal-overlay');
+        const form = modal.querySelector('#orcamentoForm');
+        const title = modal.querySelector('#modalOrcTitle');
+
+        // Configurar estado
+        STATE.currentEdit.orcamento = orcamentoId;
+        STATE.orcamentoBuild = {
+            cliente_id: null,
+            itens: [],
+            desconto: 0,
+            subtotal: 0,
+            total: 0
+        };
+        
+        if (orcamentoId) {
+            const orcamento = STATE.data.orcamentos.find(o => o.id === orcamentoId);
+            if (orcamento) {
+                title.textContent = 'Editar Orçamento';
+                modal.querySelector('#orcClienteSelect').value = orcamento.cliente_id;
+                modal.querySelector('#orcDesconto').value = orcamento.percentual_desconto || 0;
+                
+                STATE.orcamentoBuild.cliente_id = orcamento.cliente_id;
+                STATE.orcamentoBuild.desconto = orcamento.percentual_desconto || 0;
+                STATE.orcamentoBuild.itens = (orcamento.orcamento_itens || []).map(item => ({
+                    servico_id: item.servico_id,
+                    descricao_servico: item.descricao_servico,
+                    valor_unitario: item.valor_unitario,
+                    quantidade: item.quantidade,
+                    valor_total: item.valor_total
+                }));
+            }
+        } else {
+            title.textContent = 'Novo Orçamento';
+        }
+
+        // Popular selects
+        this.populateOrcamentoSelects(modal);
+
+        // Configurar eventos
+        form.addEventListener('submit', this.handleOrcamentoSubmit);
+        
+        const addBtn = modal.querySelector('#orcAddService');
+        addBtn.addEventListener('click', () => this.addServicoToOrcamento(modal));
+        
+        const descontoInput = modal.querySelector('#orcDesconto');
+        descontoInput.addEventListener('input', () => this.calculateOrcamentoTotal(modal));
+
+        // Renderizar itens existentes
+        this.renderOrcamentoItens(modal);
+        this.calculateOrcamentoTotal(modal);
+
+        // Adicionar ao DOM e mostrar
+        document.body.appendChild(modalElement);
+        this.setupModalEvents(modalElement);
+    },
+
+    // Popular selects do orçamento
+    populateOrcamentoSelects(modal) {
+        const clienteSelect = modal.querySelector('#orcClienteSelect');
+        const servicoSelect = modal.querySelector('#orcServicoSelect');
+
+        // Popular clientes
+        clienteSelect.innerHTML = '<option value="">Selecione um cliente</option>';
+        STATE.data.clientes.forEach(cliente => {
+            const option = document.createElement('option');
+            option.value = cliente.id;
+            option.textContent = `${cliente.nome} - ${cliente.carro || 'Sem veículo'}`;
+            clienteSelect.appendChild(option);
+        });
+
+        // Popular serviços
+        servicoSelect.innerHTML = '<option value="">Selecione um serviço</option>';
+        STATE.data.servicos.forEach(servico => {
+            const option = document.createElement('option');
+            option.value = servico.id;
+            option.textContent = `${servico.descricao} - ${Utils.formatCurrency(servico.valor)}`;
+            servicoSelect.appendChild(option);
+        });
+    },
+
+    // Adicionar serviço ao orçamento
+    addServicoToOrcamento(modal) {
+        const servicoSelect = modal.querySelector('#orcServicoSelect');
+        const quantidadeInput = modal.querySelector('#orcQuantidade');
+        
+        const servicoId = servicoSelect.value;
+        const quantidade = parseInt(quantidadeInput.value) || 1;
+        
+        if (!servicoId) {
+            UIManager.showNotification('Selecione um serviço', 'warning');
+            return;
+        }
+        
+        const servico = STATE.data.servicos.find(s => s.id === servicoId);
+        if (!servico) return;
+        
+        // Verificar se já existe
+        const existingIndex = STATE.orcamentoBuild.itens.findIndex(item => item.servico_id === servicoId);
+        
+        if (existingIndex !== -1) {
+            STATE.orcamentoBuild.itens[existingIndex].quantidade += quantidade;
+            STATE.orcamentoBuild.itens[existingIndex].valor_total = 
+                STATE.orcamentoBuild.itens[existingIndex].quantidade * STATE.orcamentoBuild.itens[existingIndex].valor_unitario;
+        } else {
+            STATE.orcamentoBuild.itens.push({
+                servico_id: servicoId,
+                descricao_servico: servico.descricao,
+                valor_unitario: servico.valor,
+                quantidade: quantidade,
+                valor_total: servico.valor * quantidade
+            });
+        }
+        
+        // Limpar campos
+        servicoSelect.value = '';
+        quantidadeInput.value = '1';
+        
+        // Atualizar interface
+        this.renderOrcamentoItens(modal);
+        this.calculateOrcamentoTotal(modal);
+        
+        UIManager.showNotification('Serviço adicionado!', 'success');
+    },
+
+    // Renderizar itens do orçamento
+    renderOrcamentoItens(modal) {
+        const container = modal.querySelector('#orcItens');
+        
+        if (STATE.orcamentoBuild.itens.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Nenhum serviço adicionado</p>';
+            return;
+        }
+        
+        container.innerHTML = STATE.orcamentoBuild.itens.map((item, index) => `
+            <div class="orc-item">
+                <div class="orc-item-info">
+                    <h4>${item.descricao_servico}</h4>
+                    <p>${Utils.formatCurrency(item.valor_unitario)} x ${item.quantidade} = ${Utils.formatCurrency(item.valor_total)}</p>
+                </div>
+                <div class="orc-item-actions">
+                    <div class="orc-qty-controls">
+                        <button type="button" onclick="ModalManager.changeQuantity(${index}, -1)">-</button>
+                        <span>${item.quantidade}</span>
+                        <button type="button" onclick="ModalManager.changeQuantity(${index}, 1)">+</button>
+                    </div>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="ModalManager.removeItem(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    // Alterar quantidade
+    changeQuantity(index, change) {
+        const item = STATE.orcamentoBuild.itens[index];
+        if (!item) return;
+        
+        const newQuantity = item.quantidade + change;
+        
+        if (newQuantity > 0) {
+            item.quantidade = newQuantity;
+            item.valor_total = item.valor_unitario * item.quantidade;
+            
+            const modal = document.querySelector('.modal-overlay');
+            this.renderOrcamentoItens(modal);
+            this.calculateOrcamentoTotal(modal);
+        }
+    },
+
+    // Remover item
+    removeItem(index) {
+        STATE.orcamentoBuild.itens.splice(index, 1);
+        
+        const modal = document.querySelector('.modal-overlay');
+        this.renderOrcamentoItens(modal);
+        this.calculateOrcamentoTotal(modal);
+        
+        UIManager.showNotification('Serviço removido!', 'info');
+    },
+
+    // Calcular total do orçamento
+    calculateOrcamentoTotal(modal) {
+        const subtotal = STATE.orcamentoBuild.itens.reduce((sum, item) => sum + item.valor_total, 0);
+        const desconto = parseFloat(modal.querySelector('#orcDesconto').value) || 0;
+        const valorDesconto = subtotal * (desconto / 100);
+        const total = subtotal - valorDesconto;
+        
+        STATE.orcamentoBuild.subtotal = subtotal;
+        STATE.orcamentoBuild.desconto = desconto;
+        STATE.orcamentoBuild.total = total;
+        
+        modal.querySelector('#orcSubtotal').textContent = Utils.formatCurrency(subtotal);
+        modal.querySelector('#orcTotal').textContent = Utils.formatCurrency(total);
+    },
+
+    // Configurar eventos do modal
+    setupModalEvents(modalElement) {
+        // Fechar modal
+        const closeButtons = modalElement.querySelectorAll('.js-close-modal');
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', () => this.closeModal(modalElement));
+        });
+
+        // Fechar ao clicar fora
+        modalElement.addEventListener('click', (e) => {
+            if (e.target === modalElement) {
+                this.closeModal(modalElement);
+            }
+        });
+
+        // Fechar com ESC
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal(modalElement);
+                document.removeEventListener('keydown', handleEsc);
+            }
+        };
+        document.addEventListener('keydown', handleEsc);
+    },
+
+    // Fechar modal
+    closeModal(modalElement) {
+        modalElement.remove();
+        
+        // Limpar estado
+        STATE.currentEdit = {
+            cliente: null,
+            servico: null,
+            orcamento: null
+        };
+        
+        STATE.orcamentoBuild = {
+            cliente_id: null,
+            itens: [],
+            desconto: 0,
+            subtotal: 0,
+            total: 0
+        };
+    },
+
+    // Handler para submit de cliente
+    async handleClienteSubmit(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const clienteData = {
+            nome: formData.get('clienteNome') || e.target.querySelector('#clienteNome').value,
+            telefone: e.target.querySelector('#clienteTelefone').value,
+            email: e.target.querySelector('#clienteEmail').value,
+            carro: e.target.querySelector('#clienteCarro').value,
+            placa: e.target.querySelector('#clientePlaca').value
+        };
+        
+        if (!clienteData.nome.trim()) {
+            UIManager.showNotification('Nome é obrigatório', 'error');
+            return;
+        }
+        
+        try {
+            UIManager.showLoading('Salvando cliente...');
+            
+            await DataManager.saveCliente(clienteData);
+            
+            UIManager.hideLoading();
+            UIManager.showNotification(
+                STATE.currentEdit.cliente ? 'Cliente atualizado!' : 'Cliente salvo!',
+                'success'
+            );
+            
+            UIManager.renderClientes();
+            UIManager.renderDashboard();
+            
+            const modal = e.target.closest('.modal-overlay');
+            ModalManager.closeModal(modal);
+            
+        } catch (error) {
+            UIManager.hideLoading();
+            UIManager.showNotification('Erro ao salvar cliente', 'error');
+        }
+    },
+
+    // Handler para submit de serviço
+    async handleServicoSubmit(e) {
+        e.preventDefault();
+        
+        const servicoData = {
+            descricao: e.target.querySelector('#servicoDescricao').value.trim(),
+            valor: parseFloat(e.target.querySelector('#servicoValor').value),
+            categoria: e.target.querySelector('#servicoCategoria').value.trim()
+        };
+        
+        if (!servicoData.descricao || !servicoData.valor) {
+            UIManager.showNotification('Descrição e valor são obrigatórios', 'error');
+            return;
+        }
+        
+        try {
+            UIManager.showLoading('Salvando serviço...');
+            
+            await DataManager.saveServico(servicoData);
+            
+            UIManager.hideLoading();
+            UIManager.showNotification(
+                STATE.currentEdit.servico ? 'Serviço atualizado!' : 'Serviço salvo!',
+                'success'
+            );
+            
+            UIManager.renderServicos();
+            UIManager.renderDashboard();
+            
+            const modal = e.target.closest('.modal-overlay');
+            ModalManager.closeModal(modal);
+            
+        } catch (error) {
+            UIManager.hideLoading();
+            UIManager.showNotification('Erro ao salvar serviço', 'error');
+        }
+    },
+
+    // Handler para submit de orçamento
+    async handleOrcamentoSubmit(e) {
+        e.preventDefault();
+        
+        const clienteId = e.target.querySelector('#orcClienteSelect').value;
+        
+        if (!clienteId) {
+            UIManager.showNotification('Selecione um cliente', 'error');
+            return;
+        }
+        
+        if (STATE.orcamentoBuild.itens.length === 0) {
+            UIManager.showNotification('Adicione pelo menos um serviço', 'error');
+            return;
+        }
+        
+        const orcamentoData = {
+            cliente_id: clienteId,
+            valor_subtotal: STATE.orcamentoBuild.subtotal,
+            percentual_desconto: STATE.orcamentoBuild.desconto,
+            valor_total: STATE.orcamentoBuild.total,
+            status: 'orcamento'
+        };
+        
+        try {
+            UIManager.showLoading('Salvando orçamento...');
+            
+            await DataManager.saveOrcamento(orcamentoData, STATE.orcamentoBuild.itens);
+            
+            UIManager.hideLoading();
+            UIManager.showNotification(
+                STATE.currentEdit.orcamento ? 'Orçamento atualizado!' : 'Orçamento salvo!',
+                'success'
+            );
+            
+            UIManager.renderOrcamentos();
+            UIManager.renderHistorico();
+            UIManager.renderDashboard();
+            
+            const modal = e.target.closest('.modal-overlay');
+            ModalManager.closeModal(modal);
+            
+        } catch (error) {
+            UIManager.hideLoading();
+            UIManager.showNotification('Erro ao salvar orçamento', 'error');
+        }
     }
 };
 
@@ -872,18 +1321,18 @@ const App = {
         });
 
         // Botões de ação
-        document.getElementById('btnAddClient')?.addEventListener('click', () => this.showClientForm());
-        document.getElementById('btnAddService')?.addEventListener('click', () => this.showServiceForm());
-        document.getElementById('btnNewQuote')?.addEventListener('click', () => this.showQuoteForm());
-        document.getElementById('quickClientBtn')?.addEventListener('click', () => this.showClientForm());
-        document.getElementById('quickQuoteBtn')?.addEventListener('click', () => this.showQuoteForm());
+        document.getElementById('btnAddClient')?.addEventListener('click', () => ModalManager.openClienteModal());
+        document.getElementById('btnAddService')?.addEventListener('click', () => ModalManager.openServicoModal());
+        document.getElementById('btnNewQuote')?.addEventListener('click', () => ModalManager.openOrcamentoModal());
+        document.getElementById('quickClientBtn')?.addEventListener('click', () => ModalManager.openClienteModal());
+        document.getElementById('quickQuoteBtn')?.addEventListener('click', () => ModalManager.openOrcamentoModal());
         document.getElementById('quickAddBtn')?.addEventListener('click', () => this.showQuickMenu());
 
         // Pesquisa
         const searchInput = document.getElementById('searchClientes');
         if (searchInput) {
             searchInput.addEventListener('input', Utils.debounce((e) => {
-                UIManager.filterClientes(e.target.value);
+                this.filterClientes(e.target.value);
             }, 300));
         }
 
@@ -897,30 +1346,11 @@ const App = {
             STATE.isOnline = false;
             this.updateConnectionStatus();
         });
-
-        // Teclas de atalho
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                switch (e.key) {
-                    case 'n':
-                        e.preventDefault();
-                        if (STATE.currentTab === 'clientes') this.showClientForm();
-                        else if (STATE.currentTab === 'servicos') this.showServiceForm();
-                        else if (STATE.currentTab === 'orcamento') this.showQuoteForm();
-                        break;
-                    case 'f':
-                        e.preventDefault();
-                        document.getElementById('searchClientes')?.focus();
-                        break;
-                }
-            }
-        });
     },
 
     // Configurar estado inicial
     setupInitialState() {
         this.updateConnectionStatus();
-        this.updateNotificationBadge();
     },
 
     // Atualizar status de conexão
@@ -930,265 +1360,98 @@ const App = {
         
         if (syncStatus && syncIcon) {
             if (STATE.isOnline) {
-                syncStatus.textContent = 'Online';
-                syncIcon.className = 'fas fa-wifi';
+                syncStatus.innerHTML = '<i class="fas fa-wifi"></i> Online';
                 syncStatus.className = 'sync-status';
             } else {
-                syncStatus.textContent = 'Offline';
-                syncIcon.className = 'fas fa-wifi-slash';
+                syncStatus.innerHTML = '<i class="fas fa-wifi-slash"></i> Offline';
                 syncStatus.className = 'sync-status offline';
             }
         }
     },
 
-    // Atualizar badge de notificações
-    updateNotificationBadge() {
-        const badge = document.getElementById('badgeCount');
-        if (badge) {
-            const count = STATE.ui.notifications.length;
-            badge.textContent = count;
-            badge.classList.toggle('active', count > 0);
+    // Filtrar clientes
+    filterClientes(searchTerm) {
+        const filteredClientes = STATE.data.clientes.filter(cliente => 
+            cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            cliente.telefone?.includes(searchTerm) ||
+            cliente.carro?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            cliente.placa?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
+        const container = document.getElementById('clientesGrid');
+        if (!container) return;
+
+        if (filteredClientes.length === 0) {
+            container.innerHTML = UIManager.getEmptyState('Nenhum cliente encontrado', `Nenhum resultado para "${searchTerm}"`);
+            return;
         }
-    },
 
-    // Mostrar formulário de cliente
-    showClientForm(clienteId = null) {
-        const cliente = clienteId ? STATE.data.clientes.find(c => c.id === clienteId) : null;
-        
-        const form = `
-            <div class="modal-overlay" onclick="this.remove()">
-                <div class="modal" onclick="event.stopPropagation()">
-                    <header class="modal-header">
-                        <h2>${cliente ? 'Editar Cliente' : 'Novo Cliente'}</h2>
-                        <button class="btn btn-ghost btn-sm" onclick="this.closest('.modal-overlay').remove()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </header>
-                    <form class="modal-body" onsubmit="App.saveClient(event, '${clienteId || ''}')">
-                        <div class="form-group">
-                            <label for="clienteNome">Nome *</label>
-                            <input type="text" id="clienteNome" value="${cliente?.nome || ''}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="clienteTelefone">Telefone</label>
-                            <input type="text" id="clienteTelefone" value="${cliente?.telefone || ''}" 
-                                   oninput="this.value = App.formatPhone(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label for="clienteEmail">Email</label>
-                            <input type="email" id="clienteEmail" value="${cliente?.email || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label for="clienteCarro">Veículo</label>
-                            <input type="text" id="clienteCarro" value="${cliente?.carro || ''}">
-                        </div>
-                        <div class="form-group">
-                            <label for="clientePlaca">Placa</label>
-                            <input type="text" id="clientePlaca" value="${cliente?.placa || ''}" 
-                                   oninput="this.value = App.formatPlate(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label for="clienteEndereco">Endereço</label>
-                            <input type="text" id="clienteEndereco" value="${cliente?.endereco || ''}">
-                        </div>
-                        <footer class="modal-footer">
-                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Salvar
-                            </button>
-                        </footer>
-                    </form>
-                </div>
-            </div>
-        `;
-
-        document.body.insertAdjacentHTML('beforeend', form);
-        document.getElementById('clienteNome').focus();
-    },
-
-    // Mostrar formulário de serviço
-    showServiceForm(servicoId = null) {
-        const servico = servicoId ? STATE.data.servicos.find(s => s.id === servicoId) : null;
-        
-        const form = `
-            <div class="modal-overlay" onclick="this.remove()">
-                <div class="modal" onclick="event.stopPropagation()">
-                    <header class="modal-header">
-                        <h2>${servico ? 'Editar Serviço' : 'Novo Serviço'}</h2>
-                        <button class="btn btn-ghost btn-sm" onclick="this.closest('.modal-overlay').remove()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </header>
-                    <form class="modal-body" onsubmit="App.saveService(event, '${servicoId || ''}')">
-                        <div class="form-group">
-                            <label for="servicoDescricao">Descrição *</label>
-                            <input type="text" id="servicoDescricao" value="${servico?.descricao || ''}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="servicoValor">Valor *</label>
-                            <input type="number" id="servicoValor" value="${servico?.valor || ''}" 
-                                   step="0.01" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="servicoDuracao">Duração (min)</label>
-                            <input type="number" id="servicoDuracao" value="${servico?.duracao || 60}" 
-                                   min="1" max="480">
-                        </div>
-                        <div class="form-group">
-                            <label for="servicoCategoria">Categoria</label>
-                            <select id="servicoCategoria">
-                                <option value="Lavagem" ${servico?.categoria === 'Lavagem' ? 'selected' : ''}>Lavagem</option>
-                                <option value="Proteção" ${servico?.categoria === 'Proteção' ? 'selected' : ''}>Proteção</option>
-                                <option value="Interno" ${servico?.categoria === 'Interno' ? 'selected' : ''}>Interno</option>
-                                <option value="Detalhamento" ${servico?.categoria === 'Detalhamento' ? 'selected' : ''}>Detalhamento</option>
-                                <option value="Combo" ${servico?.categoria === 'Combo' ? 'selected' : ''}>Combo</option>
-                            </select>
-                        </div>
-                        <footer class="modal-footer">
-                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Salvar
-                            </button>
-                        </footer>
-                    </form>
-                </div>
-            </div>
-        `;
-
-        document.body.insertAdjacentHTML('beforeend', form);
-        document.getElementById('servicoDescricao').focus();
-    },
-
-    // Mostrar formulário de orçamento
-    showQuoteForm(orcamentoId = null) {
-        UIManager.showNotification('Formulário de orçamento em desenvolvimento', 'info');
+        // Renderizar clientes filtrados
+        const originalClientes = STATE.data.clientes;
+        STATE.data.clientes = filteredClientes;
+        UIManager.renderClientes();
+        STATE.data.clientes = originalClientes;
     },
 
     // Mostrar menu rápido
     showQuickMenu() {
-        const menu = `
-            <div class="modal-overlay" onclick="this.remove()">
-                <div class="quick-menu" onclick="event.stopPropagation()">
-                    <h3>Ações Rápidas</h3>
-                    <div class="quick-actions">
-                        <button class="btn btn-primary" onclick="App.showClientForm(); this.closest('.modal-overlay').remove();">
-                            <i class="fas fa-user-plus"></i> Novo Cliente
+        const actions = [
+            { text: 'Novo Cliente', icon: 'fas fa-user-plus', action: () => ModalManager.openClienteModal() },
+            { text: 'Novo Serviço', icon: 'fas fa-plus', action: () => ModalManager.openServicoModal() },
+            { text: 'Novo Orçamento', icon: 'fas fa-file-invoice', action: () => ModalManager.openOrcamentoModal() }
+        ];
+
+        // Criar menu dinâmico
+        const menu = document.createElement('div');
+        menu.className = 'modal-overlay';
+        menu.innerHTML = `
+            <div class="modal" style="max-width: 300px;">
+                <header class="modal-header">
+                    <h2>Ações Rápidas</h2>
+                    <button class="btn btn-ghost btn-sm js-close-modal"><i class="fas fa-times"></i></button>
+                </header>
+                <div class="modal-body">
+                    ${actions.map(action => `
+                        <button class="btn btn-ghost" style="width: 100%; margin-bottom: 0.5rem; justify-content: flex-start;" data-action="${action.text}">
+                            <i class="${action.icon}"></i> ${action.text}
                         </button>
-                        <button class="btn btn-primary" onclick="App.showServiceForm(); this.closest('.modal-overlay').remove();">
-                            <i class="fas fa-plus"></i> Novo Serviço
-                        </button>
-                        <button class="btn btn-primary" onclick="App.showQuoteForm(); this.closest('.modal-overlay').remove();">
-                            <i class="fas fa-file-invoice"></i> Novo Orçamento
-                        </button>
-                    </div>
+                    `).join('')}
                 </div>
             </div>
         `;
 
-        document.body.insertAdjacentHTML('beforeend', menu);
-    },
-
-    // Salvar cliente
-    async saveClient(event, clienteId = null) {
-        event.preventDefault();
-        
-        const cliente = {
-            nome: document.getElementById('clienteNome').value.trim(),
-            telefone: document.getElementById('clienteTelefone').value.trim(),
-            email: document.getElementById('clienteEmail').value.trim(),
-            carro: document.getElementById('clienteCarro').value.trim(),
-            placa: document.getElementById('clientePlaca').value.trim(),
-            endereco: document.getElementById('clienteEndereco').value.trim()
-        };
-
-        if (!cliente.nome) {
-            UIManager.showNotification('Nome é obrigatório', 'error');
-            return;
-        }
-
-        try {
-            UIManager.showLoading('Salvando cliente...');
-            
-            if (clienteId) {
-                // Atualizar cliente existente
-                const index = STATE.data.clientes.findIndex(c => c.id === clienteId);
-                if (index !== -1) {
-                    STATE.data.clientes[index] = { ...STATE.data.clientes[index], ...cliente };
+        // Configurar eventos
+        menu.addEventListener('click', (e) => {
+            const actionBtn = e.target.closest('[data-action]');
+            if (actionBtn) {
+                const action = actions.find(a => a.text === actionBtn.dataset.action);
+                if (action) {
+                    action.action();
+                    menu.remove();
                 }
-            } else {
-                // Criar novo cliente
-                await DataManager.saveCliente(cliente);
             }
-
-            UIManager.hideLoading();
-            UIManager.showNotification('Cliente salvo com sucesso!', 'success');
-            UIManager.renderClientes();
             
-            // Fechar modal
-            document.querySelector('.modal-overlay').remove();
-
-        } catch (error) {
-            UIManager.hideLoading();
-            UIManager.showNotification('Erro ao salvar cliente', 'error');
-        }
-    },
-
-    // Salvar serviço
-    async saveService(event, servicoId = null) {
-        event.preventDefault();
-        
-        const servico = {
-            descricao: document.getElementById('servicoDescricao').value.trim(),
-            valor: parseFloat(document.getElementById('servicoValor').value),
-            duracao: parseInt(document.getElementById('servicoDuracao').value) || 60,
-            categoria: document.getElementById('servicoCategoria').value,
-            ativo: true
-        };
-
-        if (!servico.descricao || !servico.valor) {
-            UIManager.showNotification('Descrição e valor são obrigatórios', 'error');
-            return;
-        }
-
-        try {
-            UIManager.showLoading('Salvando serviço...');
-            
-            if (servicoId) {
-                // Atualizar serviço existente
-                const index = STATE.data.servicos.findIndex(s => s.id === servicoId);
-                if (index !== -1) {
-                    STATE.data.servicos[index] = { ...STATE.data.servicos[index], ...servico };
-                }
-            } else {
-                // Criar novo serviço
-                await DataManager.saveServico(servico);
+            if (e.target.classList.contains('modal-overlay') || e.target.closest('.js-close-modal')) {
+                menu.remove();
             }
+        });
 
-            UIManager.hideLoading();
-            UIManager.showNotification('Serviço salvo com sucesso!', 'success');
-            UIManager.renderServicos();
-            
-            // Fechar modal
-            document.querySelector('.modal-overlay').remove();
-
-        } catch (error) {
-            UIManager.hideLoading();
-            UIManager.showNotification('Erro ao salvar serviço', 'error');
-        }
+        document.body.appendChild(menu);
     },
 
     // Editar cliente
     editClient(clienteId) {
-        this.showClientForm(clienteId);
+        ModalManager.openClienteModal(clienteId);
     },
 
     // Editar serviço
     editService(servicoId) {
-        this.showServiceForm(servicoId);
+        ModalManager.openServicoModal(servicoId);
+    },
+
+    // Editar orçamento
+    editOrcamento(orcamentoId) {
+        ModalManager.openOrcamentoModal(orcamentoId);
     },
 
     // Deletar cliente
@@ -1208,6 +1471,7 @@ const App = {
                 UIManager.hideLoading();
                 UIManager.showNotification('Cliente excluído com sucesso!', 'success');
                 UIManager.renderClientes();
+                UIManager.renderDashboard();
             } catch (error) {
                 UIManager.hideLoading();
                 UIManager.showNotification('Erro ao excluir cliente', 'error');
@@ -1232,6 +1496,7 @@ const App = {
                 UIManager.hideLoading();
                 UIManager.showNotification('Serviço excluído com sucesso!', 'success');
                 UIManager.renderServicos();
+                UIManager.renderDashboard();
             } catch (error) {
                 UIManager.hideLoading();
                 UIManager.showNotification('Erro ao excluir serviço', 'error');
@@ -1262,27 +1527,20 @@ const App = {
 
     // Ver orçamento
     viewOrcamento(orcamentoId) {
-        UIManager.showNotification('Visualização de orçamento em desenvolvimento', 'info');
-    },
-
-    // Editar orçamento
-    editOrcamento(orcamentoId) {
-        UIManager.showNotification('Edição de orçamento em desenvolvimento', 'info');
+        const orcamento = STATE.data.orcamentos.find(o => o.id === orcamentoId);
+        if (!orcamento) return;
+        
+        UIManager.showNotification(`Visualizando orçamento ${orcamento.numero_orcamento}`, 'info');
+        // Aqui você pode implementar um modal de visualização detalhada
     },
 
     // Download PDF
     downloadPDF(orcamentoId) {
-        UIManager.showNotification('Download de PDF em desenvolvimento', 'info');
-    },
-
-    // Formatação de telefone
-    formatPhone(value) {
-        return Utils.formatPhone(value);
-    },
-
-    // Formatação de placa
-    formatPlate(value) {
-        return Utils.formatPlate(value);
+        const orcamento = STATE.data.orcamentos.find(o => o.id === orcamentoId);
+        if (!orcamento) return;
+        
+        UIManager.showNotification('Funcionalidade PDF em desenvolvimento', 'info');
+        // Aqui você pode implementar a geração de PDF
     }
 };
 
@@ -1292,139 +1550,12 @@ document.addEventListener('DOMContentLoaded', () => {
     App.init();
 });
 
-// ===== ESTILOS ADICIONAIS PARA MODAIS =====
-const modalStyles = `
-    <style>
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            backdrop-filter: blur(4px);
-        }
-        
-        .modal {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow: hidden;
-            animation: modalIn 0.3s ease-out;
-        }
-        
-        @keyframes modalIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9) translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-        
-        .modal-header {
-            padding: var(--space-lg);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        .modal-header h2 {
-            margin: 0;
-            color: var(--text-primary);
-            font-size: 1.25rem;
-        }
-        
-        .modal-body {
-            padding: var(--space-lg);
-            overflow-y: auto;
-        }
-        
-        .modal-footer {
-            padding: var(--space-lg);
-            border-top: 1px solid var(--border);
-            display: flex;
-            gap: var(--space-sm);
-            justify-content: flex-end;
-        }
-        
-        .form-group {
-            margin-bottom: var(--space-md);
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: var(--space-xs);
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: var(--space-sm);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            font-size: 0.875rem;
-            transition: var(--transition);
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-        }
-        
-        .quick-menu {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: var(--space-lg);
-            width: 90%;
-            max-width: 400px;
-            animation: modalIn 0.3s ease-out;
-        }
-        
-        .quick-menu h3 {
-            margin: 0 0 var(--space-md) 0;
-            color: var(--text-primary);
-            text-align: center;
-        }
-        
-        .quick-menu .quick-actions {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-sm);
-        }
-        
-        .empty-state {
-            text-align: center;
-            padding: var(--space-2xl);
-            grid-column: 1 / -1;
-        }
-    </style>
-`;
-
-document.head.insertAdjacentHTML('beforeend', modalStyles);
-
-// ===== EXPORTAÇÃO GLOBAL =====
+// ===== TORNAR GLOBALMENTE ACESSÍVEL =====
 window.App = App;
 window.UIManager = UIManager;
 window.DataManager = DataManager;
+window.ModalManager = ModalManager;
 window.Utils = Utils;
 window.STATE = STATE;
+
+console.log('📝 R.M. CRM Pro+ Script carregado - Versão 2.0.0');
