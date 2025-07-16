@@ -712,3 +712,36 @@ window.App = App;
 window.UIManager = UIManager;
 window.DataManager = DataManager;
 window.STATE = STATE;
+// ...código preexistente...
+/* ---------- UTILIDADE DE MODAL ---------- */
+function openModal(tplId){
+  const tpl=document.getElementById(tplId);
+  if(!tpl) return;
+  const node=tpl.content.cloneNode(true);
+  document.body.appendChild(node);
+  const backdrop=document.querySelector('[data-modal]:last-of-type');
+  backdrop.addEventListener('click',e=>{
+    if(e.target.dataset.modal!==undefined) closeModal(backdrop);
+  });
+  backdrop.querySelectorAll('[data-close]').forEach(btn=>{
+    btn.addEventListener('click',()=>closeModal(backdrop));
+  });
+  document.addEventListener('keydown',escClose);
+  function escClose(ev){if(ev.key==='Escape'){closeModal(backdrop);document.removeEventListener('keydown',escClose);}}
+}
+
+function closeModal(el){el.remove();}
+
+/* ---------- REGISTRO DE BOTÕES ---------- */
+function registerButtons(){
+  id('btnAddClient')?.addEventListener('click',()=>CRM.clients.showForm());
+  id('btnAddService')?.addEventListener('click',()=>CRM.services.showForm());
+  id('btnNewQuote')?.addEventListener('click',()=>CRM.quotes.showForm());
+  id('quickClientBtn')?.addEventListener('click',()=>CRM.clients.showForm());
+  id('quickQuoteBtn')?.addEventListener('click',()=>CRM.quotes.showForm());
+  id('quickAddBtn')?.addEventListener('click',()=>CRM.clients.showForm());
+}
+
+function id(q){return document.getElementById(q);}
+document.addEventListener('DOMContentLoaded',registerButtons);
+// ...restante inalterado...
