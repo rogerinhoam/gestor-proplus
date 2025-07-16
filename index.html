@@ -1,381 +1,1631 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>R.M. Estética Automotiva – CRM Pro+</title>
-  <meta name="description" content="Sistema completo de CRM para gestão de estética automotiva com PWA">
-  <meta name="theme-color" content="#ef4444">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R.M. Estética Automotiva - Gestor PRO+</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-  <!-- MANIFEST (injetado por JS) -->
-  <link rel="manifest" href="">
+    <!-- Scripts de Bibliotecas -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.autotable.min.js"></script>
 
-  <!-- Ícone principal -->
-  <link rel="icon" href="data:image/png;base64,/* base64 do icon_192 */" type="image/png">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --bg-modal: #131c31;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --primary-red: #ef4444;
+            --primary-red-dark: #dc2626;
+            --accent-green: #22c55e;
+            --accent-green-dark: #16a34a;
+            --accent-blue: #3b82f6;
+            --accent-blue-dark: #2563eb;
+            --accent-orange: #f97316;
+            --accent-orange-dark: #ea580c;
+            --accent-red-status: #ef4444;
+            --border-color: #475569;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --header-border: #64748b;
+            --skeleton-base: #334155;
+            --skeleton-highlight: #475569;
+        }
 
-  <!-- ===== CSS Unificado ===== -->
-  <style>
-    /* RESET & VARIÁVEIS */
-    *{margin:0;padding:0;box-sizing:border-box}
-    :root{
-      --primary:#ef4444;--dark:#1e293b;--bg:#0f172a;--text:#f1f5f9;
-      --border:#334155;--radius:.5rem;--spacing:1rem;--transition:.3s
-    }
-    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
-    h1,h2,h3,h4{font-weight:600}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+            font-size: 16px;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', sans-serif; color: var(--text-light); }
 
-    /* HEADER */
-    .header{background:var(--dark);display:flex;justify-content:space-between;align-items:center;padding:var(--spacing)}
-    .header .logo{color:var(--primary);font-size:1.25rem}
-    .header .sync{color:var(--text);font-size:.875rem}
+        .app-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; border-bottom: 2px solid var(--header-border);
+            padding-bottom: 20px; flex-wrap: wrap; gap: 15px;
+        }
+        header h1 { 
+            color: var(--primary-red); font-size: 2rem; font-weight: 700; 
+            display: flex; align-items: center; gap: 10px;
+        }
+        header h1 i { color: var(--accent-blue); }
 
-    /* NAVEGAÇÃO DESKTOP */
-    .desktop-nav{background:var(--dark);display:flex;gap:.5rem}
-    .nav-tab{background:none;border:none;color:var(--text);padding:.75rem;cursor:pointer;transition:var(--transition)}
-    .nav-tab.active{background:var(--bg);border-bottom:2px solid var(--primary);color:var(--primary)}
+        .sync-btn {
+            background: none; border: none; color: var(--text-muted); cursor: pointer;
+            font-size: 2.2rem; transition: color 0.3s, transform 0.3s; padding: 5px;
+        }
+        .sync-btn:hover { color: var(--primary-red); transform: rotate(15deg); }
+        .sync-btn.syncing { animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite; color: var(--accent-blue); }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-    /* NAVEGAÇÃO MOBILE */
-    .mobile-nav{display:none;position:fixed;bottom:0;width:100%;background:var(--dark);border-top:1px solid var(--border)}
-    .mobile-nav-item{flex:1;padding:.5rem;text-align:center;color:var(--text);cursor:pointer}
-    .mobile-nav-item.plus{background:var(--primary);color:#fff;border-radius:50%;width:3rem;height:3rem;margin:-1.5rem auto 0;display:flex;align-items:center;justify-content:center}
+        nav { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 30px; }
+        .nav-btn {
+            padding: 12px 20px; background-color: var(--bg-card); color: var(--text-muted);
+            border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            font-size: 1rem; font-weight: 500; text-align: center;
+            flex-grow: 1; display: flex; align-items: center; justify-content: center;
+            gap: 8px; box-shadow: 0 2px 5px var(--shadow-color);
+        }
+        @media (min-width: 600px) { .nav-btn { flex-grow: 0; } }
+        .nav-btn:hover { background-color: var(--bg-input); color: var(--text-light); border-color: var(--primary-red); }
+        .nav-btn.active { 
+            background-color: var(--primary-red); color: white; font-weight: bold; 
+            border-color: var(--primary-red); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+        }
 
-    /* MAIN & TABS */
-    .main{padding:var(--spacing)}
-    .tab-content{display:none;animation:fadeIn .3s ease}
-    .tab-content.active{display:block}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .tab-content { display: none; animation: fadeInScale 0.6s ease-out; transform-origin: top; }
+        .tab-content.active { display: block; }
+        @keyframes fadeInScale { 
+            from { opacity: 0; transform: translateY(20px) scale(0.98); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
 
-    /* MÉTRICAS */
-    .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--spacing);margin-bottom:var(--spacing)}
-    .metric-card{background:var(--dark);border:1px solid var(--border);border-radius:var(--radius);padding:var(--spacing);display:flex;align-items:center;gap:.5rem;position:relative;overflow:hidden;transition:var(--transition)}
-    .metric-card:hover{transform:translateY(-2px);box-shadow:0 4px 6px rgba(0,0,0,.3)}
-    .metric-card.blue{color:#3b82f6}.metric-card.green{color:#10b981}.metric-card.orange{color:#f59e0b}.metric-card.purple{color:#8b5cf6}
-    .metric-icon{font-size:1.5rem;opacity:.8}
-    .metric-body h3{font-size:1.5rem;margin-bottom:.25rem}
+        .grid-layout, .historico-layout, .dashboard-main-grid { display: grid; grid-template-columns: 1fr; gap: 25px; }
+        @media (min-width: 768px) { 
+            .grid-layout { grid-template-columns: 1fr 1.5fr; } 
+            .dashboard-main-grid { grid-template-columns: 1.8fr 1fr; } 
+        }
+        @media (min-width: 992px) { .historico-layout { grid-template-columns: 1fr 1.5fr; } }
 
-    /* CARD GRID */
-    .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--spacing)}
-    .card{background:var(--dark);border:1px solid var(--border);border-radius:var(--radius);padding:var(--spacing);transition:var(--transition)}
-    .card:hover{transform:translateY(-2px);box-shadow:0 4px 6px rgba(0,0,0,.3)}
-    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
-    .card-title{font-size:1.125rem;color:var(--text)}
-    .card-info{display:flex;flex-direction:column;gap:.25rem;color:var(--text)}
-    .card-actions{display:flex;gap:.5rem;justify-content:flex-end}
+        .card { 
+            background-color: var(--bg-card); padding: 30px; border-radius: 15px; 
+            border: 1px solid var(--border-color); box-shadow: 0 8px 25px var(--shadow-color);
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4); }
+        .card h2 {
+            margin-top: 0; margin-bottom: 25px; color: var(--primary-red);
+            border-bottom: 2px solid var(--primary-red); padding-bottom: 12px; 
+            font-size: 1.7rem; font-weight: 600; display: flex; align-items: center; gap: 10px;
+        }
 
-    button.btn{padding:.5rem 1rem;border:none;border-radius:var(--radius);cursor:pointer;transition:var(--transition)}
-    .btn-primary{background:var(--primary);color:#fff}
-    .btn-secondary{background:var(--dark);color:var(--text)}
-    .btn-danger{background:#ef4444;color:#fff}
-    .btn-sm{padding:.25rem .5rem;font-size:.75rem}
+        .form-group { margin-bottom: 20px; position: relative; }
+        .form-group label { 
+            display: block; margin-bottom: 8px; color: var(--text-muted); 
+            font-size: 0.95rem; font-weight: 500;
+        }
+        
+        .search-container { position: relative; margin-bottom: 25px; }
+        .search-container input { padding-left: 45px; }
+        .search-container i.fa-search { 
+            position: absolute; left: 15px; top: 50%; transform: translateY(-50%); 
+            color: var(--text-muted); font-size: 1.1rem;
+        }
 
-    /* SEARCH */
-    .search-bar{position:relative;margin-bottom:var(--spacing);max-width:300px}
-    .search-bar input{width:100%;padding:.5rem .5rem .5rem 2rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text)}
-    .search-bar i{position:absolute;left:.5rem;top:50%;transform:translateY(-50%);color:var(--text)}
+        input, select, textarea {
+            width: 100%; padding: 15px; background-color: var(--bg-input);
+            border: 1.5px solid var(--border-color); border-radius: 10px;
+            color: var(--text-light); font-size: 1.05rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none; border-color: var(--accent-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.25);
+        }
 
-    /* TIMELINE */
-    .timeline{position:relative;padding-left:2rem}
-    .timeline::before{content:'';position:absolute;left:1rem;top:0;bottom:0;width:2px;background:var(--border)}
-    .timeline-item{position:relative;margin-bottom:var(--spacing)}
-    .timeline-item::before{content:'';position:absolute;left:0;top:.25rem;width:1rem;height:1rem;border-radius:50%;background:var(--primary);border:2px solid var(--dark)}
-    .timeline-content{background:var(--dark);border:1px solid var(--border);border-radius:var(--radius);padding:var(--spacing)}
-    .timeline-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
-    .timeline-title{font-size:1rem;color:var(--text)}
-    .timeline-date{font-size:.75rem;color:var(--text)}
+        input[type="date"], input[type="month"] { color-scheme: dark; }
+        textarea { resize: vertical; }
 
-    /* DASHBOARD ACTIVITIES */
-    .activity-item{display:flex;align-items:center;gap:.5rem;padding:.5rem 0;border-bottom:1px solid var(--border)}
-    .activity-icon{width:1.5rem;height:1.5rem;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:.875rem}
-    .activity-content p{margin:0;color:var(--text)}
-    .activity-content time{font-size:.75rem;color:var(--text)}
-    .activity-icon.cliente{background:rgba(59,130,246,.1);color:#3b82f6}
-    .activity-icon.servico{background:rgba(16,185,129,.1);color:#10b981}
-    .activity-icon.orcamento{background:rgba(245,158,11,.1);color:#f59e0b}
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; 
+            padding: 14px 25px; border: none; border-radius: 10px; cursor: pointer; 
+            font-weight: 600; text-transform: uppercase; font-size: 0.95rem; 
+            transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+            width: 100%; text-align: center; margin-top: 10px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+        @media(min-width: 992px) { .btn { width: auto; } }
+        
+        .btn:active { transform: translateY(1px); box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+        .btn-primary { background-color: var(--primary-red); color: white; }
+        .btn-primary:hover { background-color: var(--primary-red-dark); box-shadow: 0 5px 12px rgba(239, 68, 68, 0.4); }
+        .btn-secondary { background-color: #475569; color: var(--text-light); }
+        .btn-secondary:hover { background-color: #64748b; }
+        .btn-danger { background-color: var(--accent-red-status); color: white; }
+        .btn-success { background-color: var(--accent-green); color: white; }
+        .btn-success:hover { background-color: var(--accent-green-dark); }
+        .btn-sm { padding: 10px 18px; font-size: 0.85rem; width: auto; }
 
-    /* MODALS & FORMS */
-    .modal-backdrop{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:1000;animation:fadeIn .3s}
-    .modal{background:var(--dark);border:1px solid var(--border);border-radius:var(--radius);max-width:500px;width:90%;max-height:90vh;overflow:auto;animation:slideIn .3s}
-    .modal-large{max-width:800px}
-    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:var(--spacing);border-bottom:1px solid var(--border)}
-    .modal-header h3{color:var(--text)}
-    .modal-close{background:none;border:none;color:var(--text);font-size:1.25rem;cursor:pointer}
-    .modal-body{padding:var(--spacing)}
-    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
-    .form-group{display:flex;flex-direction:column}
-    .form-group.full-width{grid-column:1/-1}
-    .form-group label{color:var(--text);font-size:.875rem;margin-bottom:.25rem}
-    .form-group input,.form-group select,.form-group textarea{padding:.5rem;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text)}
-    .form-actions{display:flex;justify-content:space-between;align-items:center;padding:var(--spacing);border-top:1px solid var(--border)}
+        .data-list ul { list-style: none; padding: 0; max-height: 550px; overflow-y: auto; margin-top: 10px; }
+        .data-list ul::-webkit-scrollbar { width: 8px; }
+        .data-list ul::-webkit-scrollbar-track { background: var(--bg-input); border-radius: 10px; }
+        .data-list ul::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        .data-list ul::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-    @keyframes slideIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+        .empty-list-message {
+            text-align: center; padding: 50px 20px; color: var(--text-muted);
+            background-color: var(--bg-input); border-radius: 10px;
+            border: 2px dashed var(--border-color); margin-top: 15px;
+        }
+        .empty-list-message p { font-size: 1.2rem; margin-bottom: 15px; font-weight: 500; }
+        .empty-list-message small { font-size: 0.9rem; color: var(--text-muted); }
+        
+        .data-list li {
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 18px; background-color: var(--bg-input); border-radius: 10px; 
+            margin-bottom: 12px; flex-wrap: wrap; gap: 15px;
+            border-left: 5px solid var(--border-color);
+            transition: border-left-color 0.3s ease, background-color 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .data-list li:hover { border-left-color: var(--primary-red); background-color: #2b3a4e; }
+        .data-list li > div:first-child { flex-grow: 1; }
+        .data-list li strong { font-size: 1.1rem; color: var(--text-light); }
+        .data-list li small { color: var(--text-muted); font-size: 0.85rem; }
+        .item-actions { display: flex; gap: 10px; flex-shrink: 0; align-items: center; }
 
-    /* QUOTES */
-    .quote-service-item{display:grid;grid-template-columns:2fr 80px 80px 32px;gap:.5rem;align-items:center;padding:.5rem;background:var(--bg);border-radius:var(--radius);margin-bottom:.5rem}
-    .quote-total{background:var(--bg);padding:var(--spacing);border-radius:var(--radius);margin:var(--spacing) 0}
-    .total-row{display:flex;justify-content:space-between;font-size:.875rem;color:var(--text)}
-    .total-row.final{font-weight:600;font-size:1rem;margin-top:.5rem;border-top:1px solid var(--border);padding-top:.5rem}
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
+        .stat-card { 
+            background-color: var(--bg-card); padding: 25px; border-radius: 12px; 
+            border: 1px solid var(--border-color); box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; text-align: center; 
+        }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .stat-card .icon { font-size: 3rem; margin-bottom: 15px; color: var(--accent-blue); }
+        .stat-card h3 { 
+            font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; 
+            text-transform: uppercase; font-weight: 600; letter-spacing: 0.8px;
+        }
+        .stat-card p { font-size: 2.2rem; font-weight: bold; color: var(--primary-red); line-height: 1; }
 
-    /* TOAST */
-    .toast{position:fixed;top:var(--spacing);right:var(--spacing);background:var(--dark);color:var(--text);padding:var(--spacing);border-radius:var(--radius);box-shadow:0 4px 6px rgba(0,0,0,.3);border-left:4px solid #3b82f6;transform:translateX(100%);transition:var(--transition);z-index:1001}
-    .toast.show{transform:translateX(0)}.toast.success{border-left-color:#10b981}.toast.error{border-left-color:#ef4444}.toast.warning{border-left-color:#f59e0b}
+        .metrics-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 25px; }
+        .metric-card {
+            background-color: var(--bg-input); padding: 20px; border-radius: 10px;
+            text-align: center; border-left: 5px solid var(--accent-blue);
+        }
+        .metric-card h3 {
+            font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .metric-card p {
+            font-size: 2rem; font-weight: 700; color: var(--text-light); line-height: 1;
+        }
 
-    /* RESPONSIVE */
-    @media(max-width:768px){.desktop-nav{display:none}.mobile-nav{display:flex}.form-grid{grid-template-columns:1fr}}
-  </style>
+        .main-layout { display: grid; grid-template-columns: 1fr; gap: 25px; }
+        .chart-container { padding: 20px; background-color: var(--bg-card); border-radius: 15px; margin-top: 25px; }
+
+        @media (min-width: 768px) {
+            header h1 { font-size: 2rem; }
+            .nav-btn { font-size: 1rem; flex-grow: 0; }
+            .card { padding: 30px; }
+            .card h2 { font-size: 1.7rem; }
+            .btn { font-size: 0.95rem; }
+            .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        
+        @media (min-width: 1024px) {
+            .main-layout { grid-template-columns: 1fr 2fr; }
+        }
+
+        .status-indicator { 
+            padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; 
+            color: white; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .status-Orçamento { background-color: var(--accent-blue); }
+        .status-Aprovado { background-color: var(--accent-orange); }
+        .status-Finalizado { background-color: var(--accent-green); }
+        .status-Cancelado { background-color: var(--accent-red-status); }
+
+        .payment-options-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+        .payment-option {
+            padding: 14px 15px; background-color: var(--bg-input); 
+            border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer; 
+            transition: all 0.2s ease; font-size: 0.95rem; color: var(--text-muted); 
+            text-align: center; font-weight: 500; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
+        .payment-option:hover { background-color: var(--border-color); color: var(--text-light); }
+        .payment-option.active {
+            background-color: var(--accent-blue); color: white; border-color: var(--accent-blue); 
+            font-weight: bold; box-shadow: 0 3px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        #notification {
+            position: fixed; bottom: 25px; left: 50%; transform: translate(-50%, 150%); 
+            padding: 18px 25px; border-radius: 10px; color: white; z-index: 1000;
+            text-align: center; visibility: hidden; 
+            transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55), visibility 0.6s;
+            max-width: 90%; box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            font-weight: 500; min-width: 280px;
+        }
+        #notification.show { transform: translate(-50%, 0); visibility: visible; }
+        #notification.success { background-color: var(--accent-green); }
+        #notification.error { background-color: var(--accent-red-status); }
+        #notification.warning { background-color: var(--accent-orange); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85); display: none; justify-content: center;
+            align-items: center; z-index: 2000; padding: 20px;
+            backdrop-filter: blur(5px); animation: fadeIn 0.3s ease-out;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background-color: var(--bg-card); padding: 35px; border-radius: 15px;
+            text-align: center; max-width: 450px; width: 100%;
+            border: 1px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            animation: slideInUp 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-content h3 { margin-bottom: 20px; color: var(--primary-red); font-size: 1.8rem; font-weight: 600; }
+        .modal-content p { margin-bottom: 30px; color: var(--text-light); font-size: 1.1rem; }
+        .modal-actions { display: flex; justify-content: center; gap: 20px; }
+
+        .crm-grid { display: grid; grid-template-columns: 1fr; gap: 25px; }
+        @media (min-width: 1024px) { .crm-grid { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 1280px) { .crm-grid { grid-template-columns: 4fr 5fr 4fr; } }
+
+        .filter-options { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
+        .filter-options .btn { margin-top: 0; flex-grow: 1; padding: 10px; font-size: 0.8rem; }
+
+        #dispatch-view-modal .modal-content {
+            background-color: var(--bg-modal); width: 100%; max-width: 1200px;
+            height: 95vh; padding: 0; display: flex; flex-direction: column;
+            animation: fadeInScale 0.5s;
+        }
+        .dispatch-header { padding: 15px 20px; }
+        .dispatch-body {
+            display: flex; flex-direction: column; gap: 15px; padding: 15px;
+            flex-grow: 1; overflow: hidden;
+        }
+        .dispatch-client-list-container { height: 40%; }
+        .dispatch-composer { height: 60%; }
+        .dispatch-client-list-container, .dispatch-composer {
+            background-color: var(--bg-card); border-radius: 10px; padding: 15px;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        #dispatch-client-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
+        #dispatch-client-list li {
+            padding: 12px 15px; border-radius: 8px; cursor: pointer;
+            transition: background-color 0.3s, opacity 0.3s; margin-bottom: 8px;
+        }
+        #dispatch-client-list li.active { background-color: var(--accent-blue); color: white; }
+        #dispatch-client-list li.contacted { 
+            background-color: var(--border-color); color: var(--text-muted); 
+            cursor: not-allowed; opacity: 0.6; 
+        }
+        #composer-placeholder { text-align: center; margin: auto; color: var(--text-muted); }
+        #composer-content.hidden, #composer-placeholder.hidden { display: none; }
+        .composer-actions { 
+            display: flex; gap: 15px; margin-top: auto; padding-top: 20px; 
+            border-top: 1px solid var(--border-color); 
+        }
+
+        @media (min-width: 768px) {
+            .dispatch-body { flex-direction: row; }
+            .dispatch-client-list-container, .dispatch-composer { height: auto; }
+        }
+    </style>
 </head>
 <body>
-  <!-- PARTE 2 – HTML Markup e Templates de Modal -->
 
-  <!-- Loading Screen -->
-  <div id="loadingScreen" class="loading-screen hidden">
-    <div class="loading-content">
-      <div class="loading-logo"><i class="fas fa-car"></i></div>
-      <h2>R.M. CRM Pro+</h2>
-      <p>Carregando sistema...</p>
-      <div class="loading-bar"><div id="loadingProgress" class="loading-progress"></div></div>
+    <div id="offline-indicator" role="alert" aria-live="assertive">Você está offline. Conecte-se para sincronizar os dados.</div>
+
+    <div class="app-container">
+        <header>
+            <h1><i class="fas fa-car-wash" aria-hidden="true"></i> R.M. Estética PRO+</h1>
+            <button class="sync-btn" id="sync-btn" title="Sincronizar Dados Manualmente" aria-label="Sincronizar Dados Manualmente"><i class="fas fa-sync-alt" aria-hidden="true"></i></button>
+        </header>
+
+        <nav role="navigation" aria-label="Navegação Principal">
+            <button class="nav-btn active" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="dashboard-tab"><i class="fas fa-chart-line" aria-hidden="true"></i> Painel</button>
+            <button class="nav-btn" data-tab="clientes" role="tab" aria-selected="false" aria-controls="clientes-tab"><i class="fas fa-users" aria-hidden="true"></i> Clientes</button>
+            <button class="nav-btn" data-tab="servicos" role="tab" aria-selected="false" aria-controls="servicos-tab"><i class="fas fa-tools" aria-hidden="true"></i> Serviços</button>
+            <button class="nav-btn" data-tab="novo-orcamento" role="tab" aria-selected="false" aria-controls="novo-orcamento-tab"><i class="fas fa-file-invoice" aria-hidden="true"></i> Orçamento</button>
+            <button class="nav-btn" data-tab="historico" role="tab" aria-selected="false" aria-controls="historico-tab"><i class="fas fa-history" aria-hidden="true"></i> Histórico</button>
+            <button class="nav-btn" data-tab="crm" role="tab" aria-selected="false" aria-controls="crm-tab"><i class="fas fa-headset" aria-hidden="true"></i> CRM</button>
+            <button class="nav-btn" data-tab="despesas" role="tab" aria-selected="false" aria-controls="despesas-tab"><i class="fas fa-wallet" aria-hidden="true"></i> Despesas</button>
+        </nav>
+
+        <main>
+            <!-- Dashboard -->
+            <section id="dashboard-tab" class="tab-content active" role="tabpanel">
+                <div class="dashboard-main-grid">
+                    <div class="stat-card" data-target-tab="clientes" data-filter-type="none" tabindex="0" role="button" aria-label="Ver todos os clientes">
+                        <div class="icon"><i class="fas fa-users" aria-hidden="true"></i></div>
+                        <h3>Clientes</h3>
+                        <p id="stat-clientes">0</p>
+                    </div>
+                    <div class="stat-card" data-target-tab="historico" data-filter-type="status" data-filter-value="Orçamento" tabindex="0" role="button" aria-label="Ver orçamentos pendentes">
+                        <div class="icon"><i class="fas fa-hourglass-half" aria-hidden="true"></i></div>
+                        <h3>Pendentes</h3>
+                        <p id="stat-pendentes">0</p>
+                    </div>
+                    <div class="stat-card" data-target-tab="historico" data-filter-type="status" data-filter-value="Aprovado" tabindex="0" role="button" aria-label="Ver orçamentos aprovados">
+                        <div class="icon"><i class="fas fa-check-circle" aria-hidden="true"></i></div>
+                        <h3>Aprovados</h3>
+                        <p id="stat-aprovados">0</p>
+                    </div>
+                    <div class="stat-card" data-target-tab="historico" data-filter-type="status" data-filter-value="Finalizado" tabindex="0" role="button" aria-label="Ver orçamentos finalizados este mês">
+                        <div class="icon"><i class="fas fa-calendar-check" aria-hidden="true"></i></div>
+                        <h3>Finalizados Mês</h3>
+                        <p id="stat-finalizados-mes">0</p>
+                    </div>
+                    <div class="stat-card" data-target-tab="historico" data-filter-type="status" data-filter-value="Finalizado" style="grid-column: span 2;" tabindex="0" role="button" aria-label="Ver faturamento total">
+                        <div class="icon"><i class="fas fa-dollar-sign" aria-hidden="true"></i></div>
+                        <h3>Faturamento Total</h3>
+                        <p id="stat-faturamento-total">R$ 0,00</p>
+                    </div>
+                </div>
+                <div class="card data-list" style="margin-top: 25px;">
+                    <h2>Atividade Recente <i class="fas fa-bolt" aria-hidden="true"></i></h2>
+                    <ul id="recent-activity-list" role="list"></ul>
+                </div>
+            </section>
+
+            <!-- Clientes -->
+            <section id="clientes-tab" class="tab-content" role="tabpanel">
+                <div class="grid-layout">
+                    <div class="card">
+                        <h2 id="cliente-form-title">Novo Cliente <i class="fas fa-user-plus" aria-hidden="true"></i></h2>
+                        <form id="cliente-form">
+                            <input type="hidden" id="cliente-id">
+                            <div class="form-group">
+                                <label for="cliente-nome">Nome Completo</label>
+                                <input type="text" id="cliente-nome" required aria-required="true" placeholder="Nome do cliente">
+                            </div>
+                            <div class="form-group">
+                                <label for="cliente-telefone">Telefone (WhatsApp)</label>
+                                <input type="tel" id="cliente-telefone" required aria-required="true" placeholder="(11) 99999-9999">
+                            </div>
+                            <div class="form-group">
+                                <label for="cliente-veiculo">Veículo</label>
+                                <input type="text" id="cliente-veiculo" placeholder="Marca/Modelo">
+                            </div>
+                            <div class="form-group">
+                                <label for="cliente-placa">Placa</label>
+                                <input type="text" id="cliente-placa" placeholder="ABC-1234">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i> Salvar Cliente
+                            </button>
+                        </form>
+                    </div>
+                    <div class="card data-list">
+                        <h2>Clientes Cadastrados <i class="fas fa-users" aria-hidden="true"></i></h2>
+                        <div class="search-container">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                            <input type="search" id="search-clientes" placeholder="Buscar cliente..." aria-label="Pesquisar Clientes">
+                        </div>
+                        <ul id="clientes-lista" role="list"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Serviços -->
+            <section id="servicos-tab" class="tab-content" role="tabpanel">
+                <div class="grid-layout">
+                    <div class="card">
+                        <h2 id="servico-form-title">Novo Serviço <i class="fas fa-plus-circle" aria-hidden="true"></i></h2>
+                        <form id="servico-form">
+                            <input type="hidden" id="servico-id">
+                            <div class="form-group">
+                                <label for="servico-descricao">Descrição</label>
+                                <input type="text" id="servico-descricao" required aria-required="true" placeholder="Descrição do serviço">
+                            </div>
+                            <div class="form-group">
+                                <label for="servico-valor">Valor (R$)</label>
+                                <input type="number" id="servico-valor" step="0.01" min="0" required aria-required="true" placeholder="0,00">
+                            </div>
+                            <div class="form-group">
+                                <label for="servico-dias-retorno">Dias de Retorno (opcional)</label>
+                                <input type="number" id="servico-dias-retorno" min="1" placeholder="Ex: 30">
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i> Salvar Serviço
+                            </button>
+                        </form>
+                    </div>
+                    <div class="card data-list">
+                        <h2>Serviços Cadastrados <i class="fas fa-tools" aria-hidden="true"></i></h2>
+                        <div class="search-container">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                            <input type="search" id="search-servicos" placeholder="Buscar serviço..." aria-label="Pesquisar Serviços">
+                        </div>
+                        <ul id="servicos-lista" role="list"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Orçamento -->
+            <section id="novo-orcamento-tab" class="tab-content" role="tabpanel">
+                <div class="grid-layout">
+                    <div class="card">
+                        <h2>Criar Novo Orçamento <i class="fas fa-file-invoice" aria-hidden="true"></i></h2>
+                        <form id="orcamento-form">
+                            <div class="form-group">
+                                <label for="orcamento-cliente">Cliente</label>
+                                <select id="orcamento-cliente" required aria-required="true">
+                                    <option value="">Selecione um cliente...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="orcamento-servico">Adicionar Serviço</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <select id="orcamento-servico" style="flex: 1;">
+                                        <option value="">Selecione um serviço...</option>
+                                    </select>
+                                    <button type="button" id="add-servico-btn" class="btn btn-sm btn-secondary">
+                                        <i class="fas fa-plus" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <h3>Serviços Adicionados</h3>
+                                <ul id="orcamento-servicos-lista" style="margin-top: 10px;"></ul>
+                            </div>
+                            <div class="form-group">
+                                <label for="orcamento-desconto">Desconto (%)</label>
+                                <input type="number" id="orcamento-desconto" min="0" max="100" step="0.01" value="0" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Formas de Pagamento</label>
+                                <div class="payment-options-group">
+                                    <div class="payment-option" data-payment="PIX">PIX</div>
+                                    <div class="payment-option" data-payment="Dinheiro">Dinheiro</div>
+                                    <div class="payment-option" data-payment="Cartão">Cartão</div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="orcamento-observacoes">Observações</label>
+                                <textarea id="orcamento-observacoes" rows="3" placeholder="Observações adicionais..."></textarea>
+                            </div>
+                            <div id="orcamento-total">TOTAL: R$ 0,00</div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save" aria-hidden="true"></i> Criar Orçamento
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Histórico -->
+            <section id="historico-tab" class="tab-content" role="tabpanel">
+                <div class="historico-layout">
+                    <div class="card data-list">
+                        <h2>Histórico de Serviços <i class="fas fa-history" aria-hidden="true"></i></h2>
+                        <div class="filter-options">
+                            <select id="filter-status">
+                                <option value="">Todos os Status</option>
+                                <option value="Orçamento">Orçamento</option>
+                                <option value="Aprovado">Aprovado</option>
+                                <option value="Finalizado">Finalizado</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                            <input type="date" id="filter-date-from" placeholder="Data início">
+                            <input type="date" id="filter-date-to" placeholder="Data fim">
+                        </div>
+                        <div class="search-container">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                            <input type="search" id="search-historico" placeholder="Buscar no histórico..." aria-label="Pesquisar Histórico">
+                        </div>
+                        <ul id="historico-lista" role="list"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CRM -->
+            <section id="crm-tab" class="tab-content" role="tabpanel">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>Total de Interações</h3>
+                        <p id="metric-total-interactions">0</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Contatos no Mês</h3>
+                        <p id="metric-month-interactions">0</p>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Follow-ups Agendados</h3>
+                        <p id="metric-scheduled-followups">0</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-lightbulb" aria-hidden="true"></i> Gestão de Follow-ups</h2>
+                    <p style="color: var(--text-muted); margin-top: -20px; margin-bottom: 20px;">Sugestões automáticas baseadas no tempo de retorno dos serviços.</p>
+                    <div class="data-list">
+                        <ul id="suggested-followups-list"></ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-users-viewfinder" aria-hidden="true"></i> Segmentação de Clientes</h2>
+                    <div class="filter-options">
+                        <div id="inactive-period-filter" style="display: flex; flex-grow: 1; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary active" data-period="all">Todos</button>
+                            <button class="btn btn-secondary" data-period="15">Inativos 15d</button>
+                            <button class="btn btn-secondary" data-period="30">Inativos 30d</button>
+                            <button class="btn btn-secondary" data-period="45">Inativos 45d</button>
+                            <button class="btn btn-secondary" data-period="60">Inativos 60d+</button>
+                        </div>
+                        <button id="bulk-contact-btn" class="btn btn-primary" style="margin-left: auto;"><i class="fas fa-bullhorn"></i> Contatar Lista</button>
+                    </div>
+                    <div class="data-list">
+                        <ul id="inactive-clients-list"></ul>
+                    </div>
+                </div>
+
+                <div class="crm-grid">
+                    <div class="card">
+                        <h2><i class="fas fa-comment-dots" aria-hidden="true"></i> Modelos de Mensagem</h2>
+                        <div class="message-template form-group">
+                            <label for="msg-template-1">Modelo 1: Lembrete Amigável (Inativos)</label>
+                            <textarea id="msg-template-1" rows="5" readonly>Olá, [NOME DO CLIENTE]! Tudo bem? Aqui é da R.M. Estética Automotiva. Notamos que já faz mais de [TEMPO] desde sua última visita. Só queríamos saber se está tudo certo com o seu carro e nos colocar à disposição! Precisando de algo, é só chamar. 👍</textarea>
+                        </div>
+                        <div class="message-template form-group">
+                            <label for="msg-template-2">Modelo 2: Oferta Especial (Inativos)</label>
+                            <textarea id="msg-template-2" rows="5" readonly>Olá, [NOME DO CLIENTE]! Da R.M. Estética Automotiva. Como já se passaram mais de [TEMPO] da sua última visita, estamos com uma condição especial para você: 10% de desconto na cristalização dos vidros. Que tal dar um trato no carro? Aguardamos seu contato! ✨</textarea>
+                        </div>
+                        <div class="message-template form-group">
+                            <label for="msg-template-3">Modelo 3: Manutenção (Inativos)</label>
+                            <textarea id="msg-template-3" rows="5" readonly>Olá [NOME DO CLIENTE], tudo joia? Aqui da R.M. Estética Automotiva. Passando para lembrar que, como já faz mais de [TEMPO] desde o último serviço, a manutenção da estética do seu carro é importante para manter o valor e a beleza dele. Quando pretende fazer a próxima? Estamos à disposição! 🚗</textarea>
+                        </div>
+                    </div>
+
+                    <div class="card data-list">
+                        <h2><i class="fas fa-history" aria-hidden="true"></i> Histórico de Interações</h2>
+                        <div class="search-container">
+                            <i class="fas fa-search" aria-hidden="true"></i>
+                            <input type="search" id="search-crm" placeholder="Buscar por cliente ou nota..." aria-label="Pesquisar Interações">
+                        </div>
+                        <ul id="crm-interaction-list"></ul>
+                    </div>
+
+                    <div>
+                        <div class="card">
+                            <h2><i class="fas fa-plus-circle" aria-hidden="true"></i> Registrar Nova Interação</h2>
+                            <form id="crm-interaction-form">
+                                <div class="form-group">
+                                    <label for="crm-cliente-select">Cliente</label>
+                                    <select id="crm-cliente-select" required aria-required="true"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="crm-interaction-type">Tipo de Interação</label>
+                                    <select id="crm-interaction-type" required aria-required="true">
+                                        <option value="WhatsApp">WhatsApp</option>
+                                        <option value="Chamada">Chamada</option>
+                                        <option value="Visita">Visita</option>
+                                        <option value="Email">E-mail</option>
+                                        <option value="Outro">Outro</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="crm-notes">Notas</label>
+                                    <textarea id="crm-notes" rows="4" placeholder="Descreva o contato com o cliente..." required aria-required="true"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="crm-follow-up-date">Agendar Follow-up (Opcional)</label>
+                                    <input type="date" id="crm-follow-up-date">
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save" aria-hidden="true"></i> Salvar Interação</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Despesas -->
+            <section id="despesas-tab" class="tab-content" role="tabpanel">
+                <div class="metrics-grid">
+                    <div class="metric-card" style="border-left-color: var(--primary-red);">
+                        <h3>Total Gasto no Mês</h3>
+                        <p id="metric-total-gasto">R$ 0,00</p>
+                    </div>
+                    <div class="metric-card" style="border-left-color: var(--accent-orange);">
+                        <h3>Despesa Média Diária</h3>
+                        <p id="metric-media-diaria">R$ 0,00</p>
+                    </div>
+                    <div class="metric-card" style="border-left-color: var(--accent-green);">
+                        <h3>Categoria com Maior Gasto</h3>
+                        <p id="metric-maior-categoria" style="font-size: 1.5rem; padding-top: 1rem;">N/A</p>
+                    </div>
+                </div>
+                
+                <div class="main-layout">
+                    <div class="card">
+                        <h2 id="despesa-form-title">Registrar Despesa</h2>
+                        <form id="despesa-form">
+                            <input type="hidden" id="despesa-id">
+                            <div class="form-group">
+                                <label for="despesa-descricao">Descrição</label>
+                                <input type="text" id="despesa-descricao" required placeholder="Ex: Compra de cera automotiva">
+                            </div>
+                            <div class="form-group">
+                                <label for="despesa-valor">Valor (R$)</label>
+                                <input type="number" id="despesa-valor" step="0.01" min="0.01" required placeholder="150,00">
+                            </div>
+                            <div class="form-group">
+                                <label for="despesa-data">Data da Despesa</label>
+                                <input type="date" id="despesa-data" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="despesa-categoria">Categoria</label>
+                                <select id="despesa-categoria" required>
+                                    <option value="Produtos">Produtos de Limpeza</option>
+                                    <option value="Aluguel/Contas">Aluguel/Contas (Água, Luz)</option>
+                                    <option value="Marketing">Marketing e Publicidade</option>
+                                    <option value="Ferramentas">Ferramentas e Equipamentos</option>
+                                    <option value="Salários">Salários/Mão de Obra</option>
+                                    <option value="Impostos">Impostos e Taxas</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Despesa</button>
+                        </form>
+                    </div>
+                    
+                    <div class="card data-list">
+                        <h2>Histórico de Despesas</h2>
+                        <div class="filter-options">
+                            <input type="month" id="filter-month" title="Filtrar por Mês">
+                            <button id="export-csv-btn" class="btn btn-sm btn-secondary" style="margin-left:auto;"><i class="fas fa-file-csv"></i> Exportar CSV</button>
+                        </div>
+                        <ul id="despesas-lista"></ul>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h2 style="text-align: center; border: none; padding: 0;">Distribuição de Despesas por Categoria (Mês Atual)</h2>
+                    <canvas id="despesas-chart"></canvas>
+                </div>
+            </section>
+        </main>
     </div>
-  </div>
 
-  <!-- Header -->
-  <header class="header">
-    <div class="logo"><i class="fas fa-car"></i> R.M. CRM Pro+</div>
-    <div class="sync"><i id="syncIcon" class="fas fa-wifi"></i> <span id="syncStatus">Online</span></div>
-  </header>
+    <div id="notification" role="status" aria-live="polite"></div>
 
-  <!-- Desktop Nav -->
-  <nav class="desktop-nav">
-    <button data-tab="dashboard" class="nav-tab active"><i class="fas fa-chart-line"></i> Dashboard</button>
-    <button data-tab="clientes" class="nav-tab"><i class="fas fa-users"></i> Clientes</button>
-    <button data-tab="servicos" class="nav-tab"><i class="fas fa-wrench"></i> Serviços</button>
-    <button data-tab="orcamento" class="nav-tab"><i class="fas fa-calculator"></i> Orçamentos</button>
-    <button data-tab="historico" class="nav-tab"><i class="fas fa-history"></i> Histórico</button>
-  </nav>
-
-  <!-- Main Content -->
-  <main class="main">
-    <!-- Dashboard -->
-    <div id="dashboard" class="tab-content active">
-      <div class="metric-grid">
-        <div class="metric-card blue">
-          <div class="metric-icon"><i class="fas fa-users"></i></div>
-          <div class="metric-body">
-            <h3 id="metricTotalClients">0</h3>
-            <p>Clientes</p>
-          </div>
+    <div id="confirm-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-content">
+            <h3 id="modal-title">Confirmar Ação</h3>
+            <p id="modal-message">Você tem certeza?</p>
+            <div class="modal-actions">
+                <button id="modal-cancel-btn" class="btn btn-secondary" aria-label="Cancelar">
+                    <i class="fas fa-ban" aria-hidden="true"></i> Cancelar
+                </button>
+                <button id="modal-confirm-btn" class="btn btn-danger" aria-label="Confirmar">
+                    <i class="fas fa-check-circle" aria-hidden="true"></i> Confirmar
+                </button>
+            </div>
         </div>
-        <div class="metric-card green">
-          <div class="metric-icon"><i class="fas fa-wrench"></i></div>
-          <div class="metric-body">
-            <h3 id="metricServices">0</h3>
-            <p>Serviços</p>
-          </div>
-        </div>
-        <div class="metric-card orange">
-          <div class="metric-icon"><i class="fas fa-calculator"></i></div>
-          <div class="metric-body">
-            <h3 id="metricQuotes">0</h3>
-            <p>Orçamentos</p>
-          </div>
-        </div>
-        <div class="metric-card purple">
-          <div class="metric-icon"><i class="fas fa-dollar-sign"></i></div>
-          <div class="metric-body">
-            <h3 id="metricRevenue">R$ 0,00</h3>
-            <p>Faturamento</p>
-          </div>
-        </div>
-      </div>
-      <h3>Atividades Recentes</h3>
-      <div id="recentActivities"></div>
     </div>
 
-    <!-- Clientes -->
-    <div id="clientes" class="tab-content">
-      <div class="page-header">
-        <h2>Clientes</h2>
-        <button id="btnAddClient" class="btn btn-primary">
-          <i class="fas fa-plus"></i> Adicionar Cliente
-        </button>
-      </div>
-      <div class="search-bar">
-        <i class="fas fa-search"></i>
-        <input id="searchClientes" placeholder="Buscar clientes...">
-      </div>
-      <div id="clientesGrid" class="card-grid"></div>
-    </div>
+    <script type="module">
+        // Credenciais do Supabase
+        const SUPABASE_URL = 'https://bezbszbkaifcanqsmdbi.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlemJzemJrYWlmY2FucXNtZGJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MTM5MTksImV4cCI6MjA2ODE4OTkxOX0.zLXAuQz7g5ym3Bd5pkhg5vsnf_3rdJFRAXI_kX8tM18';
+        
+        const { createClient } = supabase;
+        const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    <!-- Serviços -->
-    <div id="servicos" class="tab-content">
-      <div class="page-header">
-        <h2>Serviços</h2>
-        <button id="btnAddService" class="btn btn-primary">
-          <i class="fas fa-plus"></i> Adicionar Serviço
-        </button>
-      </div>
-      <div id="servicosGrid" class="card-grid"></div>
-    </div>
+        // Estado da aplicação
+        let state = {
+            clientes: [],
+            servicos: [],
+            orcamentos: [],
+            despesas: [],
+            crmInteractions: [],
+            currentTab: 'dashboard',
+            selectedOrcamento: null,
+            orcamentoServicos: [],
+            selectedPayments: [],
+            editingId: null,
+            chartInstance: null
+        };
 
-    <!-- Orçamentos -->
-    <div id="orcamento" class="tab-content">
-      <div class="page-header">
-        <h2>Orçamentos</h2>
-        <button id="btnNewQuote" class="btn btn-primary">
-          <i class="fas fa-plus"></i> Novo Orçamento
-        </button>
-      </div>
-      <div id="orcamentosGrid" class="card-grid"></div>
-    </div>
+        // Utilitários
+        const $ = (id) => document.getElementById(id);
+        const $$ = (selector) => document.querySelectorAll(selector);
+        const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        const formatDate = (dateString) => new Date(dateString).toLocaleDateString('pt-BR');
+        const formatDateTime = (dateString) => new Date(dateString).toLocaleString('pt-BR');
 
-    <!-- Histórico -->
-    <div id="historico" class="tab-content">
-      <h2>Histórico</h2>
-      <div class="timeline">
-        <div id="historicoList"></div>
-      </div>
-    </div>
-  </main>
+        // Notificação
+        const showNotification = (message, type = 'success') => {
+            const notification = $('notification');
+            notification.textContent = message;
+            notification.className = `show ${type}`;
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        };
 
-  <!-- Mobile Nav -->
-  <nav class="mobile-nav">
-    <button data-tab="dashboard" class="mobile-nav-item active">
-      <i class="fas fa-chart-line"></i>
-    </button>
-    <button data-tab="clientes" class="mobile-nav-item">
-      <i class="fas fa-users"></i>
-    </button>
-    <button id="quickAddBtn" class="mobile-nav-item plus">
-      <i class="fas fa-plus"></i>
-    </button>
-    <button data-tab="orcamento" class="mobile-nav-item">
-      <i class="fas fa-calculator"></i>
-    </button>
-    <button data-tab="historico" class="mobile-nav-item">
-      <i class="fas fa-history"></i>
-    </button>
-  </nav>
+        // Modal de confirmação
+        let confirmCallback = null;
+        const showConfirmModal = (title, message, callback) => {
+            $('modal-title').textContent = title;
+            $('modal-message').textContent = message;
+            confirmCallback = callback;
+            $('confirm-modal').classList.add('active');
+        };
 
-  <!-- Toast Notification -->
-  <div id="notification" class="toast"></div>
+        const hideConfirmModal = () => {
+            $('confirm-modal').classList.remove('active');
+            confirmCallback = null;
+        };
 
-  <!-- Modal Templates -->
-  <template id="clientModal">
-    <div class="modal-backdrop">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>Novo Cliente</h3>
-          <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-          <form id="clientForm" class="form-grid">
-            <div class="form-group"><label>Nome*<input name="nome" required></label></div>
-            <div class="form-group"><label>Telefone*<input name="telefone" required></label></div>
-            <div class="form-group"><label>Email<input type="email" name="email"></label></div>
-            <div class="form-group"><label>Carro<input name="carro"></label></div>
-            <div class="form-group"><label>Placa<input name="placa" maxlength="8"></label></div>
-            <div class="form-group full-width"><label>Endereço<input name="endereco"></label></div>
-          </form>
-        </div>
-        <div class="form-actions">
-          <button class="btn btn-secondary modal-close">Cancelar</button>
-          <button class="btn btn-primary" form="clientForm">Salvar Cliente</button>
-        </div>
-      </div>
-    </div>
-  </template>
+        // Navegação por abas
+        const switchTab = (tabName) => {
+            // Remover classe active de todas as abas
+            $$('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            $$('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Ativar aba selecionada
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            $(`${tabName}-tab`).classList.add('active');
+            
+            state.currentTab = tabName;
+            
+            // Carregar dados específicos da aba
+            switch(tabName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'clientes':
+                    loadClientes();
+                    break;
+                case 'servicos':
+                    loadServicos();
+                    break;
+                case 'novo-orcamento':
+                    loadOrcamentoForm();
+                    break;
+                case 'historico':
+                    loadHistorico();
+                    break;
+                case 'crm':
+                    loadCRM();
+                    break;
+                case 'despesas':
+                    loadDespesas();
+                    break;
+            }
+        };
 
-  <template id="serviceModal">
-    <div class="modal-backdrop">
-      <div class="modal">
-        <div class="modal-header">
-          <h3>Novo Serviço</h3>
-          <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-          <form id="serviceForm" class="form-grid">
-            <div class="form-group full-width"><label>Descrição*<input name="descricao" required></label></div>
-            <div class="form-group"><label>Valor*<input type="number" name="valor" step="0.01" required></label></div>
-            <div class="form-group"><label>Duração (min)<input type="number" name="duracao" value="60"></label></div>
-            <div class="form-group"><label>Categoria<select name="categoria"><option>Lavagem</option><option>Proteção</option><option>Limpeza</option><option>Detalhamento</option></select></label></div>
-            <div class="form-group"><label><input type="checkbox" name="ativo" checked> Ativo</label></div>
-          </form>
-        </div>
-        <div class="form-actions">
-          <button class="btn btn-secondary modal-close">Cancelar</button>
-          <button class="btn btn-primary" form="serviceForm">Salvar Serviço</button>
-        </div>
-      </div>
-    </div>
-  </template>
+        // Carregar dados iniciais
+        const loadAllData = async () => {
+            try {
+                const [clientesRes, servicosRes, orcamentosRes, despesasRes, crmRes] = await Promise.all([
+                    db.from('clientes').select('*'),
+                    db.from('servicos').select('*'),
+                    db.from('orcamentos').select('*, clientes(nome), orcamento_itens(*, servicos(descricao))'),
+                    db.from('despesas').select('*'),
+                    db.from('crm_interactions').select('*, clientes(nome)')
+                ]);
 
-  <template id="quoteModal">
-    <div class="modal-backdrop">
-      <div class="modal modal-large">
-        <div class="modal-header">
-          <h3>Novo Orçamento</h3>
-          <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-          <form id="quoteForm" class="form-grid">
-            <div class="form-group"><label>Cliente*<select name="cliente_id" required></select></label></div>
-            <div class="form-group"><label>Status<select name="status"><option>Orçamento</option><option>Aprovado</option><option>Finalizado</option><option>Cancelado</option></select></label></div>
-            <div class="form-group"><label>Desconto (%)<input type="number" name="desconto" value="0" min="0" max="100"></label></div>
-            <div class="form-group full-width"><label>Observações<textarea name="observacoes" rows="3"></textarea></label></div>
-          </form>
-          <div id="quoteServicesList"></div>
-          <button id="addQuoteService" class="btn btn-secondary">+ Serviço</button>
-          <div class="quote-total">
-            <div class="total-row"><span>Subtotal:</span><span id="quoteSubtotal">R$ 0,00</span></div>
-            <div class="total-row"><span>Desconto:</span><span id="quoteDescontoValue">R$ 0,00</span></div>
-            <div class="total-row final"><span>Total:</span><span id="quoteTotal">R$ 0,00</span></div>
-          </div>
-        </div>
-        <div class="form-actions">
-          <button class="btn btn-secondary modal-close">Cancelar</button>
-          <button class="btn btn-primary" form="quoteForm">Salvar Orçamento</button>
-        </div>
-      </div>
-    </div>
-  </template>
-  <!-- PARTE 3 – JavaScript, Manifest e Service Worker -->
+                state.clientes = clientesRes.data || [];
+                state.servicos = servicosRes.data || [];
+                state.orcamentos = orcamentosRes.data || [];
+                state.despesas = despesasRes.data || [];
+                state.crmInteractions = crmRes.data || [];
 
-  <!-- ======= SCRIPTS UNIFICADOS ======= -->
-  <script>
-  // ===== utils.js =====
-  function formatCurrency(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v||0)}
-  function formatDate(d){return new Intl.DateTimeFormat('pt-BR').format(new Date(d))}
-  function formatDateTime(d){return new Intl.DateTimeFormat('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(d))}
-  function formatPhone(v){return v.replace(/\D/g,'').replace(/^(\d{2})(\d)/,'($1) $2').replace(/(\d)(\d{4})$/,'$1-$2')}
-  function formatPlate(v){return v.replace(/[^A-Za-z0-9]/g,'').toUpperCase().replace(/^([A-Z]{3})(\d)/,'$1-$2')}
-  function debounce(f,w){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>f(...a),w)}}
-  function generateId(){return Date.now().toString(36)+Math.random().toString(36).substr(2)}
-  function sanitizeHtml(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
-  function validateEmail(e){if(!e)return!0;return/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)}
-  function validatePhone(p){return/^\(\d{2}\) \d{4,5}-\d{4}$/.test(p)}
-  function showNotification(m,t='info',d=4000){const n=document.getElementById('notification');if(!n)return;n.textContent=m;n.className=`toast ${t} show`;setTimeout(()=>n.classList.remove('show'),d)}
-  function confirmAction(m){return Promise.resolve(window.confirm(m))}
-  function openModal(id){const tpl=document.getElementById(id);if(!tpl)return;const c=tpl.content.cloneNode(!0);document.body.appendChild(c);const b=document.querySelector('.modal-backdrop:last-of-type');b.querySelectorAll('.modal-close').forEach(btn=>btn.addEventListener('click',()=>b.remove()));b.addEventListener('click',e=>{if(e.target===b)b.remove()});return b}
-  window.Utils={formatCurrency,formatDate,formatDateTime,formatPhone,formatPlate,debounce,generateId,sanitizeHtml,validateEmail,validatePhone,showNotification,confirmAction,openModal};
+                loadDashboard();
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                showNotification('Erro ao carregar dados', 'error');
+            }
+        };
 
-  // ===== DataManager =====
-  const SAMPLE={clientes:[{id:'c1',nome:'João Silva',telefone:'(24) 99999-9999',email:'',carro:'',placa:'',endereco:'',created_at:new Date().toISOString()}],servicos:[],orcamentos:[]};
-  const DataManager={load(){const d=localStorage.getItem('gestorProPlus');if(d)STATE.data=JSON.parse(d);else STATE.data=JSON.parse(JSON.stringify(SAMPLE)),this.save()},save(){localStorage.setItem('gestorProPlus',JSON.stringify(STATE.data))},saveCliente(c){c.id=generateId();c.created_at=new Date().toISOString();STATE.data.clientes.push(c);this.save()},saveServico(s){s.id=generateId();s.created_at=new Date().toISOString();STATE.data.servicos.push(s);this.save()},saveOrcamento(o){o.id=generateId();o.created_at=new Date().toISOString();STATE.data.orcamentos.push(o);this.save()}};  
+        // Dashboard
+        const loadDashboard = () => {
+            const totalClientes = state.clientes.length;
+            const pendentes = state.orcamentos.filter(o => o.status === 'Orçamento').length;
+            const aprovados = state.orcamentos.filter(o => o.status === 'Aprovado').length;
+            
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const finalizadosMes = state.orcamentos.filter(o => 
+                o.status === 'Finalizado' && new Date(o.updated_at) >= startOfMonth
+            ).length;
+            
+            const faturamentoTotal = state.orcamentos
+                .filter(o => o.status === 'Finalizado')
+                .reduce((total, o) => total + o.valor_total, 0);
 
-  // ===== UIManager & App =====
-  const STATE={currentTab:'dashboard',data:{clientes:[],servicos:[],orcamentos:[]},ui:{}};
-  const UIManager={switchTab(t){document.querySelectorAll('.nav-tab,.mobile-nav-item').forEach(e=>e.classList.remove('active'));document.querySelectorAll(`[data-tab="${t}"]`).forEach(e=>e.classList.add('active'));document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));document.getElementById(t).classList.add('active');STATE.currentTab=t;},renderClientes(){const c=document.getElementById('clientesGrid');if(!STATE.data.clientes.length)return c.innerHTML='<p style="color:#888">Nenhum cliente</p>';c.innerHTML=STATE.data.clientes.map(cl=>`<div class="card"><div class="card-header"><h3>${sanitizeHtml(cl.nome)}</h3></div><div class="card-info"><p>${sanitizeHtml(cl.telefone)}</p></div></div>`).join('')},renderServicos(){},renderOrcamentos(){},renderHistorico(){}};
-  const App={init(){DataManager.load();UIManager.renderClientes(); /* chamadas das outras render… */}}; document.addEventListener('DOMContentLoaded',App.init);
+            $('stat-clientes').textContent = totalClientes;
+            $('stat-pendentes').textContent = pendentes;
+            $('stat-aprovados').textContent = aprovados;
+            $('stat-finalizados-mes').textContent = finalizadosMes;
+            $('stat-faturamento-total').textContent = formatCurrency(faturamentoTotal);
 
-  // ===== Manifest Inline =====
-  const manifestJSON={name:"R.M. CRM Pro+",short_name:"CRM Pro+",start_url:".",display:"standalone",theme_color:"#ef4444",background_color:"#0f172a",icons:[{src:"data:image/png;base64,/* base64 icon_192 */",sizes:"192x192",type:"image/png"}]};
-  const mBlob=new Blob([JSON.stringify(manifestJSON)],{type:"application/json"}),mURL=URL.createObjectURL(mBlob);
-  document.querySelector('link[rel="manifest"]').href=mURL;
+            // Atividade recente
+            const recentActivity = state.orcamentos
+                .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+                .slice(0, 10);
 
-  // ===== Service Worker via Blob =====
-  if('serviceWorker' in navigator){
-    const swCode=`self.addEventListener('install',e=>e.waitUntil(caches.open('v1').then(c=>c.addAll(['/']))));self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>caches.match(e.request))));`;
-    const swBlob=new Blob([swCode],{type:'text/javascript'}),swURL=URL.createObjectURL(swBlob);
-    navigator.serviceWorker.register(swURL);
-  }
-  </script>
+            $('recent-activity-list').innerHTML = recentActivity.map(o => `
+                <li onclick="switchTab('historico')">
+                    <div>
+                        <strong>${o.clientes?.nome || 'Cliente não encontrado'}</strong><br>
+                        <small>${formatDateTime(o.updated_at)}</small>
+                    </div>
+                    <div>
+                        <span class="status-indicator status-${o.status}">${o.status}</span>
+                    </div>
+                </li>
+            `).join('');
+        };
+
+        // Clientes
+        const loadClientes = async () => {
+            renderClientes();
+            
+            $('cliente-form').onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const data = {
+                    nome: $('cliente-nome').value,
+                    telefone: $('cliente-telefone').value,
+                    veiculo: $('cliente-veiculo').value,
+                    placa: $('cliente-placa').value
+                };
+
+                try {
+                    if (state.editingId) {
+                        await db.from('clientes').update(data).eq('id', state.editingId);
+                        showNotification('Cliente atualizado com sucesso!');
+                    } else {
+                        await db.from('clientes').insert(data);
+                        showNotification('Cliente cadastrado com sucesso!');
+                    }
+                    
+                    resetClienteForm();
+                    await loadAllData();
+                } catch (error) {
+                    console.error('Erro ao salvar cliente:', error);
+                    showNotification('Erro ao salvar cliente', 'error');
+                }
+            };
+
+            $('search-clientes').oninput = renderClientes;
+        };
+
+        const renderClientes = () => {
+            const search = $('search-clientes')?.value?.toLowerCase() || '';
+            const filteredClientes = state.clientes.filter(c => 
+                c.nome.toLowerCase().includes(search) || 
+                c.telefone.includes(search) ||
+                (c.veiculo && c.veiculo.toLowerCase().includes(search))
+            );
+
+            $('clientes-lista').innerHTML = filteredClientes.map(cliente => `
+                <li>
+                    <div>
+                        <strong>${cliente.nome}</strong><br>
+                        <small>${cliente.telefone} | ${cliente.veiculo || 'Veículo não informado'}</small>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="editCliente(${cliente.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCliente(${cliente.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </li>
+            `).join('');
+        };
+
+        const editCliente = (id) => {
+            const cliente = state.clientes.find(c => c.id === id);
+            if (!cliente) return;
+
+            $('cliente-id').value = cliente.id;
+            $('cliente-nome').value = cliente.nome;
+            $('cliente-telefone').value = cliente.telefone;
+            $('cliente-veiculo').value = cliente.veiculo || '';
+            $('cliente-placa').value = cliente.placa || '';
+            $('cliente-form-title').innerHTML = 'Editar Cliente <i class="fas fa-edit"></i>';
+            
+            state.editingId = id;
+        };
+
+        const deleteCliente = (id) => {
+            showConfirmModal('Excluir Cliente', 'Tem certeza que deseja excluir este cliente?', async () => {
+                try {
+                    await db.from('clientes').delete().eq('id', id);
+                    showNotification('Cliente excluído com sucesso!');
+                    await loadAllData();
+                } catch (error) {
+                    console.error('Erro ao excluir cliente:', error);
+                    showNotification('Erro ao excluir cliente', 'error');
+                }
+                hideConfirmModal();
+            });
+        };
+
+        const resetClienteForm = () => {
+            $('cliente-form').reset();
+            $('cliente-id').value = '';
+            $('cliente-form-title').innerHTML = 'Novo Cliente <i class="fas fa-user-plus"></i>';
+            state.editingId = null;
+        };
+
+        // Serviços
+        const loadServicos = async () => {
+            renderServicos();
+            
+            $('servico-form').onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const data = {
+                    descricao: $('servico-descricao').value,
+                    valor: parseFloat($('servico-valor').value),
+                    dias_retorno: parseInt($('servico-dias-retorno').value) || null
+                };
+
+                try {
+                    if (state.editingId) {
+                        await db.from('servicos').update(data).eq('id', state.editingId);
+                        showNotification('Serviço atualizado com sucesso!');
+                    } else {
+                        await db.from('servicos').insert(data);
+                        showNotification('Serviço cadastrado com sucesso!');
+                    }
+                    
+                    resetServicoForm();
+                    await loadAllData();
+                } catch (error) {
+                    console.error('Erro ao salvar serviço:', error);
+                    showNotification('Erro ao salvar serviço', 'error');
+                }
+            };
+
+            $('search-servicos').oninput = renderServicos;
+        };
+
+        const renderServicos = () => {
+            const search = $('search-servicos')?.value?.toLowerCase() || '';
+            const filteredServicos = state.servicos.filter(s => 
+                s.descricao.toLowerCase().includes(search)
+            );
+
+            $('servicos-lista').innerHTML = filteredServicos.map(servico => `
+                <li>
+                    <div>
+                        <strong>${servico.descricao}</strong><br>
+                        <small>${formatCurrency(servico.valor)} ${servico.dias_retorno ? `| Retorno em ${servico.dias_retorno} dias` : ''}</small>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-sm btn-secondary" onclick="editServico(${servico.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteServico(${servico.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </li>
+            `).join('');
+        };
+
+        const editServico = (id) => {
+            const servico = state.servicos.find(s => s.id === id);
+            if (!servico) return;
+
+            $('servico-id').value = servico.id;
+            $('servico-descricao').value = servico.descricao;
+            $('servico-valor').value = servico.valor;
+            $('servico-dias-retorno').value = servico.dias_retorno || '';
+            $('servico-form-title').innerHTML = 'Editar Serviço <i class="fas fa-edit"></i>';
+            
+            state.editingId = id;
+        };
+
+        const deleteServico = (id) => {
+            showConfirmModal('Excluir Serviço', 'Tem certeza que deseja excluir este serviço?', async () => {
+                try {
+                    await db.from('servicos').delete().eq('id', id);
+                    showNotification('Serviço excluído com sucesso!');
+                    await loadAllData();
+                } catch (error) {
+                    console.error('Erro ao excluir serviço:', error);
+                    showNotification('Erro ao excluir serviço', 'error');
+                }
+                hideConfirmModal();
+            });
+        };
+
+        const resetServicoForm = () => {
+            $('servico-form').reset();
+            $('servico-id').value = '';
+            $('servico-form-title').innerHTML = 'Novo Serviço <i class="fas fa-plus-circle"></i>';
+            state.editingId = null;
+        };
+
+        // Orçamento
+        const loadOrcamentoForm = () => {
+            // Povoar select de clientes
+            $('orcamento-cliente').innerHTML = '<option value="">Selecione um cliente...</option>' +
+                state.clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+            
+            // Povoar select de serviços
+            $('orcamento-servico').innerHTML = '<option value="">Selecione um serviço...</option>' +
+                state.servicos.map(s => `<option value="${s.id}">${s.descricao} - ${formatCurrency(s.valor)}</option>`).join('');
+            
+            // Botão adicionar serviço
+            $('add-servico-btn').onclick = () => {
+                const servicoId = parseInt($('orcamento-servico').value);
+                if (!servicoId) return;
+                
+                const servico = state.servicos.find(s => s.id === servicoId);
+                if (!servico) return;
+                
+                // Verificar se já foi adicionado
+                if (state.orcamentoServicos.find(s => s.id === servicoId)) {
+                    showNotification('Serviço já adicionado', 'warning');
+                    return;
+                }
+                
+                state.orcamentoServicos.push({
+                    id: servicoId,
+                    descricao: servico.descricao,
+                    valor: servico.valor,
+                    quantidade: 1
+                });
+                
+                renderOrcamentoServicos();
+                calculateTotal();
+            };
+            
+            // Formas de pagamento
+            $$('.payment-option').forEach(option => {
+                option.onclick = () => {
+                    const payment = option.dataset.payment;
+                    if (state.selectedPayments.includes(payment)) {
+                        state.selectedPayments = state.selectedPayments.filter(p => p !== payment);
+                        option.classList.remove('active');
+                    } else {
+                        state.selectedPayments.push(payment);
+                        option.classList.add('active');
+                    }
+                };
+            });
+            
+            // Desconto
+            $('orcamento-desconto').oninput = calculateTotal;
+            
+            // Submit do formulário
+            $('orcamento-form').onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const clienteId = parseInt($('orcamento-cliente').value);
+                const desconto = parseFloat($('orcamento-desconto').value) || 0;
+                const observacoes = $('orcamento-observacoes').value;
+                
+                if (!clienteId) {
+                    showNotification('Selecione um cliente', 'warning');
+                    return;
+                }
+                
+                if (state.orcamentoServicos.length === 0) {
+                    showNotification('Adicione pelo menos um serviço', 'warning');
+                    return;
+                }
+                
+                if (state.selectedPayments.length === 0) {
+                    showNotification('Selecione pelo menos uma forma de pagamento', 'warning');
+                    return;
+                }
+                
+                const subtotal = state.orcamentoServicos.reduce((total, s) => total + (s.valor * s.quantidade), 0);
+                const valorDesconto = subtotal * (desconto / 100);
+                const valorTotal = subtotal - valorDesconto;
+                
+                try {
+                    // Inserir orçamento
+                    const { data: orcamento, error } = await db.from('orcamentos').insert({
+                        cliente_id: clienteId,
+                        valor_total: valorTotal,
+                        desconto: desconto,
+                        formas_pagamento: state.selectedPayments,
+                        observacoes: observacoes,
+                        status: 'Orçamento'
+                    }).select().single();
+                    
+                    if (error) throw error;
+                    
+                    // Inserir itens do orçamento
+                    const itens = state.orcamentoServicos.map(s => ({
+                        orcamento_id: orcamento.id,
+                        servico_id: s.id,
+                        quantidade: s.quantidade,
+                        valor_unitario: s.valor,
+                        valor_total: s.valor * s.quantidade
+                    }));
+                    
+                    await db.from('orcamento_itens').insert(itens);
+                    
+                    showNotification('Orçamento criado com sucesso!');
+                    resetOrcamentoForm();
+                    await loadAllData();
+                    
+                } catch (error) {
+                    console.error('Erro ao criar orçamento:', error);
+                    showNotification('Erro ao criar orçamento', 'error');
+                }
+            };
+            
+            renderOrcamentoServicos();
+            calculateTotal();
+        };
+
+        const renderOrcamentoServicos = () => {
+            $('orcamento-servicos-lista').innerHTML = state.orcamentoServicos.map(servico => `
+                <li>
+                    <div>
+                        <strong>${servico.descricao}</strong><br>
+                        <small>${formatCurrency(servico.valor)} x ${servico.quantidade}</small>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-sm btn-danger" onclick="removeOrcamentoServico(${servico.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </li>
+            `).join('');
+        };
+
+        const removeOrcamentoServico = (id) => {
+            state.orcamentoServicos = state.orcamentoServicos.filter(s => s.id !== id);
+            renderOrcamentoServicos();
+            calculateTotal();
+        };
+
+        const calculateTotal = () => {
+            const subtotal = state.orcamentoServicos.reduce((total, s) => total + (s.valor * s.quantidade), 0);
+            const desconto = parseFloat($('orcamento-desconto').value) || 0;
+            const valorDesconto = subtotal * (desconto / 100);
+            const total = subtotal - valorDesconto;
+            
+            $('orcamento-total').textContent = `TOTAL: ${formatCurrency(total)}`;
+        };
+
+        const resetOrcamentoForm = () => {
+            $('orcamento-form').reset();
+            state.orcamentoServicos = [];
+            state.selectedPayments = [];
+            $$('.payment-option').forEach(option => option.classList.remove('active'));
+            renderOrcamentoServicos();
+            calculateTotal();
+        };
+
+        // Histórico
+        const loadHistorico = () => {
+            renderHistorico();
+            
+            $('filter-status').onchange = renderHistorico;
+            $('filter-date-from').onchange = renderHistorico;
+            $('filter-date-to').onchange = renderHistorico;
+            $('search-historico').oninput = renderHistorico;
+        };
+
+        const renderHistorico = () => {
+            const statusFilter = $('filter-status').value;
+            const dateFrom = $('filter-date-from').value;
+            const dateTo = $('filter-date-to').value;
+            const search = $('search-historico').value.toLowerCase();
+            
+            let filteredOrcamentos = state.orcamentos;
+            
+            if (statusFilter) {
+                filteredOrcamentos = filteredOrcamentos.filter(o => o.status === statusFilter);
+            }
+            
+            if (dateFrom) {
+                filteredOrcamentos = filteredOrcamentos.filter(o => 
+                    new Date(o.created_at) >= new Date(dateFrom)
+                );
+            }
+            
+            if (dateTo) {
+                filteredOrcamentos = filteredOrcamentos.filter(o => 
+                    new Date(o.created_at) <= new Date(dateTo)
+                );
+            }
+            
+            if (search) {
+                filteredOrcamentos = filteredOrcamentos.filter(o => 
+                    o.clientes?.nome.toLowerCase().includes(search) ||
+                    o.observacoes?.toLowerCase().includes(search)
+                );
+            }
+            
+            $('historico-lista').innerHTML = filteredOrcamentos.map(orcamento => `
+                <li onclick="selectOrcamento(${orcamento.id})">
+                    <div>
+                        <strong>${orcamento.clientes?.nome || 'Cliente não encontrado'}</strong><br>
+                        <small>${formatDate(orcamento.created_at)} | ${formatCurrency(orcamento.valor_total)}</small>
+                    </div>
+                    <div>
+                        <span class="status-indicator status-${orcamento.status}">${orcamento.status}</span>
+                    </div>
+                </li>
+            `).join('');
+        };
+
+        const selectOrcamento = (id) => {
+            state.selectedOrcamento = state.orcamentos.find(o => o.id === id);
+            // Aqui você pode implementar a visualização detalhada do orçamento
+        };
+
+        // CRM
+        const loadCRM = async () => {
+            await loadCRMData();
+            renderCRMMetrics();
+            renderCRMInteractions();
+            
+            // Popular select de clientes
+            $('crm-cliente-select').innerHTML = '<option value="">Selecione um cliente...</option>' +
+                state.clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+            
+            // Form de interação
+            $('crm-interaction-form').onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const data = {
+                    cliente_id: parseInt($('crm-cliente-select').value),
+                    interaction_type: $('crm-interaction-type').value,
+                    notes: $('crm-notes').value,
+                    follow_up_date: $('crm-follow-up-date').value || null
+                };
+                
+                try {
+                    await db.from('crm_interactions').insert(data);
+                    showNotification('Interação registrada com sucesso!');
+                    $('crm-interaction-form').reset();
+                    await loadCRMData();
+                    renderCRMMetrics();
+                    renderCRMInteractions();
+                } catch (error) {
+                    console.error('Erro ao registrar interação:', error);
+                    showNotification('Erro ao registrar interação', 'error');
+                }
+            };
+            
+            $('search-crm').oninput = renderCRMInteractions;
+        };
+
+        const loadCRMData = async () => {
+            const { data } = await db.from('crm_interactions').select('*, clientes(nome)').order('created_at', { ascending: false });
+            state.crmInteractions = data || [];
+        };
+
+        const renderCRMMetrics = () => {
+            const total = state.crmInteractions.length;
+            
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const monthInteractions = state.crmInteractions.filter(i => 
+                new Date(i.created_at) >= startOfMonth
+            ).length;
+            
+            const followups = state.crmInteractions.filter(i => 
+                i.follow_up_date && new Date(i.follow_up_date) >= now
+            ).length;
+            
+            $('metric-total-interactions').textContent = total;
+            $('metric-month-interactions').textContent = monthInteractions;
+            $('metric-scheduled-followups').textContent = followups;
+        };
+
+        const renderCRMInteractions = () => {
+            const search = $('search-crm')?.value?.toLowerCase() || '';
+            const filteredInteractions = state.crmInteractions.filter(i => 
+                i.clientes?.nome?.toLowerCase().includes(search) ||
+                i.notes.toLowerCase().includes(search)
+            );
+            
+            $('crm-interaction-list').innerHTML = filteredInteractions.map(interaction => `
+                <li>
+                    <div>
+                        <strong>${interaction.clientes?.nome || 'Cliente não encontrado'}</strong><br>
+                        <small>${interaction.interaction_type} - ${formatDateTime(interaction.created_at)}</small><br>
+                        <small>${interaction.notes}</small>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-sm btn-danger" onclick="deleteCRMInteraction(${interaction.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </li>
+            `).join('');
+        };
+
+        const deleteCRMInteraction = (id) => {
+            showConfirmModal('Excluir Interação', 'Tem certeza que deseja excluir esta interação?', async () => {
+                try {
+                    await db.from('crm_interactions').delete().eq('id', id);
+                    showNotification('Interação excluída com sucesso!');
+                    await loadCRMData();
+                    renderCRMMetrics();
+                    renderCRMInteractions();
+                } catch (error) {
+                    console.error('Erro ao excluir interação:', error);
+                    showNotification('Erro ao excluir interação', 'error');
+                }
+                hideConfirmModal();
+            });
+        };
+
+        // Despesas
+        const loadDespesas = async () => {
+            await loadDespesasData();
+            renderDespesasMetrics();
+            renderDespesas();
+            
+            // Definir data atual
+            const now = new Date();
+            $('despesa-data').valueAsDate = now;
+            $('filter-month').value = now.toISOString().slice(0, 7);
+            
+            // Form de despesa
+            $('despesa-form').onsubmit = async (e) => {
+                e.preventDefault();
+                
+                const data = {
+                    descricao: $('despesa-descricao').value,
+                    valor: parseFloat($('despesa-valor').value),
+                    data: $('despesa-data').value,
+                    categoria: $('despesa-categoria').value
+                };
+                
+                try {
+                    await db.from('despesas').insert(data);
+                    showNotification('Despesa registrada com sucesso!');
+                    $('despesa-form').reset();
+                    $('despesa-data').valueAsDate = now;
+                    await loadDespesasData();
+                    renderDespesasMetrics();
+                    renderDespesas();
+                    renderDespesasChart();
+                } catch (error) {
+                    console.error('Erro ao registrar despesa:', error);
+                    showNotification('Erro ao registrar despesa', 'error');
+                }
+            };
+            
+            $('filter-month').onchange = () => {
+                renderDespesas();
+                renderDespesasChart();
+            };
+            
+            $('export-csv-btn').onclick = exportDespesasCSV;
+            
+            renderDespesasChart();
+        };
+
+        const loadDespesasData = async () => {
+            const { data } = await db.from('despesas').select('*').order('data', { ascending: false });
+            state.despesas = data || [];
+        };
+
+        const renderDespesasMetrics = () => {
+            const now = new Date();
+            const currentMonth = now.toISOString().slice(0, 7);
+            
+            const despesasMes = state.despesas.filter(d => d.data.startsWith(currentMonth));
+            
+            const totalGasto = despesasMes.reduce((sum, d) => sum + d.valor, 0);
+            $('metric-total-gasto').textContent = formatCurrency(totalGasto);
+            
+            const diasNoMes = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const mediaDiaria = totalGasto / diasNoMes;
+            $('metric-media-diaria').textContent = formatCurrency(mediaDiaria);
+            
+            const gastosPorCategoria = despesasMes.reduce((acc, d) => {
+                acc[d.categoria] = (acc[d.categoria] || 0) + d.valor;
+                return acc;
+            }, {});
+            
+            let maiorCategoria = 'N/A';
+            let maiorValor = 0;
+            for (const categoria in gastosPorCategoria) {
+                if (gastosPorCategoria[categoria] > maiorValor) {
+                    maiorValor = gastosPorCategoria[categoria];
+                    maiorCategoria = categoria;
+                }
+            }
+            
+            $('metric-maior-categoria').textContent = maiorCategoria;
+        };
+
+        const renderDespesas = () => {
+            const selectedMonth = $('filter-month').value;
+            let filteredDespesas = state.despesas;
+            
+            if (selectedMonth) {
+                filteredDespesas = state.despesas.filter(d => d.data.startsWith(selectedMonth));
+            }
+            
+            $('despesas-lista').innerHTML = filteredDespesas.map(despesa => `
+                <li>
+                    <div>
+                        <strong>${despesa.descricao}</strong><br>
+                        <small>${despesa.categoria} - ${formatDate(despesa.data)}</small>
+                    </div>
+                    <div>
+                        <strong style="color: var(--primary-red);">${formatCurrency(despesa.valor)}</strong>
+                        <div class="item-actions">
+                            <button class="btn btn-sm btn-danger" onclick="deleteDespesa(${despesa.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+            `).join('');
+        };
+
+        const renderDespesasChart = () => {
+            const selectedMonth = $('filter-month').value || new Date().toISOString().slice(0, 7);
+            const despesasMes = state.despesas.filter(d => d.data.startsWith(selectedMonth));
+            
+            const gastosPorCategoria = despesasMes.reduce((acc, d) => {
+                acc[d.categoria] = (acc[d.categoria] || 0) + d.valor;
+                return acc;
+            }, {});
+            
+            const ctx = $('despesas-chart').getContext('2d');
+            
+            if (state.chartInstance) {
+                state.chartInstance.destroy();
+            }
+            
+            state.chartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(gastosPorCategoria),
+                    datasets: [{
+                        data: Object.values(gastosPorCategoria),
+                        backgroundColor: [
+                            '#3b82f6', '#ef4444', '#22c55e', '#f97316', 
+                            '#8b5cf6', '#eab308', '#64748b'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#e2e8f0'
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        const deleteDespesa = (id) => {
+            showConfirmModal('Excluir Despesa', 'Tem certeza que deseja excluir esta despesa?', async () => {
+                try {
+                    await db.from('despesas').delete().eq('id', id);
+                    showNotification('Despesa excluída com sucesso!');
+                    await loadDespesasData();
+                    renderDespesasMetrics();
+                    renderDespesas();
+                    renderDespesasChart();
+                } catch (error) {
+                    console.error('Erro ao excluir despesa:', error);
+                    showNotification('Erro ao excluir despesa', 'error');
+                }
+                hideConfirmModal();
+            });
+        };
+
+        const exportDespesasCSV = () => {
+            const selectedMonth = $('filter-month').value;
+            let dataToExport = state.despesas;
+            
+            if (selectedMonth) {
+                dataToExport = state.despesas.filter(d => d.data.startsWith(selectedMonth));
+            }
+            
+            if (dataToExport.length === 0) {
+                showNotification('Nenhuma despesa para exportar', 'warning');
+                return;
+            }
+            
+            const headers = ['Data', 'Descrição', 'Categoria', 'Valor'];
+            const csvRows = [headers.join(',')];
+            
+            dataToExport.forEach(despesa => {
+                const row = [
+                    formatDate(despesa.data),
+                    `"${despesa.descricao}"`,
+                    despesa.categoria,
+                    despesa.valor.toFixed(2)
+                ];
+                csvRows.push(row.join(','));
+            });
+            
+            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `despesas_${selectedMonth || 'geral'}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Navegação
+            $$('.nav-btn').forEach(btn => {
+                btn.onclick = () => switchTab(btn.dataset.tab);
+            });
+            
+            // Modal
+            $('modal-cancel-btn').onclick = hideConfirmModal;
+            $('modal-confirm-btn').onclick = () => {
+                if (confirmCallback) confirmCallback();
+                hideConfirmModal();
+            };
+            
+            // Sync button
+            $('sync-btn').onclick = () => {
+                $('sync-btn').classList.add('syncing');
+                setTimeout(() => {
+                    $('sync-btn').classList.remove('syncing');
+                    loadAllData();
+                }, 1000);
+            };
+            
+            // Carregar dados iniciais
+            loadAllData();
+        });
+
+        // Funções globais para uso nos templates
+        window.editCliente = editCliente;
+        window.deleteCliente = deleteCliente;
+        window.editServico = editServico;
+        window.deleteServico = deleteServico;
+        window.removeOrcamentoServico = removeOrcamentoServico;
+        window.selectOrcamento = selectOrcamento;
+        window.deleteCRMInteraction = deleteCRMInteraction;
+        window.deleteDespesa = deleteDespesa;
+        window.switchTab = switchTab;
+    </script>
 </body>
 </html>
