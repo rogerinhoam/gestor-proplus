@@ -6,10 +6,6 @@
 
 // Configuração global
 const CONFIG = {
-    supabase: {
-        url: 'https://bezbszbkaifcanqsmdbi.supabase.co',
-        key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlemJzemJrYWlmY2FucXNtZGJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MTM5MTksImV4cCI6MjA2ODE4OTkxOX0.zLXAuQz7g5ym3Bd5pkhg5vsnf_3rdJFRAXI_kX8tM18'
-    },
     app: {
         name: 'R.M. Estética Automotiva',
         version: '2.0.0'
@@ -18,7 +14,6 @@ const CONFIG = {
 
 // Estado global da aplicação
 const STATE = {
-    db: null,
     currentTab: 'dashboard',
     isOnline: navigator.onLine,
     data: {
@@ -28,12 +23,11 @@ const STATE = {
     },
     ui: {
         loading: false,
-        modals: {},
         notifications: []
     }
 };
 
-// Dados de exemplo para modo offline
+// Dados de exemplo
 const SAMPLE_DATA = {
     clientes: [
         {
@@ -55,6 +49,16 @@ const SAMPLE_DATA = {
             placa: 'DEF-5678',
             endereco: 'Avenida Central, 456',
             created_at: '2024-01-10T14:30:00Z'
+        },
+        {
+            id: 'c3',
+            nome: 'Pedro Oliveira',
+            telefone: '(24) 77777-7777',
+            email: 'pedro.oliveira@email.com',
+            carro: 'Volkswagen Jetta 2021',
+            placa: 'GHI-9012',
+            endereco: 'Rua da Praia, 789',
+            created_at: '2024-01-08T16:45:00Z'
         }
     ],
     servicos: [
@@ -73,6 +77,22 @@ const SAMPLE_DATA = {
             duracao: 90,
             categoria: 'Proteção',
             ativo: true
+        },
+        {
+            id: 's3',
+            descricao: 'Lavagem Simples',
+            valor: 25.00,
+            duracao: 30,
+            categoria: 'Lavagem',
+            ativo: true
+        },
+        {
+            id: 's4',
+            descricao: 'Limpeza Interna',
+            valor: 40.00,
+            duracao: 45,
+            categoria: 'Limpeza',
+            ativo: true
         }
     ],
     orcamentos: [
@@ -88,160 +108,65 @@ const SAMPLE_DATA = {
                 { servico_id: 's1', quantidade: 1, valor: 35.00 },
                 { servico_id: 's2', quantidade: 1, valor: 45.00 }
             ]
+        },
+        {
+            id: 'o2',
+            cliente_id: 'c2',
+            valor_total: 65.00,
+            desconto: 5,
+            status: 'Aprovado',
+            observacoes: 'Cliente aprovou o orçamento',
+            created_at: '2024-01-12T14:15:00Z',
+            itens: [
+                { servico_id: 's1', quantidade: 1, valor: 35.00 },
+                { servico_id: 's4', quantidade: 1, valor: 40.00 }
+            ]
+        },
+        {
+            id: 'o3',
+            cliente_id: 'c3',
+            valor_total: 25.00,
+            desconto: 0,
+            status: 'Orçamento',
+            observacoes: 'Aguardando resposta do cliente',
+            created_at: '2024-01-10T11:20:00Z',
+            itens: [
+                { servico_id: 's3', quantidade: 1, valor: 25.00 }
+            ]
         }
     ]
 };
 
 // Gerenciador de dados
 const DataManager = {
-    // Inicializar Supabase
-    async initSupabase() {
-        try {
-            if (window.supabase) {
-                const { createClient } = supabase;
-                STATE.db = createClient(CONFIG.supabase.url, CONFIG.supabase.key);
-                
-                // Testar conexão
-                const { data, error } = await STATE.db
-                    .from('clientes')
-                    .select('id')
-                    .limit(1);
-                
-                if (error && error.code !== 'PGRST116') {
-                    throw error;
-                }
-                
-                console.log('✅ Supabase conectado');
-                return true;
-            }
-        } catch (error) {
-            console.warn('⚠️ Supabase não disponível:', error);
-        }
-        return false;
-    },
-
     // Carregar dados
-    async loadData() {
-        try {
-            if (STATE.db) {
-                await Promise.all([
-                    this.loadClientes(),
-                    this.loadServicos(),
-                    this.loadOrcamentos()
-                ]);
-            } else {
-                this.loadSampleData();
-            }
-        } catch (error) {
-            console.error('❌ Erro ao carregar dados:', error);
-            this.loadSampleData();
-        }
-    },
-
-    // Carregar dados de exemplo
-    loadSampleData() {
+    loadData() {
         STATE.data = { ...SAMPLE_DATA };
-        console.log('📋 Dados de exemplo carregados');
-    },
-
-    // Carregar clientes
-    async loadClientes() {
-        try {
-            const { data, error } = await STATE.db
-                .from('clientes')
-                .select('*')
-                .order('nome');
-            
-            if (error) throw error;
-            STATE.data.clientes = data || [];
-        } catch (error) {
-            console.error('❌ Erro ao carregar clientes:', error);
-            STATE.data.clientes = SAMPLE_DATA.clientes;
-        }
-    },
-
-    // Carregar serviços
-    async loadServicos() {
-        try {
-            const { data, error } = await STATE.db
-                .from('servicos')
-                .select('*')
-                .order('descricao');
-            
-            if (error) throw error;
-            STATE.data.servicos = data || [];
-        } catch (error) {
-            console.error('❌ Erro ao carregar serviços:', error);
-            STATE.data.servicos = SAMPLE_DATA.servicos;
-        }
-    },
-
-    // Carregar orçamentos
-    async loadOrcamentos() {
-        try {
-            const { data, error } = await STATE.db
-                .from('orcamentos')
-                .select('*')
-                .order('created_at', { ascending: false });
-            
-            if (error) throw error;
-            STATE.data.orcamentos = data || [];
-        } catch (error) {
-            console.error('❌ Erro ao carregar orçamentos:', error);
-            STATE.data.orcamentos = SAMPLE_DATA.orcamentos;
-        }
+        console.log('📋 Dados carregados');
     },
 
     // Salvar cliente
-    async saveCliente(cliente) {
-        try {
-            if (STATE.db) {
-                const { data, error } = await STATE.db
-                    .from('clientes')
-                    .insert([cliente])
-                    .select()
-                    .single();
-                
-                if (error) throw error;
-                
-                STATE.data.clientes.push(data);
-                return data;
-            } else {
-                cliente.id = generateId();
-                cliente.created_at = new Date().toISOString();
-                STATE.data.clientes.push(cliente);
-                return cliente;
-            }
-        } catch (error) {
-            console.error('❌ Erro ao salvar cliente:', error);
-            throw error;
-        }
+    saveCliente(cliente) {
+        cliente.id = generateId();
+        cliente.created_at = new Date().toISOString();
+        STATE.data.clientes.push(cliente);
+        return cliente;
     },
 
     // Salvar serviço
-    async saveServico(servico) {
-        try {
-            if (STATE.db) {
-                const { data, error } = await STATE.db
-                    .from('servicos')
-                    .insert([servico])
-                    .select()
-                    .single();
-                
-                if (error) throw error;
-                
-                STATE.data.servicos.push(data);
-                return data;
-            } else {
-                servico.id = generateId();
-                servico.created_at = new Date().toISOString();
-                STATE.data.servicos.push(servico);
-                return servico;
-            }
-        } catch (error) {
-            console.error('❌ Erro ao salvar serviço:', error);
-            throw error;
-        }
+    saveServico(servico) {
+        servico.id = generateId();
+        servico.created_at = new Date().toISOString();
+        STATE.data.servicos.push(servico);
+        return servico;
+    },
+
+    // Salvar orçamento
+    saveOrcamento(orcamento) {
+        orcamento.id = generateId();
+        orcamento.created_at = new Date().toISOString();
+        STATE.data.orcamentos.push(orcamento);
+        return orcamento;
     }
 };
 
@@ -364,6 +289,10 @@ const UIManager = {
                             <span>${sanitizeHtml(cliente.telefone || 'Não informado')}</span>
                         </div>
                         <div class="card-info-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>${sanitizeHtml(cliente.email || 'Não informado')}</span>
+                        </div>
+                        <div class="card-info-item">
                             <i class="fas fa-car"></i>
                             <span>${sanitizeHtml(cliente.carro || 'Não informado')}</span>
                         </div>
@@ -474,6 +403,7 @@ const UIManager = {
                                 <span>${orcamento.itens?.length || 0} itens</span>
                             </div>
                         </div>
+                        ${orcamento.observacoes ? `<p style="margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.875rem;">${sanitizeHtml(orcamento.observacoes)}</p>` : ''}
                     </div>
                     <div class="card-actions">
                         <button class="btn btn-sm btn-primary" onclick="viewOrcamento('${orcamento.id}')">
@@ -555,13 +485,9 @@ const App = {
             this.setupEventListeners();
             UIManager.updateProgress(30);
 
-            // Inicializar Supabase
-            await DataManager.initSupabase();
-            UIManager.updateProgress(50);
-
             // Carregar dados
-            await DataManager.loadData();
-            UIManager.updateProgress(70);
+            DataManager.loadData();
+            UIManager.updateProgress(60);
 
             // Renderizar interface
             UIManager.renderDashboard();
@@ -575,7 +501,7 @@ const App = {
             setTimeout(() => {
                 UIManager.hideLoading();
                 showNotification('Sistema carregado com sucesso!', 'success');
-            }, 500);
+            }, 1000);
 
         } catch (error) {
             console.error('❌ Erro na inicialização:', error);
@@ -606,7 +532,7 @@ const App = {
         const searchInput = document.getElementById('searchClientes');
         if (searchInput) {
             searchInput.addEventListener('input', debounce((e) => {
-                UIManager.filterClientes(e.target.value);
+                this.filterClientes(e.target.value);
             }, 300));
         }
 
@@ -636,33 +562,91 @@ const App = {
             if (STATE.isOnline) {
                 syncStatus.textContent = 'Online';
                 syncIcon.className = 'fas fa-wifi';
-                syncStatus.className = 'sync-status';
+                syncStatus.parentElement.classList.remove('offline');
             } else {
                 syncStatus.textContent = 'Offline';
                 syncIcon.className = 'fas fa-wifi-slash';
-                syncStatus.className = 'sync-status offline';
+                syncStatus.parentElement.classList.add('offline');
             }
         }
     },
 
+    // Filtrar clientes
+    filterClientes(query) {
+        const filteredClientes = STATE.data.clientes.filter(cliente => 
+            cliente.nome.toLowerCase().includes(query.toLowerCase()) ||
+            cliente.telefone.includes(query) ||
+            cliente.email.toLowerCase().includes(query.toLowerCase()) ||
+            cliente.carro.toLowerCase().includes(query.toLowerCase())
+        );
+
+        const container = document.getElementById('clientesGrid');
+        if (!container) return;
+
+        if (filteredClientes.length === 0) {
+            container.innerHTML = UIManager.getEmptyState('Nenhum cliente encontrado', 'Tente uma busca diferente');
+            return;
+        }
+
+        container.innerHTML = filteredClientes.map(cliente => `
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">${sanitizeHtml(cliente.nome)}</h3>
+                    <span class="card-badge active">Ativo</span>
+                </div>
+                <div class="card-body">
+                    <div class="card-info">
+                        <div class="card-info-item">
+                            <i class="fas fa-phone"></i>
+                            <span>${sanitizeHtml(cliente.telefone || 'Não informado')}</span>
+                        </div>
+                        <div class="card-info-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>${sanitizeHtml(cliente.email || 'Não informado')}</span>
+                        </div>
+                        <div class="card-info-item">
+                            <i class="fas fa-car"></i>
+                            <span>${sanitizeHtml(cliente.carro || 'Não informado')}</span>
+                        </div>
+                        <div class="card-info-item">
+                            <i class="fas fa-id-card"></i>
+                            <span>${sanitizeHtml(cliente.placa || 'Não informado')}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-sm btn-secondary" onclick="editClient('${cliente.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-success" onclick="callClient('${cliente.telefone}')">
+                        <i class="fas fa-phone"></i>
+                    </button>
+                    <button class="btn btn-sm btn-primary" onclick="whatsappClient('${cliente.telefone}', '${cliente.nome}')">
+                        <i class="fab fa-whatsapp"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    },
+
     // Mostrar formulário de cliente
     showClientForm() {
-        showNotification('Formulário de cliente em desenvolvimento', 'info');
+        showNotification('Formulário de cliente será implementado em breve', 'info');
     },
 
     // Mostrar formulário de serviço
     showServiceForm() {
-        showNotification('Formulário de serviço em desenvolvimento', 'info');
+        showNotification('Formulário de serviço será implementado em breve', 'info');
     },
 
     // Mostrar formulário de orçamento
     showQuoteForm() {
-        showNotification('Formulário de orçamento em desenvolvimento', 'info');
+        showNotification('Formulário de orçamento será implementado em breve', 'info');
     },
 
     // Mostrar menu rápido
     showQuickMenu() {
-        showNotification('Menu rápido em desenvolvimento', 'info');
+        showNotification('Menu rápido será implementado em breve', 'info');
     }
 };
 
@@ -678,8 +662,10 @@ function editService(servicoId) {
 function deleteService(servicoId) {
     confirmAction('Tem certeza que deseja excluir este serviço?').then(confirmed => {
         if (confirmed) {
-            showNotification('Serviço excluído com sucesso', 'success');
+            // Aqui você removeria o serviço do array
+            STATE.data.servicos = STATE.data.servicos.filter(s => s.id !== servicoId);
             UIManager.renderServicos();
+            showNotification('Serviço excluído com sucesso', 'success');
         }
     });
 }
@@ -704,15 +690,15 @@ function whatsappClient(telefone, nome) {
 }
 
 function viewOrcamento(orcamentoId) {
-    showNotification('Visualização de orçamento em desenvolvimento', 'info');
+    showNotification('Visualização de orçamento será implementada em breve', 'info');
 }
 
 function editOrcamento(orcamentoId) {
-    showNotification('Edição de orçamento em desenvolvimento', 'info');
+    showNotification('Edição de orçamento será implementada em breve', 'info');
 }
 
 function downloadPDF(orcamentoId) {
-    showNotification('Download de PDF em desenvolvimento', 'info');
+    showNotification('Download de PDF será implementado em breve', 'info');
 }
 
 // Inicialização
