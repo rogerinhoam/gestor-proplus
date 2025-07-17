@@ -1,293 +1,416 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>R.M. Estética PRO+</title>
-  <!-- Google Fonts combinados e cache -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
-    rel="stylesheet"
-    integrity="sha384-XXXXXXXX"
-    crossorigin="anonymous"
-  />
-
-  <style>
-    /* === 1. Variáveis CSS === */
-    :root {
-      --cor-primaria: #6c63ff;
-      --cor-secundaria: #f5f5f5;
-      --texto-escuro: #333;
-      --texto-claro: #fff;
-      --fundo: #fafafa;
-      --raio: 8px;
-      --transicao: 0.3s;
-      --sombra: rgba(0, 0, 0, 0.1);
-      --font: 'Inter', sans-serif;
-    }
-
-    /* === 2. Reset + Base Styles === */
-    *,
-    *::before,
-    *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: var(--font);
-      background: var(--fundo);
-      color: var(--texto-escuro);
-      line-height: 1.6;
-    }
-    a {
-      color: var(--cor-primaria);
-      text-decoration: none;
-      transition: color var(--transicao);
-    }
-    a:hover {
-      color: darken(var(--cor-primaria), 10%);
-    }
-
-    /* === 3. Utilitários === */
-    .flex-center {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .btn {
-      padding: 0.6em 1.2em;
-      background: var(--cor-primaria);
-      color: var(--texto-claro);
-      border: none;
-      border-radius: var(--raio);
-      cursor: pointer;
-      transition: background var(--transicao);
-    }
-    .btn:disabled {
-      background: #bbb;
-      cursor: not-allowed;
-    }
-    .btn:focus {
-      outline: 2px solid var(--cor-primaria);
-      outline-offset: 2px;
-    }
-    .btn-transition {
-      transition: all var(--transicao);
-    }
-    .card {
-      background: var(--texto-claro);
-      border-radius: var(--raio);
-      box-shadow: 0 2px 8px var(--sombra);
-      padding: 1em;
-      transition: transform var(--transicao);
-    }
-    .card:hover {
-      transform: translateY(-4px);
-    }
-    .skeleton {
-      background: var(--secundaria);
-      border-radius: var(--raio);
-      min-height: 80px;
-      animation: pulse 1.5s infinite ease-in-out;
-    }
-    @keyframes pulse {
-      0% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.4;
-      }
-      100% {
-        opacity: 1;
-      }
-    }
-
-    /* === 4. Componentes === */
-    nav {
-      background: var(--cor-primaria);
-      color: var(--texto-claro);
-      padding: 1em;
-    }
-    nav .nav-btn {
-      background: transparent;
-      border: none;
-      color: inherit;
-      font-size: 1em;
-      margin-right: 1em;
-      cursor: pointer;
-    }
-    nav .nav-btn:focus {
-      outline: 2px dashed var(--texto-claro);
-    }
-    main {
-      padding: 2em;
-    }
-    .hidden {
-      display: none;
-    }
-
-    /* === 5. Media Queries (Mobile-First) === */
-    @media (min-width: 768px) {
-      main {
-        max-width: 1024px;
-        margin: 0 auto;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R.M. Estética Automotiva - Gestor PRO+</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
-
 <body>
-  <!-- === Navegação por Abas === -->
-  <nav role="navigation" aria-label="Menu principal">
-    <button class="nav-btn" data-tab="dashboard" tabindex="0">Dashboard</button>
-    <button class="nav-btn" data-tab="clientes" tabindex="0">Clientes</button>
-    <button class="nav-btn" data-tab="servicos" tabindex="0">Serviços</button>
-  </nav>
+    <div class="app-container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-car"></i>
+                <span>R.M. Estética PRO+</span>
+            </div>
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Painel</span>
+                </button>
+                <button class="nav-tab" data-tab="crm">
+                    <i class="fas fa-users"></i>
+                    <span>CRM</span>
+                </button>
+                <button class="nav-tab" data-tab="despesas">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Despesas</span>
+                </button>
+            </div>
+            <div class="nav-status">
+                <div class="status-indicator online" id="networkStatus">
+                    <i class="fas fa-wifi"></i>
+                    <span>Online</span>
+                </div>
+            </div>
+        </nav>
 
-  <main>
-    <!-- === Dashboard === -->
-    <section id="dashboard" class="tab-section">
-      <h1>Dashboard</h1>
-      <div id="chartContainer" class="card" aria-label="Gráfico de atendimento"></div>
-    </section>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <div class="tab-content active" id="dashboard">
+                <div class="dashboard-header">
+                    <h1>Painel de Controle</h1>
+                    <p>Visão geral dos negócios - R.M. Estética Automotiva</p>
+                </div>
 
-    <!-- === Clientes === -->
-    <section id="clientes" class="tab-section hidden">
-      <h1>Clientes</h1>
-      <form id="clienteForm" aria-label="Formulário de clientes">
-        <input type="text" name="nome" placeholder="Nome" required />
-        <input type="email" name="email" placeholder="Email" required />
-        <button type="submit" class="btn btn-transition">Salvar</button>
-      </form>
-      <div id="clientesList" class="mt-2"></div>
-    </section>
+                <!-- Metrics Cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon clients">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 id="totalClientes">0</h3>
+                            <p>Total de Clientes</p>
+                        </div>
+                    </div>
 
-    <!-- === Serviços === -->
-    <section id="servicos" class="tab-section hidden">
-      <h1>Serviços</h1>
-      <form id="servicoForm" aria-label="Formulário de serviços">
-        <input type="text" name="titulo" placeholder="Título" required />
-        <input type="number" name="preco" placeholder="Preço" required />
-        <button type="submit" class="btn btn-transition">Salvar</button>
-      </form>
-      <div id="servicosList" class="mt-2"></div>
-    </section>
-  </main>
+                    <div class="metric-card clickable" data-filter="Orçamento">
+                        <div class="metric-icon pending">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 id="orcamentosPendentes">0</h3>
+                            <p>Orçamentos Pendentes</p>
+                        </div>
+                    </div>
 
-  <script>
-    /* === Configuração Supabase === */
-    const SUPABASE_URL = 'https://xyz.supabase.co'
-    const SUPABASE_KEY = 'public-anon-key'
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+                    <div class="metric-card clickable" data-filter="Aprovado">
+                        <div class="metric-icon approved">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 id="orcamentosAprovados">0</h3>
+                            <p>Orçamentos Aprovados</p>
+                        </div>
+                    </div>
 
-    /* === Módulo de Navegação === */
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'))
-        document.getElementById(btn.dataset.tab).classList.remove('hidden')
-      })
-    })
+                    <div class="metric-card clickable" data-filter="Finalizado">
+                        <div class="metric-icon completed">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 id="orcamentosFinalizados">0</h3>
+                            <p>Finalizados (Mês)</p>
+                        </div>
+                    </div>
 
-    /* === Utilitário de DB Actions === */
-    async function handleDbAction(action, onSuccess, onError) {
-      try {
-        const { data, error } = await action()
-        if (error) throw error
-        onSuccess(data)
-      } catch (err) {
-        alert(onError + ': ' + err.message)
-      }
-    }
+                    <div class="metric-card revenue">
+                        <div class="metric-icon revenue">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 id="receitaTotal">R$ 0,00</h3>
+                            <p>Receita Total</p>
+                        </div>
+                    </div>
+                </div>
 
-    /* === Dashboard: Gráfico Chart.js === */
-    let chartInstance
-    async function loadChart() {
-      const container = document.getElementById('chartContainer')
-      container.innerHTML = '<div class="skeleton"></div>'
-      await handleDbAction(
-        () => supabase.from('atendimentos').select('data, count'),
-        data => {
-          const labels = data.map(r => r.data)
-          const values = data.map(r => r.count)
-          container.innerHTML = '<canvas id="chartCanvas"></canvas>'
-          const ctx = document.getElementById('chartCanvas').getContext('2d')
-          chartInstance = new Chart(ctx, {
-            type: 'line',
-            data: { labels, datasets: [{ label: 'Atendimentos', data: values, borderColor: var(--cor-primaria) }] },
-            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-          })
-        },
-        'Erro ao carregar dados do gráfico'
-      )
-    }
-    loadChart()
+                <!-- Charts and Recent Activity -->
+                <div class="dashboard-grid">
+                    <div class="chart-container">
+                        <h2>Serviços Finalizados (Últimos 6 Meses)</h2>
+                        <canvas id="servicesChart"></canvas>
+                    </div>
 
-    /* === Clientes: CRUD === */
-    const clienteForm = document.getElementById('clienteForm')
-    const clientesList = document.getElementById('clientesList')
-    clienteForm.addEventListener('submit', async e => {
-      e.preventDefault()
-      const btn = clienteForm.querySelector('button')
-      btn.disabled = true
-      btn.textContent = 'Salvando...'
-      const formData = Object.fromEntries(new FormData(clienteForm))
-      await handleDbAction(
-        () => supabase.from('clientes').insert(formData),
-        () => {
-          clienteForm.reset()
-          loadClientes()
-        },
-        'Erro ao salvar cliente'
-      )
-      btn.disabled = false
-      btn.textContent = 'Salvar'
-    })
-    async function loadClientes() {
-      clientesList.innerHTML = '<div class="skeleton"></div>'
-      await handleDbAction(
-        () => supabase.from('clientes').select(),
-        data => {
-          clientesList.innerHTML = data.map(c => `<div class="card">${c.nome} (${c.email})</div>`).join('')
-        },
-        'Erro ao carregar clientes'
-      )
-    }
-    loadClientes()
+                    <div class="recent-activity">
+                        <h2>Últimos Orçamentos</h2>
+                        <div class="activity-list" id="recentOrcamentos">
+                            <!-- Recent orders will be populated here -->
+                        </div>
+                    </div>
+                </div>
 
-    /* === Serviços: CRUD === */
-    const servicoForm = document.getElementById('servicoForm')
-    const servicosList = document.getElementById('servicosList')
-    servicoForm.addEventListener('submit', async e => {
-      e.preventDefault()
-      const btn = servicoForm.querySelector('button')
-      btn.disabled = true
-      btn.textContent = 'Salvando...'
-      const formData = Object.fromEntries(new FormData(servicoForm))
-      await handleDbAction(
-        () => supabase.from('servicos').insert(formData),
-        () => {
-          servicoForm.reset()
-          loadServicos()
-        },
-        'Erro ao salvar serviço'
-      )
-      btn.disabled = false
-      btn.textContent = 'Salvar'
-    })
-    async function loadServicos() {
-      servicosList.innerHTML = '<div class="skeleton"></div>'
-      await handleDbAction(
-        () => supabase.from('servicos').select(),
-        data => {
-          servicosList.innerHTML = data.map(s => `<div class="card">${s.titulo} - R$${s.preco}</div>`).join('')
-        },
-        'Erro ao carregar serviços'
-      )
-    }
-    loadServicos()
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <!-- Client Management Section -->
+                <div class="section-card">
+                    <h2>Gerenciamento de Clientes</h2>
+                    
+                    <div class="client-form-container">
+                        <form id="clientForm" class="client-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="clientName">Nome Completo *</label>
+                                    <input type="text" id="clientName" name="nome" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="clientPhone">Telefone *</label>
+                                    <input type="tel" id="clientPhone" name="telefone" placeholder="(11) 99999-9999" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="clientCar">Modelo do Carro</label>
+                                    <input type="text" id="clientCar" name="carro" placeholder="Ex: Honda Civic 2020">
+                                </div>
+                                <div class="form-group">
+                                    <label for="clientPlate">Placa do Veículo</label>
+                                    <input type="text" id="clientPlate" name="placa" placeholder="ABC-1234">
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    Salvar Cliente
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="cancelEditClient" style="display: none;">
+                                    <i class="fas fa-times"></i>
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="clients-list-container">
+                        <div class="list-header">
+                            <h3>Lista de Clientes</h3>
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="searchClients" placeholder="Buscar cliente...">
+                            </div>
+                        </div>
+                        <div class="clients-list" id="clientsList">
+                            <!-- Clients will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order History Section -->
+                <div class="section-card">
+                    <h2>Histórico de Orçamentos</h2>
+                    
+                    <div class="filters-container">
+                        <div class="filter-group">
+                            <label>Status:</label>
+                            <select id="statusFilter">
+                                <option value="">Todos</option>
+                                <option value="Orçamento">Orçamento</option>
+                                <option value="Aprovado">Aprovado</option>
+                                <option value="Finalizado">Finalizado</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchOrcamentos" placeholder="Buscar por cliente...">
+                        </div>
+                    </div>
+
+                    <div class="orders-list" id="ordersList">
+                        <!-- Orders will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- CRM Tab -->
+            <div class="tab-content" id="crm">
+                <div class="crm-header">
+                    <h1>CRM - Gestão de Relacionamento</h1>
+                    <p>Análise de clientes inativos e gestão de follow-ups</p>
+                </div>
+
+                <div class="crm-filters">
+                    <h3>Clientes Inativos</h3>
+                    <div class="period-filters">
+                        <button class="period-btn active" data-period="15">15 dias</button>
+                        <button class="period-btn" data-period="30">30 dias</button>
+                        <button class="period-btn" data-period="60">60 dias</button>
+                        <button class="period-btn" data-period="90">90 dias</button>
+                        <button class="period-btn" data-period="180">180 dias</button>
+                    </div>
+                </div>
+
+                <div class="inactive-clients-container">
+                    <div class="inactive-clients-list" id="inactiveClientsList">
+                        <!-- Inactive clients will be populated here -->
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>Registrar Interação</h2>
+                    <form id="interactionForm" class="interaction-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="interactionClient">Cliente *</label>
+                                <select id="interactionClient" name="cliente_id" required>
+                                    <option value="">Selecione um cliente</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="interactionType">Tipo de Interação *</label>
+                                <select id="interactionType" name="interaction_type" required>
+                                    <option value="">Selecione o tipo</option>
+                                    <option value="Ligação">Ligação</option>
+                                    <option value="WhatsApp">WhatsApp</option>
+                                    <option value="Email">Email</option>
+                                    <option value="Visita">Visita</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="interactionNotes">Observações *</label>
+                            <textarea id="interactionNotes" name="notes" rows="4" placeholder="Descreva os detalhes da interação..." required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="followUpDate">Data do Follow-up</label>
+                                <input type="date" id="followUpDate" name="follow_up_date">
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    Registrar Interação
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="section-card">
+                    <h2>Histórico de Interações</h2>
+                    <div class="interactions-list" id="interactionsList">
+                        <!-- Interactions will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Despesas Tab -->
+            <div class="tab-content" id="despesas">
+                <div class="despesas-header">
+                    <h1>Controle de Despesas</h1>
+                    <p>Gestão financeira e análise de gastos</p>
+                </div>
+
+                <div class="section-card">
+                    <h2>Cadastrar Despesa</h2>
+                    <form id="despesaForm" class="despesa-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="despesaData">Data *</label>
+                                <input type="date" id="despesaData" name="data" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="despesaCategoria">Categoria *</label>
+                                <select id="despesaCategoria" name="categoria" required>
+                                    <option value="">Selecione a categoria</option>
+                                    <option value="Produtos">Produtos</option>
+                                    <option value="Utilidades">Utilidades</option>
+                                    <option value="Manutenção">Manutenção</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="despesaDescricao">Descrição *</label>
+                                <input type="text" id="despesaDescricao" name="descricao" placeholder="Descreva a despesa..." required>
+                            </div>
+                            <div class="form-group">
+                                <label for="despesaValor">Valor *</label>
+                                <input type="number" id="despesaValor" name="valor" placeholder="0,00" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Cadastrar Despesa
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="financial-analysis">
+                    <div class="analysis-header">
+                        <h2>Análise Financeira</h2>
+                        <div class="month-filter">
+                            <label for="monthFilter">Mês de Análise:</label>
+                            <input type="month" id="monthFilter">
+                        </div>
+                    </div>
+
+                    <div class="analysis-metrics">
+                        <div class="analysis-card">
+                            <div class="analysis-icon">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="analysis-content">
+                                <h3 id="totalGasto">R$ 0,00</h3>
+                                <p>Total Gasto</p>
+                            </div>
+                        </div>
+
+                        <div class="analysis-card">
+                            <div class="analysis-icon">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <div class="analysis-content">
+                                <h3 id="mediaDiaria">R$ 0,00</h3>
+                                <p>Média Diária</p>
+                            </div>
+                        </div>
+
+                        <div class="analysis-card">
+                            <div class="analysis-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="analysis-content">
+                                <h3 id="categoriaMaior">-</h3>
+                                <p>Categoria com Maior Gasto</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Distribuição de Gastos por Categoria</h3>
+                        <canvas id="expensesChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>Lista de Despesas</h2>
+                    <div class="despesas-list" id="despesasList">
+                        <!-- Expenses will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- PDF Modal -->
+    <div class="modal" id="pdfModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Gerar PDF</h3>
+                <button class="modal-close" id="closePdfModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Selecione o tipo de documento:</p>
+                <div class="pdf-options">
+                    <button class="btn btn-primary" onclick="generatePdf('orcamento')">
+                        <i class="fas fa-file-alt"></i>
+                        Orçamento
+                    </button>
+                    <button class="btn btn-secondary" onclick="generatePdf('recibo')">
+                        <i class="fas fa-receipt"></i>
+                        Recibo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
 </body>
 </html>
