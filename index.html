@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R.M. Estética Automotiva - Gestor PRO+</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <i class="fas fa-car"></i>
+                <span>R.M. Estética PRO+</span>
+            </div>
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Painel</span>
+                </button>
+                <button class="nav-tab" data-tab="crm">
+                    <i class="fas fa-users"></i>
+                    <span>CRM</span>
+                </button>
+                <button class="nav-tab" data-tab="despesas">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Despesas</span>
+                </button>
+            </div>
+            <div class="nav-status">
+                <div class="status-indicator online" id="networkStatus">
+                    <i class="fas fa-wifi"></i>
+                    <span>Online</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <div class="tab-content active" id="dashboard">
+                <div class="dashboard-header">
+                    <h1>Painel de Controle</h1>
+                    <p>Visão geral dos negócios - R.M. Estética Automotiva</p>
+                </div>
+
+                <!-- Metrics Cards -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon clients">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 id="totalClientes">0</h3>
+                            <p>Total de Clientes</p>
+                        </div>
+                    </div>
+
+                    <div class="metric-card clickable" data-filter="Orçamento">
+                        <div class="metric-icon pending">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 id="orcamentosPendentes">0</h3>
+                            <p>Orçamentos Pendentes</p>
+                        </div>
+                    </div>
+
+                    <div class="metric-card clickable" data-filter="Aprovado">
+                        <div class="metric-icon approved">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 id="orcamentosAprovados">0</h3>
+                            <p>Orçamentos Aprovados</p>
+                        </div>
+                    </div>
+
+                    <div class="metric-card clickable" data-filter="Finalizado">
+                        <div class="metric-icon completed">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 id="orcamentosFinalizados">0</h3>
+                            <p>Finalizados (Mês)</p>
+                        </div>
+                    </div>
+
+                    <div class="metric-card revenue">
+                        <div class="metric-icon revenue">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3 id="receitaTotal">R$ 0,00</h3>
+                            <p>Receita Total</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts and Recent Activity -->
+                <div class="dashboard-grid">
+                    <div class="chart-container">
+                        <h2>Serviços Finalizados (Últimos 6 Meses)</h2>
+                        <canvas id="servicesChart"></canvas>
+                    </div>
+
+                    <div class="recent-activity">
+                        <h2>Últimos Orçamentos</h2>
+                        <div class="activity-list" id="recentOrcamentos">
+                            <!-- Recent orders will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client Management Section -->
+                <div class="section-card">
+                    <h2>Gerenciamento de Clientes</h2>
+                    
+                    <div class="client-form-container">
+                        <form id="clientForm" class="client-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="clientName">Nome Completo *</label>
+                                    <input type="text" id="clientName" name="nome" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="clientPhone">Telefone *</label>
+                                    <input type="tel" id="clientPhone" name="telefone" placeholder="(11) 99999-9999" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="clientCar">Modelo do Carro</label>
+                                    <input type="text" id="clientCar" name="carro" placeholder="Ex: Honda Civic 2020">
+                                </div>
+                                <div class="form-group">
+                                    <label for="clientPlate">Placa do Veículo</label>
+                                    <input type="text" id="clientPlate" name="placa" placeholder="ABC-1234">
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    Salvar Cliente
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="cancelEditClient" style="display: none;">
+                                    <i class="fas fa-times"></i>
+                                    Cancelar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="clients-list-container">
+                        <div class="list-header">
+                            <h3>Lista de Clientes</h3>
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="searchClients" placeholder="Buscar cliente...">
+                            </div>
+                        </div>
+                        <div class="clients-list" id="clientsList">
+                            <!-- Clients will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order History Section -->
+                <div class="section-card">
+                    <h2>Histórico de Orçamentos</h2>
+                    
+                    <div class="filters-container">
+                        <div class="filter-group">
+                            <label>Status:</label>
+                            <select id="statusFilter">
+                                <option value="">Todos</option>
+                                <option value="Orçamento">Orçamento</option>
+                                <option value="Aprovado">Aprovado</option>
+                                <option value="Finalizado">Finalizado</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchOrcamentos" placeholder="Buscar por cliente...">
+                        </div>
+                    </div>
+
+                    <div class="orders-list" id="ordersList">
+                        <!-- Orders will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- CRM Tab -->
+            <div class="tab-content" id="crm">
+                <div class="crm-header">
+                    <h1>CRM - Gestão de Relacionamento</h1>
+                    <p>Análise de clientes inativos e gestão de follow-ups</p>
+                </div>
+
+                <div class="crm-filters">
+                    <h3>Clientes Inativos</h3>
+                    <div class="period-filters">
+                        <button class="period-btn active" data-period="15">15 dias</button>
+                        <button class="period-btn" data-period="30">30 dias</button>
+                        <button class="period-btn" data-period="60">60 dias</button>
+                        <button class="period-btn" data-period="90">90 dias</button>
+                        <button class="period-btn" data-period="180">180 dias</button>
+                    </div>
+                </div>
+
+                <div class="inactive-clients-container">
+                    <div class="inactive-clients-list" id="inactiveClientsList">
+                        <!-- Inactive clients will be populated here -->
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>Registrar Interação</h2>
+                    <form id="interactionForm" class="interaction-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="interactionClient">Cliente *</label>
+                                <select id="interactionClient" name="cliente_id" required>
+                                    <option value="">Selecione um cliente</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="interactionType">Tipo de Interação *</label>
+                                <select id="interactionType" name="interaction_type" required>
+                                    <option value="">Selecione o tipo</option>
+                                    <option value="Ligação">Ligação</option>
+                                    <option value="WhatsApp">WhatsApp</option>
+                                    <option value="Email">Email</option>
+                                    <option value="Visita">Visita</option>
+                                    <option value="Outro">Outro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="interactionNotes">Observações *</label>
+                            <textarea id="interactionNotes" name="notes" rows="4" placeholder="Descreva os detalhes da interação..." required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="followUpDate">Data do Follow-up</label>
+                                <input type="date" id="followUpDate" name="follow_up_date">
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i>
+                                    Registrar Interação
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="section-card">
+                    <h2>Histórico de Interações</h2>
+                    <div class="interactions-list" id="interactionsList">
+                        <!-- Interactions will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Despesas Tab -->
+            <div class="tab-content" id="despesas">
+                <div class="despesas-header">
+                    <h1>Controle de Despesas</h1>
+                    <p>Gestão financeira e análise de gastos</p>
+                </div>
+
+                <div class="section-card">
+                    <h2>Cadastrar Despesa</h2>
+                    <form id="despesaForm" class="despesa-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="despesaData">Data *</label>
+                                <input type="date" id="despesaData" name="data" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="despesaCategoria">Categoria *</label>
+                                <select id="despesaCategoria" name="categoria" required>
+                                    <option value="">Selecione a categoria</option>
+                                    <option value="Produtos">Produtos</option>
+                                    <option value="Utilidades">Utilidades</option>
+                                    <option value="Manutenção">Manutenção</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="despesaDescricao">Descrição *</label>
+                                <input type="text" id="despesaDescricao" name="descricao" placeholder="Descreva a despesa..." required>
+                            </div>
+                            <div class="form-group">
+                                <label for="despesaValor">Valor *</label>
+                                <input type="number" id="despesaValor" name="valor" placeholder="0,00" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i>
+                                Cadastrar Despesa
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="financial-analysis">
+                    <div class="analysis-header">
+                        <h2>Análise Financeira</h2>
+                        <div class="month-filter">
+                            <label for="monthFilter">Mês de Análise:</label>
+                            <input type="month" id="monthFilter">
+                        </div>
+                    </div>
+
+                    <div class="analysis-metrics">
+                        <div class="analysis-card">
+                            <div class="analysis-icon">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="analysis-content">
+                                <h3 id="totalGasto">R$ 0,00</h3>
+                                <p>Total Gasto</p>
+                            </div>
+                        </div>
+
+                        <div class="analysis-card">
+                            <div class="analysis-icon">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <div class="analysis-content">
+                                <h3 id="mediaDiaria">R$ 0,00</h3>
+                                <p>Média Diária</p>
+                            </div>
+                        </div>
+
+                        <div class="analysis-card">
+                            <div class="analysis-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="analysis-content">
+                                <h3 id="categoriaMaior">-</h3>
+                                <p>Categoria com Maior Gasto</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3>Distribuição de Gastos por Categoria</h3>
+                        <canvas id="expensesChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-card">
+                    <h2>Lista de Despesas</h2>
+                    <div class="despesas-list" id="despesasList">
+                        <!-- Expenses will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- PDF Modal -->
+    <div class="modal" id="pdfModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Gerar PDF</h3>
+                <button class="modal-close" id="closePdfModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Selecione o tipo de documento:</p>
+                <div class="pdf-options">
+                    <button class="btn btn-primary" onclick="generatePdf('orcamento')">
+                        <i class="fas fa-file-alt"></i>
+                        Orçamento
+                    </button>
+                    <button class="btn btn-secondary" onclick="generatePdf('recibo')">
+                        <i class="fas fa-receipt"></i>
+                        Recibo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
