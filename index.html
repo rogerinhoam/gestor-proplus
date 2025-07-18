@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R.M. Estética PRO+ v2.0</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>R.M. Estética PRO+</h2>
+                <span class="version">v2.0</span>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" data-module="dashboard" class="menu-item active">📊 Dashboard</a></li>
+                <li><a href="#" data-module="clientes" class="menu-item">👥 Clientes</a></li>
+                <li><a href="#" data-module="orcamentos" class="menu-item">💰 Orçamentos</a></li>
+                <li><a href="#" data-module="agenda" class="menu-item">📅 Agenda</a></li>
+                <li><a href="#" data-module="financeiro" class="menu-item">📈 Financeiro</a></li>
+                <li><a href="#" data-module="crm" class="menu-item">📱 CRM</a></li>
+                <li><a href="#" data-module="configuracoes" class="menu-item">⚙️ Configurações</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-content">
+                    <h1 id="page-title">Dashboard</h1>
+                    <div class="header-actions">
+                        <button class="btn btn--sm btn--secondary" id="notifications-btn">🔔 Notificações</button>
+                        <button class="btn btn--sm btn--outline" id="user-menu-btn">👤 Admin</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Dashboard Module -->
+                <div id="dashboard-module" class="module active">
+                    <div class="dashboard-stats">
+                        <div class="stat-card">
+                            <div class="stat-number">15</div>
+                            <div class="stat-label">Clientes Ativos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">8</div>
+                            <div class="stat-label">Orçamentos Pendentes</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">R$ 2.850</div>
+                            <div class="stat-label">Receita do Mês</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">Agendamentos</div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-charts">
+                        <div class="chart-container">
+                            <h3>Receitas vs Despesas</h3>
+                            <canvas id="revenueChart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Agendamentos por Status</h3>
+                            <canvas id="appointmentChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clientes Module -->
+                <div id="clientes-module" class="module">
+                    <div class="module-header">
+                        <button class="btn btn--primary" id="add-client-btn">+ Novo Cliente</button>
+                        <div class="search-bar">
+                            <input type="text" id="search-clients" placeholder="Buscar clientes..." class="form-control">
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Telefone</th>
+                                    <th>Email</th>
+                                    <th>Carro</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clients-table-body">
+                                <!-- Clients will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Orçamentos Module -->
+                <div id="orcamentos-module" class="module">
+                    <div class="module-header">
+                        <button class="btn btn--primary" id="add-quote-btn">+ Novo Orçamento</button>
+                        <select id="quote-filter" class="form-control">
+                            <option value="">Todos os Status</option>
+                            <option value="Orçamento">Orçamento</option>
+                            <option value="Aprovado">Aprovado</option>
+                            <option value="Cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Valor Total</th>
+                                    <th>Status</th>
+                                    <th>Data</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="quotes-table-body">
+                                <!-- Quotes will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Agenda Module -->
+                <div id="agenda-module" class="module">
+                    <div class="module-header">
+                        <button class="btn btn--primary" id="add-appointment-btn">+ Novo Agendamento</button>
+                        <select id="appointment-filter" class="form-control">
+                            <option value="">Todos os Status</option>
+                            <option value="agendado">Agendado</option>
+                            <option value="confirmado">Confirmado</option>
+                            <option value="concluido">Concluído</option>
+                        </select>
+                    </div>
+                    
+                    <div class="appointments-grid">
+                        <div id="appointments-list">
+                            <!-- Appointments will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financeiro Module -->
+                <div id="financeiro-module" class="module">
+                    <div class="financial-summary">
+                        <div class="summary-card revenue">
+                            <h3>Receitas</h3>
+                            <div class="amount">R$ 3.250,00</div>
+                        </div>
+                        <div class="summary-card expenses">
+                            <h3>Despesas</h3>
+                            <div class="amount">R$ 1.180,00</div>
+                        </div>
+                        <div class="summary-card profit">
+                            <h3>Lucro</h3>
+                            <div class="amount">R$ 2.070,00</div>
+                        </div>
+                    </div>
+                    
+                    <div class="financial-tabs">
+                        <button class="tab-btn active" data-tab="receitas">Receitas</button>
+                        <button class="tab-btn" data-tab="despesas">Despesas</button>
+                    </div>
+                    
+                    <div class="financial-content">
+                        <div class="module-header">
+                            <button class="btn btn--primary" id="add-transaction-btn">+ Nova Transação</button>
+                        </div>
+                        
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Descrição</th>
+                                        <th>Valor</th>
+                                        <th>Data</th>
+                                        <th>Categoria</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transactions-table-body">
+                                    <!-- Transactions will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CRM Module -->
+                <div id="crm-module" class="module">
+                    <div class="crm-tabs">
+                        <button class="tab-btn active" data-tab="follow-up">Follow-up</button>
+                        <button class="tab-btn" data-tab="templates">Templates</button>
+                    </div>
+                    
+                    <div class="crm-content">
+                        <div id="follow-up-content" class="tab-content active">
+                            <div class="module-header">
+                                <h3>Clientes Inativos</h3>
+                                <button class="btn btn--primary" id="send-promotion-btn">Enviar Promoção</button>
+                            </div>
+                            <div id="inactive-clients-list">
+                                <!-- Inactive clients will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div id="templates-content" class="tab-content">
+                            <div class="module-header">
+                                <button class="btn btn--primary" id="add-template-btn">+ Novo Template</button>
+                            </div>
+                            <div id="templates-list">
+                                <!-- Templates will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configurações Module -->
+                <div id="configuracoes-module" class="module">
+                    <div class="config-tabs">
+                        <button class="tab-btn active" data-tab="empresa">Empresa</button>
+                        <button class="tab-btn" data-tab="sistema">Sistema</button>
+                        <button class="tab-btn" data-tab="backup">Backup</button>
+                    </div>
+                    
+                    <div class="config-content">
+                        <div id="empresa-content" class="tab-content active">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h3>Dados da Empresa</h3>
+                                    <form id="company-form">
+                                        <div class="form-group">
+                                            <label class="form-label">Nome da Empresa</label>
+                                            <input type="text" class="form-control" id="company-name" value="R.M. Estética Automotiva">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">CNPJ</label>
+                                            <input type="text" class="form-control" id="company-cnpj" value="12.345.678/0001-90">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Telefone</label>
+                                            <input type="text" class="form-control" id="company-phone" value="(11) 99999-9999">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="company-email" value="contato@rmestetica.com.br">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Endereço</label>
+                                            <input type="text" class="form-control" id="company-address" value="Rua das Flores, 123 - Centro - São Paulo/SP">
+                                        </div>
+                                        <button type="submit" class="btn btn--primary">Salvar Alterações</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="sistema-content" class="tab-content">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h3>Configurações do Sistema</h3>
+                                    <form id="system-form">
+                                        <div class="form-group">
+                                            <label class="form-label">Tema</label>
+                                            <select class="form-control" id="theme-select">
+                                                <option value="light">Claro</option>
+                                                <option value="dark">Escuro</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Idioma</label>
+                                            <select class="form-control" id="language-select">
+                                                <option value="pt-BR">Português (Brasil)</option>
+                                                <option value="en-US">English (US)</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Moeda</label>
+                                            <select class="form-control" id="currency-select">
+                                                <option value="BRL">Real (BRL)</option>
+                                                <option value="USD">Dólar (USD)</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn--primary">Salvar Alterações</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="backup-content" class="tab-content">
+                            <div class="card">
+                                <div class="card__body">
+                                    <h3>Backup e Restauração</h3>
+                                    <div class="backup-actions">
+                                        <button class="btn btn--primary" id="backup-btn">Fazer Backup</button>
+                                        <button class="btn btn--outline" id="restore-btn">Restaurar Backup</button>
+                                        <button class="btn btn--secondary" id="export-btn">Exportar Dados</button>
+                                    </div>
+                                    <div class="backup-info">
+                                        <p>Último backup: 15/12/2024 às 14:30</p>
+                                        <p>Tamanho do arquivo: 2.5 MB</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-title">Modal Title</h2>
+                <button class="modal-close" id="modal-close-btn">×</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Modal content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
