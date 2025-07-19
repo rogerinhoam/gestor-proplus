@@ -1,1927 +1,2565 @@
-// R.M. Estética PRO+ v2.0 - Main Application Script (Fixed)
+// R.M. Estética Automotiva PRO+ - Sistema de Gerenciamento
+// JavaScript Principal - Todas as funcionalidades integradas
 
-// Initial data setup
-const initialData = {
-  empresa: {
+// ============================================================================
+// CONFIGURAÇÕES E CONSTANTES
+// ============================================================================
+
+// Dados do estabelecimento
+const ESTABELECIMENTO = {
     nome: "R.M. Estética Automotiva",
-    cnpj: "12.345.678/0001-90",
-    telefone: "(11) 99999-9999",
-    email: "contato@rmestetica.com.br",
-    endereco: "Rua das Flores, 123 - Centro - São Paulo/SP"
-  },
-  clientes: [
-    {
-      id: 1,
-      nome: "João Silva",
-      telefone: "(11) 98765-4321",
-      email: "joao@email.com",
-      carro: "Honda Civic",
-      placa: "ABC-1234",
-      endereco: "Rua A, 123",
-      created_at: "2024-12-01",
-      status: "ativo"
-    },
-    {
-      id: 2,
-      nome: "Maria Santos",
-      telefone: "(11) 97654-3210",
-      email: "maria@email.com",
-      carro: "Toyota Corolla",
-      placa: "DEF-5678",
-      endereco: "Rua B, 456",
-      created_at: "2024-11-15",
-      status: "ativo"
-    },
-    {
-      id: 3,
-      nome: "Pedro Costa",
-      telefone: "(11) 96543-2109",
-      email: "pedro@email.com",
-      carro: "Ford Focus",
-      placa: "GHI-9012",
-      endereco: "Rua C, 789",
-      created_at: "2024-10-20",
-      status: "inativo"
-    },
-    {
-      id: 4,
-      nome: "Ana Oliveira",
-      telefone: "(11) 95432-1098",
-      email: "ana@email.com",
-      carro: "Volkswagen Polo",
-      placa: "JKL-3456",
-      endereco: "Rua D, 321",
-      created_at: "2024-09-10",
-      status: "inativo"
-    }
-  ],
-  orcamentos: [
-    {
-      id: 1,
-      cliente_id: 1,
-      valor_total: 350.00,
-      status: "Aprovado",
-      desconto: 10,
-      observacoes: "Carro com sujeira pesada",
-      created_at: "2024-12-10",
-      itens: [
-        { id: 1, descricao: "Lavagem Completa", valor: 80.00, quantidade: 1 },
-        { id: 2, descricao: "Enceramento", valor: 150.00, quantidade: 1 },
-        { id: 3, descricao: "Limpeza de Banco", valor: 120.00, quantidade: 1 }
-      ]
-    },
-    {
-      id: 2,
-      cliente_id: 2,
-      valor_total: 200.00,
-      status: "Orçamento",
-      desconto: 0,
-      observacoes: "Cliente aguardando aprovação",
-      created_at: "2024-12-15",
-      itens: [
-        { id: 1, descricao: "Lavagem Simples", valor: 50.00, quantidade: 1 },
-        { id: 2, descricao: "Cera Automotiva", valor: 150.00, quantidade: 1 }
-      ]
-    },
-    {
-      id: 3,
-      cliente_id: 3,
-      valor_total: 450.00,
-      status: "Cancelado",
-      desconto: 0,
-      observacoes: "Cliente desistiu",
-      created_at: "2024-12-05",
-      itens: [
-        { id: 1, descricao: "Lavagem Completa", valor: 80.00, quantidade: 1 },
-        { id: 2, descricao: "Enceramento", valor: 150.00, quantidade: 1 },
-        { id: 3, descricao: "Pintura Automotiva", valor: 220.00, quantidade: 1 }
-      ]
-    }
-  ],
-  agendamentos: [
-    {
-      id: 1,
-      cliente_id: 1,
-      data_hora: "2024-12-20T14:00:00",
-      servico: "Lavagem Completa + Enceramento",
-      status: "agendado",
-      observacoes: "Cliente prefere horário da tarde"
-    },
-    {
-      id: 2,
-      cliente_id: 2,
-      data_hora: "2024-12-21T09:00:00",
-      servico: "Lavagem Simples",
-      status: "confirmado",
-      observacoes: "Primeira vez no estabelecimento"
-    },
-    {
-      id: 3,
-      cliente_id: 1,
-      data_hora: "2024-12-18T16:00:00",
-      servico: "Enceramento",
-      status: "concluido",
-      observacoes: "Serviço realizado com sucesso"
-    }
-  ],
-  receitas: [
-    { id: 1, descricao: "Serviço - João Silva", valor: 350.00, data: "2024-12-01", categoria: "Serviços" },
-    { id: 2, descricao: "Serviço - Maria Santos", valor: 200.00, data: "2024-12-05", categoria: "Serviços" },
-    { id: 3, descricao: "Serviço - Ana Oliveira", valor: 180.00, data: "2024-12-10", categoria: "Serviços" }
-  ],
-  despesas: [
-    { id: 1, descricao: "Produtos de Limpeza", valor: 150.00, data: "2024-12-01", categoria: "Produtos", pago: true },
-    { id: 2, descricao: "Energia Elétrica", valor: 200.00, data: "2024-12-05", categoria: "Utilities", pago: true },
-    { id: 3, descricao: "Aluguel", valor: 800.00, data: "2024-12-01", categoria: "Fixos", pago: true }
-  ],
-  templates_whatsapp: [
-    {
-      id: 1,
-      nome: "Lembrete de Agendamento",
-      tipo: "lembrete",
-      mensagem: "Olá {nome}! Lembramos que você tem um agendamento para {servico} amanhã às {horario}. Confirme sua presença respondendo esta mensagem."
-    },
-    {
-      id: 2,
-      nome: "Promoção Semanal",
-      tipo: "promocao",
-      mensagem: "🚗 PROMOÇÃO DA SEMANA! Lavagem completa + enceramento por apenas R$ 199,90. Válido até sexta-feira. Agende já: (11) 99999-9999"
-    },
-    {
-      id: 3,
-      nome: "Follow-up Pós-Serviço",
-      tipo: "seguimento",
-      mensagem: "Olá {nome}! Como ficou seu {carro} após nosso serviço? Sua opinião é muito importante para nós. Avalie-nos e ganhe 10% de desconto no próximo serviço!"
-    }
-  ]
+    cnpj: "18.637.639/0001-48",
+    telefone: "24999486232",
+    endereco: "Rua 40, TV - Recanto dos Pássaros, Pq. Mambucaba, Angra dos Reis - RJ",
+    agradecimento: "Obrigado pela preferência e volte sempre! 👍"
 };
 
-// Application state
-let currentModule = 'dashboard';
-let currentTransactionType = 'receitas';
-let currentCrmTab = 'follow-up';
-let currentConfigTab = 'empresa';
+// Configurações do Supabase
+const SUPABASE_URL = "https://bezbszbkaifcanqsmdbi.supabase.co/";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlemJzemJrYWlmY2FucXNtZGJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MTM5MTksImV4cCI6MjA2ODE4OTkxOX0.zLXAuQz7g5ym3Bd5pkhg5vsnf_3rdJFRAXI_kX8tM18";
 
-// Initialize application
-document.addEventListener('DOMContentLoaded', function() {
-  initializeData();
-  initializeNavigation();
-  initializeModules();
-  initializeModals();
-  setTimeout(() => {
-    initializeCharts();
-  }, 500);
-  loadDashboard();
-  showToast('Sistema carregado com sucesso!', 'success');
-});
-
-// Data Management
-function initializeData() {
-  try {
-    const existingData = localStorage.getItem('rm_estetica_data');
-    if (!existingData) {
-      localStorage.setItem('rm_estetica_data', JSON.stringify(initialData));
-    }
-  } catch (error) {
-    console.error('Error initializing data:', error);
-    localStorage.setItem('rm_estetica_data', JSON.stringify(initialData));
-  }
+// Validação crítica das credenciais
+if (!SUPABASE_URL || !SUPABASE_KEY || SUPABASE_URL.includes('YOUR_SUPABASE_URL') || SUPABASE_KEY.includes('YOUR_SUPABASE_KEY')) {
+    alert('❌ Erro: Credenciais do Supabase não configuradas corretamente!');
 }
 
-function getData() {
-  try {
-    const data = localStorage.getItem('rm_estetica_data');
-    return data ? JSON.parse(data) : initialData;
-  } catch (error) {
-    console.error('Error getting data:', error);
-    return initialData;
-  }
-}
+// Inicialização do cliente Supabase
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function saveData(data) {
-  try {
-    localStorage.setItem('rm_estetica_data', JSON.stringify(data));
-  } catch (error) {
-    console.error('Error saving data:', error);
-  }
-}
+// ============================================================================
+// ESTADO GLOBAL DA APLICAÇÃO
+// ============================================================================
 
-function generateId(array) {
-  return array.length > 0 ? Math.max(...array.map(item => item.id)) + 1 : 1;
-}
+const state = {
+    // Dados principais
+    clientes: [],
+    servicos: [],
+    orcamentos: [],
+    orcamentoItens: [],
+    crmInteractions: [],
+    despesas: [],
+    
+    // Variáveis de controle
+    editandoClienteId: null,
+    editandoServicoId: null,
+    editandoDespesaId: null,
+    orcamentoSelecionado: null,
+    isSyncing: false,
+    isOffline: false,
+    
+    // Listas temporárias
+    novoOrcamentoItens: [],
+    selectedDispatchClients: new Set(),
+    selectedDispatchImage: null,
+    
+    // Listeners do Supabase
+    supabaseListeners: [],
+    
+    // Charts
+    monthlyChart: null,
+    despesasChart: null
+};
 
-// Navigation
-function initializeNavigation() {
-  const menuItems = document.querySelectorAll('.menu-item');
-  menuItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const module = item.dataset.module;
-      if (module) {
-        switchModule(module);
-      }
-    });
-  });
-}
+// ============================================================================
+// UTILITÁRIOS E SELETORES DOM
+// ============================================================================
 
-function switchModule(module) {
-  try {
-    // Update active menu item
-    document.querySelectorAll('.menu-item').forEach(item => {
-      item.classList.remove('active');
-    });
-    const activeMenuItem = document.querySelector(`[data-module="${module}"]`);
-    if (activeMenuItem) {
-      activeMenuItem.classList.add('active');
-    }
-    
-    // Update active module
-    document.querySelectorAll('.module').forEach(mod => {
-      mod.classList.remove('active');
-    });
-    const activeModule = document.getElementById(`${module}-module`);
-    if (activeModule) {
-      activeModule.classList.add('active');
-    }
-    
-    // Update page title
-    const titles = {
-      dashboard: 'Dashboard',
-      clientes: 'Clientes',
-      orcamentos: 'Orçamentos',
-      agenda: 'Agenda',
-      financeiro: 'Financeiro',
-      crm: 'CRM',
-      configuracoes: 'Configurações'
-    };
-    const titleElement = document.getElementById('page-title');
-    if (titleElement && titles[module]) {
-      titleElement.textContent = titles[module];
-    }
-    
-    currentModule = module;
-    loadModuleData(module);
-  } catch (error) {
-    console.error('Error switching module:', error);
-  }
-}
+// Seletores DOM simplificados
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => document.querySelectorAll(selector);
 
-function loadModuleData(module) {
-  try {
-    switch(module) {
-      case 'dashboard':
-        loadDashboard();
-        break;
-      case 'clientes':
-        loadClients();
-        break;
-      case 'orcamentos':
-        loadQuotes();
-        break;
-      case 'agenda':
-        loadAppointments();
-        break;
-      case 'financeiro':
-        loadFinancial();
-        break;
-      case 'crm':
-        loadCRM();
-        break;
-      case 'configuracoes':
-        loadConfigurations();
-        break;
-    }
-  } catch (error) {
-    console.error('Error loading module data:', error);
-  }
-}
-
-// Module Initialization
-function initializeModules() {
-  try {
-    // Client module
-    const addClientBtn = document.getElementById('add-client-btn');
-    if (addClientBtn) {
-      addClientBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openClientModal();
-      });
-    }
+// Função para mostrar notificações
+function showNotification(message, type = 'success') {
+    const notification = $('#notification');
+    const messageElement = $('#notification-message');
     
-    const searchClients = document.getElementById('search-clients');
-    if (searchClients) {
-      searchClients.addEventListener('input', (e) => filterClients(e.target.value));
-    }
-    
-    // Quote module
-    const addQuoteBtn = document.getElementById('add-quote-btn');
-    if (addQuoteBtn) {
-      addQuoteBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openQuoteModal();
-      });
-    }
-    
-    const quoteFilter = document.getElementById('quote-filter');
-    if (quoteFilter) {
-      quoteFilter.addEventListener('change', (e) => filterQuotes(e.target.value));
-    }
-    
-    // Appointment module
-    const addAppointmentBtn = document.getElementById('add-appointment-btn');
-    if (addAppointmentBtn) {
-      addAppointmentBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openAppointmentModal();
-      });
-    }
-    
-    const appointmentFilter = document.getElementById('appointment-filter');
-    if (appointmentFilter) {
-      appointmentFilter.addEventListener('change', (e) => filterAppointments(e.target.value));
-    }
-    
-    // Financial module
-    const addTransactionBtn = document.getElementById('add-transaction-btn');
-    if (addTransactionBtn) {
-      addTransactionBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openTransactionModal();
-      });
-    }
-    
-    document.querySelectorAll('.financial-tabs .tab-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        switchFinancialTab(e.target.dataset.tab);
-      });
-    });
-    
-    // CRM module
-    const sendPromotionBtn = document.getElementById('send-promotion-btn');
-    if (sendPromotionBtn) {
-      sendPromotionBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        sendPromotionToAll();
-      });
-    }
-    
-    const addTemplateBtn = document.getElementById('add-template-btn');
-    if (addTemplateBtn) {
-      addTemplateBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        openTemplateModal();
-      });
-    }
-    
-    document.querySelectorAll('.crm-tabs .tab-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        switchCrmTab(e.target.dataset.tab);
-      });
-    });
-    
-    // Config module
-    document.querySelectorAll('.config-tabs .tab-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        switchConfigTab(e.target.dataset.tab);
-      });
-    });
-    
-    const companyForm = document.getElementById('company-form');
-    if (companyForm) {
-      companyForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        saveCompanyData();
-      });
-    }
-    
-    const systemForm = document.getElementById('system-form');
-    if (systemForm) {
-      systemForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        saveSystemData();
-      });
-    }
-    
-    const backupBtn = document.getElementById('backup-btn');
-    if (backupBtn) {
-      backupBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        createBackup();
-      });
-    }
-    
-    const restoreBtn = document.getElementById('restore-btn');
-    if (restoreBtn) {
-      restoreBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        restoreBackup();
-      });
-    }
-    
-    const exportBtn = document.getElementById('export-btn');
-    if (exportBtn) {
-      exportBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        exportData();
-      });
-    }
-  } catch (error) {
-    console.error('Error initializing modules:', error);
-  }
-}
-
-// Dashboard
-function loadDashboard() {
-  try {
-    const data = getData();
-    
-    // Update stats
-    const activeClients = data.clientes.filter(c => c.status === 'ativo').length;
-    const pendingQuotes = data.orcamentos.filter(o => o.status === 'Orçamento').length;
-    const monthlyRevenue = data.receitas.reduce((sum, r) => sum + r.valor, 0);
-    const appointments = data.agendamentos.length;
-    
-    const statElements = document.querySelectorAll('.stat-card .stat-number');
-    if (statElements.length >= 4) {
-      statElements[0].textContent = activeClients;
-      statElements[1].textContent = pendingQuotes;
-      statElements[2].textContent = formatCurrency(monthlyRevenue);
-      statElements[3].textContent = appointments;
-    }
-  } catch (error) {
-    console.error('Error loading dashboard:', error);
-  }
-}
-
-// Clients
-function loadClients() {
-  try {
-    const data = getData();
-    const tbody = document.getElementById('clients-table-body');
-    if (tbody) {
-      tbody.innerHTML = '';
-      
-      data.clientes.forEach(client => {
-        const row = createClientRow(client);
-        tbody.appendChild(row);
-      });
-    }
-  } catch (error) {
-    console.error('Error loading clients:', error);
-  }
-}
-
-function createClientRow(client) {
-  const row = document.createElement('tr');
-  row.innerHTML = `
-    <td>${client.nome}</td>
-    <td>${client.telefone}</td>
-    <td>${client.email}</td>
-    <td>${client.carro} - ${client.placa}</td>
-    <td><span class="status-badge ${client.status}">${client.status}</span></td>
-    <td>
-      <div class="action-buttons">
-        <button class="btn-icon btn-edit" onclick="editClient(${client.id})">✏️</button>
-        <button class="btn-icon btn-delete" onclick="deleteClient(${client.id})">🗑️</button>
-        <button class="btn-icon btn-view" onclick="viewClient(${client.id})">👁️</button>
-      </div>
-    </td>
-  `;
-  return row;
-}
-
-function filterClients(searchTerm) {
-  try {
-    const data = getData();
-    const filteredClients = data.clientes.filter(client => 
-      client.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.telefone.includes(searchTerm)
-    );
-    
-    const tbody = document.getElementById('clients-table-body');
-    if (tbody) {
-      tbody.innerHTML = '';
-      
-      filteredClients.forEach(client => {
-        const row = createClientRow(client);
-        tbody.appendChild(row);
-      });
-    }
-  } catch (error) {
-    console.error('Error filtering clients:', error);
-  }
-}
-
-function openClientModal(clientId = null) {
-  try {
-    const data = getData();
-    const client = clientId ? data.clientes.find(c => c.id === clientId) : null;
-    
-    const title = client ? 'Editar Cliente' : 'Novo Cliente';
-    const form = `
-      <form id="client-form">
-        <div class="form-group">
-          <label class="form-label">Nome</label>
-          <input type="text" class="form-control" id="client-name" value="${client ? client.nome : ''}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Telefone</label>
-          <input type="text" class="form-control" id="client-phone" value="${client ? client.telefone : ''}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" id="client-email" value="${client ? client.email : ''}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Carro</label>
-          <input type="text" class="form-control" id="client-car" value="${client ? client.carro : ''}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Placa</label>
-          <input type="text" class="form-control" id="client-plate" value="${client ? client.placa : ''}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Endereço</label>
-          <input type="text" class="form-control" id="client-address" value="${client ? client.endereco : ''}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Status</label>
-          <select class="form-control" id="client-status">
-            <option value="ativo" ${client && client.status === 'ativo' ? 'selected' : ''}>Ativo</option>
-            <option value="inativo" ${client && client.status === 'inativo' ? 'selected' : ''}>Inativo</option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn--primary">${client ? 'Salvar' : 'Criar'}</button>
-      </form>
-    `;
-    
-    openModal(title, form);
-    
-    // Add event listener after modal is opened
-    setTimeout(() => {
-      const clientForm = document.getElementById('client-form');
-      if (clientForm) {
-        clientForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          saveClient(clientId);
-        });
-      }
-    }, 100);
-  } catch (error) {
-    console.error('Error opening client modal:', error);
-  }
-}
-
-function saveClient(clientId) {
-  try {
-    const data = getData();
-    const clientData = {
-      nome: document.getElementById('client-name').value,
-      telefone: document.getElementById('client-phone').value,
-      email: document.getElementById('client-email').value,
-      carro: document.getElementById('client-car').value,
-      placa: document.getElementById('client-plate').value,
-      endereco: document.getElementById('client-address').value,
-      status: document.getElementById('client-status').value
-    };
-    
-    if (clientId) {
-      const index = data.clientes.findIndex(c => c.id === clientId);
-      if (index !== -1) {
-        data.clientes[index] = { ...data.clientes[index], ...clientData };
-        showToast('Cliente atualizado com sucesso!', 'success');
-      }
-    } else {
-      const newClient = {
-        id: generateId(data.clientes),
-        ...clientData,
-        created_at: new Date().toISOString().split('T')[0]
-      };
-      data.clientes.push(newClient);
-      showToast('Cliente criado com sucesso!', 'success');
-    }
-    
-    saveData(data);
-    closeModal();
-    loadClients();
-  } catch (error) {
-    console.error('Error saving client:', error);
-    showToast('Erro ao salvar cliente!', 'error');
-  }
-}
-
-function editClient(clientId) {
-  openClientModal(clientId);
-}
-
-function deleteClient(clientId) {
-  if (confirm('Tem certeza que deseja excluir este cliente?')) {
-    try {
-      const data = getData();
-      data.clientes = data.clientes.filter(c => c.id !== clientId);
-      saveData(data);
-      loadClients();
-      showToast('Cliente excluído com sucesso!', 'success');
-    } catch (error) {
-      console.error('Error deleting client:', error);
-      showToast('Erro ao excluir cliente!', 'error');
-    }
-  }
-}
-
-function viewClient(clientId) {
-  try {
-    const data = getData();
-    const client = data.clientes.find(c => c.id === clientId);
-    
-    if (client) {
-      const content = `
-        <div class="client-details">
-          <h3>${client.nome}</h3>
-          <p><strong>Telefone:</strong> ${client.telefone}</p>
-          <p><strong>Email:</strong> ${client.email}</p>
-          <p><strong>Carro:</strong> ${client.carro}</p>
-          <p><strong>Placa:</strong> ${client.placa}</p>
-          <p><strong>Endereço:</strong> ${client.endereco}</p>
-          <p><strong>Status:</strong> <span class="status-badge ${client.status}">${client.status}</span></p>
-          <p><strong>Cadastrado em:</strong> ${formatDate(client.created_at)}</p>
-        </div>
-      `;
-      
-      openModal('Detalhes do Cliente', content);
-    }
-  } catch (error) {
-    console.error('Error viewing client:', error);
-  }
-}
-
-// Quotes
-function loadQuotes() {
-  try {
-    const data = getData();
-    const tbody = document.getElementById('quotes-table-body');
-    if (tbody) {
-      tbody.innerHTML = '';
-      
-      data.orcamentos.forEach(quote => {
-        const row = createQuoteRow(quote, data.clientes);
-        tbody.appendChild(row);
-      });
-    }
-  } catch (error) {
-    console.error('Error loading quotes:', error);
-  }
-}
-
-function createQuoteRow(quote, clients) {
-  const client = clients.find(c => c.id === quote.cliente_id);
-  const row = document.createElement('tr');
-  row.innerHTML = `
-    <td>${client ? client.nome : 'Cliente não encontrado'}</td>
-    <td>${formatCurrency(quote.valor_total)}</td>
-    <td><span class="status-badge ${quote.status.toLowerCase()}">${quote.status}</span></td>
-    <td>${formatDate(quote.created_at)}</td>
-    <td>
-      <div class="action-buttons">
-        <button class="btn-icon btn-edit" onclick="editQuote(${quote.id})">✏️</button>
-        <button class="btn-icon btn-delete" onclick="deleteQuote(${quote.id})">🗑️</button>
-        <button class="btn-icon btn-pdf" onclick="generateQuotePDF(${quote.id})">📄</button>
-      </div>
-    </td>
-  `;
-  return row;
-}
-
-function filterQuotes(status) {
-  try {
-    const data = getData();
-    const filteredQuotes = status ? data.orcamentos.filter(q => q.status === status) : data.orcamentos;
-    
-    const tbody = document.getElementById('quotes-table-body');
-    if (tbody) {
-      tbody.innerHTML = '';
-      
-      filteredQuotes.forEach(quote => {
-        const row = createQuoteRow(quote, data.clientes);
-        tbody.appendChild(row);
-      });
-    }
-  } catch (error) {
-    console.error('Error filtering quotes:', error);
-  }
-}
-
-function openQuoteModal(quoteId = null) {
-  try {
-    const data = getData();
-    const quote = quoteId ? data.orcamentos.find(q => q.id === quoteId) : null;
-    
-    const title = quote ? 'Editar Orçamento' : 'Novo Orçamento';
-    const clientOptions = data.clientes.map(c => 
-      `<option value="${c.id}" ${quote && quote.cliente_id === c.id ? 'selected' : ''}>${c.nome}</option>`
-    ).join('');
-    
-    const form = `
-      <form id="quote-form">
-        <div class="form-group">
-          <label class="form-label">Cliente</label>
-          <select class="form-control" id="quote-client" required>
-            <option value="">Selecione um cliente</option>
-            ${clientOptions}
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Status</label>
-          <select class="form-control" id="quote-status">
-            <option value="Orçamento" ${quote && quote.status === 'Orçamento' ? 'selected' : ''}>Orçamento</option>
-            <option value="Aprovado" ${quote && quote.status === 'Aprovado' ? 'selected' : ''}>Aprovado</option>
-            <option value="Cancelado" ${quote && quote.status === 'Cancelado' ? 'selected' : ''}>Cancelado</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Desconto (%)</label>
-          <input type="number" class="form-control" id="quote-discount" value="${quote ? quote.desconto : 0}" min="0" max="100">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Observações</label>
-          <textarea class="form-control" id="quote-notes" rows="3">${quote ? quote.observacoes : ''}</textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Itens</label>
-          <div id="quote-items">
-            ${quote ? quote.itens.map(item => createQuoteItemHTML(item)).join('') : createQuoteItemHTML()}
-          </div>
-          <button type="button" class="btn btn--secondary" onclick="addQuoteItem()">+ Adicionar Item</button>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Valor Total</label>
-          <input type="text" class="form-control" id="quote-total" readonly>
-        </div>
-        <button type="submit" class="btn btn--primary">${quote ? 'Salvar' : 'Criar'}</button>
-      </form>
-    `;
-    
-    openModal(title, form);
+    messageElement.textContent = message;
+    notification.className = `show ${type}`;
     
     setTimeout(() => {
-      const quoteForm = document.getElementById('quote-form');
-      if (quoteForm) {
-        quoteForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          saveQuote(quoteId);
-        });
-      }
-      calculateQuoteTotal();
-    }, 100);
-  } catch (error) {
-    console.error('Error opening quote modal:', error);
-  }
+        notification.classList.remove('show');
+    }, 4000);
 }
 
-function createQuoteItemHTML(item = {}) {
-  return `
-    <div class="quote-item" style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-      <input type="text" class="form-control" placeholder="Descrição" value="${item.descricao || ''}" onchange="calculateQuoteTotal()" style="flex: 2;">
-      <input type="number" class="form-control" placeholder="Valor" value="${item.valor || ''}" step="0.01" onchange="calculateQuoteTotal()" style="flex: 1;">
-      <input type="number" class="form-control" placeholder="Qtd" value="${item.quantidade || 1}" min="1" onchange="calculateQuoteTotal()" style="flex: 1;">
-      <button type="button" class="btn btn--secondary" onclick="removeQuoteItem(this)" style="flex: 0;">🗑️</button>
-    </div>
-  `;
-}
-
-function addQuoteItem() {
-  const container = document.getElementById('quote-items');
-  if (container) {
-    const itemHTML = createQuoteItemHTML();
-    container.insertAdjacentHTML('beforeend', itemHTML);
-  }
-}
-
-function removeQuoteItem(button) {
-  const item = button.closest('.quote-item');
-  if (item) {
-    item.remove();
-    calculateQuoteTotal();
-  }
-}
-
-function calculateQuoteTotal() {
-  try {
-    const items = document.querySelectorAll('.quote-item');
-    let total = 0;
+// Animação de confete para celebrar sucessos
+function triggerConfetti(type = 'success') {
+    const colors = ['#16a34a', '#2563eb', '#dc2626', '#ea580c', '#8b5cf6'];
+    const container = document.body;
     
-    items.forEach(item => {
-      const valorInput = item.querySelector('input[placeholder="Valor"]');
-      const quantidadeInput = item.querySelector('input[placeholder="Qtd"]');
-      
-      if (valorInput && quantidadeInput) {
-        const valor = parseFloat(valorInput.value) || 0;
-        const quantidade = parseInt(quantidadeInput.value) || 1;
-        total += valor * quantidade;
-      }
-    });
-    
-    const descontoInput = document.getElementById('quote-discount');
-    const totalInput = document.getElementById('quote-total');
-    
-    if (descontoInput && totalInput) {
-      const desconto = parseFloat(descontoInput.value) || 0;
-      const valorComDesconto = total * (1 - desconto / 100);
-      totalInput.value = formatCurrency(valorComDesconto);
-    }
-  } catch (error) {
-    console.error('Error calculating quote total:', error);
-  }
-}
-
-function saveQuote(quoteId) {
-  try {
-    const data = getData();
-    const items = [];
-    
-    document.querySelectorAll('.quote-item').forEach((item, index) => {
-      const descricaoInput = item.querySelector('input[placeholder="Descrição"]');
-      const valorInput = item.querySelector('input[placeholder="Valor"]');
-      const quantidadeInput = item.querySelector('input[placeholder="Qtd"]');
-      
-      if (descricaoInput && valorInput && quantidadeInput) {
-        const descricao = descricaoInput.value;
-        const valor = parseFloat(valorInput.value) || 0;
-        const quantidade = parseInt(quantidadeInput.value) || 1;
+    for (let i = 0; i < 30; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.top = Math.random() * 100 + '%';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.setProperty('--x', (Math.random() - 0.5) * 200 + 'px');
+        confetti.style.setProperty('--y', Math.random() * 100 + 100 + 'px');
+        confetti.style.animationDelay = Math.random() * 0.5 + 's';
         
-        if (descricao && valor > 0) {
-          items.push({
-            id: index + 1,
-            descricao,
-            valor,
-            quantidade
-          });
-        }
-      }
-    });
-    
-    const total = items.reduce((sum, item) => sum + (item.valor * item.quantidade), 0);
-    const desconto = parseFloat(document.getElementById('quote-discount').value) || 0;
-    const valorTotal = total * (1 - desconto / 100);
-    
-    const quoteData = {
-      cliente_id: parseInt(document.getElementById('quote-client').value),
-      status: document.getElementById('quote-status').value,
-      desconto,
-      observacoes: document.getElementById('quote-notes').value,
-      valor_total: valorTotal,
-      itens: items
-    };
-    
-    if (quoteId) {
-      const index = data.orcamentos.findIndex(q => q.id === quoteId);
-      if (index !== -1) {
-        data.orcamentos[index] = { ...data.orcamentos[index], ...quoteData };
-        showToast('Orçamento atualizado com sucesso!', 'success');
-      }
-    } else {
-      const newQuote = {
-        id: generateId(data.orcamentos),
-        ...quoteData,
-        created_at: new Date().toISOString().split('T')[0]
-      };
-      data.orcamentos.push(newQuote);
-      showToast('Orçamento criado com sucesso!', 'success');
-    }
-    
-    saveData(data);
-    closeModal();
-    loadQuotes();
-  } catch (error) {
-    console.error('Error saving quote:', error);
-    showToast('Erro ao salvar orçamento!', 'error');
-  }
-}
-
-function editQuote(quoteId) {
-  openQuoteModal(quoteId);
-}
-
-function deleteQuote(quoteId) {
-  if (confirm('Tem certeza que deseja excluir este orçamento?')) {
-    try {
-      const data = getData();
-      data.orcamentos = data.orcamentos.filter(q => q.id !== quoteId);
-      saveData(data);
-      loadQuotes();
-      showToast('Orçamento excluído com sucesso!', 'success');
-    } catch (error) {
-      console.error('Error deleting quote:', error);
-      showToast('Erro ao excluir orçamento!', 'error');
-    }
-  }
-}
-
-function generateQuotePDF(quoteId) {
-  try {
-    const data = getData();
-    const quote = data.orcamentos.find(q => q.id === quoteId);
-    const client = data.clientes.find(c => c.id === quote.cliente_id);
-    
-    if (quote && client && window.jspdf) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      
-      // Header
-      doc.setFontSize(20);
-      doc.text('R.M. Estética Automotiva', 20, 20);
-      doc.setFontSize(12);
-      doc.text('CNPJ: 12.345.678/0001-90', 20, 30);
-      doc.text('Telefone: (11) 99999-9999', 20, 40);
-      
-      // Quote info
-      doc.setFontSize(16);
-      doc.text(`Orçamento #${quote.id}`, 20, 60);
-      doc.setFontSize(12);
-      doc.text(`Cliente: ${client.nome}`, 20, 75);
-      doc.text(`Data: ${formatDate(quote.created_at)}`, 20, 85);
-      doc.text(`Status: ${quote.status}`, 20, 95);
-      
-      // Items
-      doc.text('Itens:', 20, 115);
-      let y = 125;
-      quote.itens.forEach(item => {
-        doc.text(`${item.descricao} - Qtd: ${item.quantidade} - Valor: ${formatCurrency(item.valor)}`, 25, y);
-        y += 10;
-      });
-      
-      // Total
-      doc.text(`Desconto: ${quote.desconto}%`, 20, y + 10);
-      doc.text(`Valor Total: ${formatCurrency(quote.valor_total)}`, 20, y + 20);
-      
-      if (quote.observacoes) {
-        doc.text('Observações:', 20, y + 35);
-        doc.text(quote.observacoes, 20, y + 45);
-      }
-      
-      doc.save(`orcamento_${quote.id}.pdf`);
-      showToast('PDF gerado com sucesso!', 'success');
-    }
-  } catch (error) {
-    console.error('Error generating PDF:', error);
-    showToast('Erro ao gerar PDF!', 'error');
-  }
-}
-
-// Appointments
-function loadAppointments() {
-  try {
-    const data = getData();
-    const container = document.getElementById('appointments-list');
-    if (container) {
-      container.innerHTML = '';
-      
-      data.agendamentos.forEach(appointment => {
-        const appointmentCard = createAppointmentCard(appointment, data.clientes);
-        container.appendChild(appointmentCard);
-      });
-    }
-  } catch (error) {
-    console.error('Error loading appointments:', error);
-  }
-}
-
-function createAppointmentCard(appointment, clients) {
-  const client = clients.find(c => c.id === appointment.cliente_id);
-  const card = document.createElement('div');
-  card.className = 'appointment-card';
-  
-  card.innerHTML = `
-    <div class="appointment-info">
-      <h4>${client ? client.nome : 'Cliente não encontrado'}</h4>
-      <p><strong>Serviço:</strong> ${appointment.servico}</p>
-      <p><strong>Data/Hora:</strong> ${formatDateTime(appointment.data_hora)}</p>
-      <p><strong>Observações:</strong> ${appointment.observacoes}</p>
-    </div>
-    <div class="appointment-actions">
-      <span class="appointment-status ${appointment.status}">${appointment.status}</span>
-      <div class="action-buttons">
-        <button class="btn-icon btn-edit" onclick="editAppointment(${appointment.id})">✏️</button>
-        <button class="btn-icon btn-delete" onclick="deleteAppointment(${appointment.id})">🗑️</button>
-      </div>
-    </div>
-  `;
-  
-  return card;
-}
-
-function filterAppointments(status) {
-  try {
-    const data = getData();
-    const filteredAppointments = status ? data.agendamentos.filter(a => a.status === status) : data.agendamentos;
-    
-    const container = document.getElementById('appointments-list');
-    if (container) {
-      container.innerHTML = '';
-      
-      filteredAppointments.forEach(appointment => {
-        const appointmentCard = createAppointmentCard(appointment, data.clientes);
-        container.appendChild(appointmentCard);
-      });
-    }
-  } catch (error) {
-    console.error('Error filtering appointments:', error);
-  }
-}
-
-function openAppointmentModal(appointmentId = null) {
-  try {
-    const data = getData();
-    const appointment = appointmentId ? data.agendamentos.find(a => a.id === appointmentId) : null;
-    
-    const title = appointment ? 'Editar Agendamento' : 'Novo Agendamento';
-    const clientOptions = data.clientes.map(c => 
-      `<option value="${c.id}" ${appointment && appointment.cliente_id === c.id ? 'selected' : ''}>${c.nome}</option>`
-    ).join('');
-    
-    const form = `
-      <form id="appointment-form">
-        <div class="form-group">
-          <label class="form-label">Cliente</label>
-          <select class="form-control" id="appointment-client" required>
-            <option value="">Selecione um cliente</option>
-            ${clientOptions}
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Data e Hora</label>
-          <input type="datetime-local" class="form-control" id="appointment-datetime" value="${appointment ? appointment.data_hora : ''}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Serviço</label>
-          <input type="text" class="form-control" id="appointment-service" value="${appointment ? appointment.servico : ''}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Status</label>
-          <select class="form-control" id="appointment-status">
-            <option value="agendado" ${appointment && appointment.status === 'agendado' ? 'selected' : ''}>Agendado</option>
-            <option value="confirmado" ${appointment && appointment.status === 'confirmado' ? 'selected' : ''}>Confirmado</option>
-            <option value="concluido" ${appointment && appointment.status === 'concluido' ? 'selected' : ''}>Concluído</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Observações</label>
-          <textarea class="form-control" id="appointment-notes" rows="3">${appointment ? appointment.observacoes : ''}</textarea>
-        </div>
-        <button type="submit" class="btn btn--primary">${appointment ? 'Salvar' : 'Criar'}</button>
-      </form>
-    `;
-    
-    openModal(title, form);
-    
-    setTimeout(() => {
-      const appointmentForm = document.getElementById('appointment-form');
-      if (appointmentForm) {
-        appointmentForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          saveAppointment(appointmentId);
-        });
-      }
-    }, 100);
-  } catch (error) {
-    console.error('Error opening appointment modal:', error);
-  }
-}
-
-function saveAppointment(appointmentId) {
-  try {
-    const data = getData();
-    const appointmentData = {
-      cliente_id: parseInt(document.getElementById('appointment-client').value),
-      data_hora: document.getElementById('appointment-datetime').value,
-      servico: document.getElementById('appointment-service').value,
-      status: document.getElementById('appointment-status').value,
-      observacoes: document.getElementById('appointment-notes').value
-    };
-    
-    if (appointmentId) {
-      const index = data.agendamentos.findIndex(a => a.id === appointmentId);
-      if (index !== -1) {
-        data.agendamentos[index] = { ...data.agendamentos[index], ...appointmentData };
-        showToast('Agendamento atualizado com sucesso!', 'success');
-      }
-    } else {
-      const newAppointment = {
-        id: generateId(data.agendamentos),
-        ...appointmentData
-      };
-      data.agendamentos.push(newAppointment);
-      showToast('Agendamento criado com sucesso!', 'success');
-    }
-    
-    saveData(data);
-    closeModal();
-    loadAppointments();
-  } catch (error) {
-    console.error('Error saving appointment:', error);
-    showToast('Erro ao salvar agendamento!', 'error');
-  }
-}
-
-function editAppointment(appointmentId) {
-  openAppointmentModal(appointmentId);
-}
-
-function deleteAppointment(appointmentId) {
-  if (confirm('Tem certeza que deseja excluir este agendamento?')) {
-    try {
-      const data = getData();
-      data.agendamentos = data.agendamentos.filter(a => a.id !== appointmentId);
-      saveData(data);
-      loadAppointments();
-      showToast('Agendamento excluído com sucesso!', 'success');
-    } catch (error) {
-      console.error('Error deleting appointment:', error);
-      showToast('Erro ao excluir agendamento!', 'error');
-    }
-  }
-}
-
-// Financial
-function loadFinancial() {
-  try {
-    const data = getData();
-    updateFinancialSummary(data);
-    loadTransactions(currentTransactionType);
-  } catch (error) {
-    console.error('Error loading financial:', error);
-  }
-}
-
-function updateFinancialSummary(data) {
-  try {
-    const totalReceitas = data.receitas.reduce((sum, r) => sum + r.valor, 0);
-    const totalDespesas = data.despesas.reduce((sum, d) => sum + d.valor, 0);
-    const lucro = totalReceitas - totalDespesas;
-    
-    const revenueAmount = document.querySelector('.summary-card.revenue .amount');
-    const expensesAmount = document.querySelector('.summary-card.expenses .amount');
-    const profitAmount = document.querySelector('.summary-card.profit .amount');
-    
-    if (revenueAmount) revenueAmount.textContent = formatCurrency(totalReceitas);
-    if (expensesAmount) expensesAmount.textContent = formatCurrency(totalDespesas);
-    if (profitAmount) profitAmount.textContent = formatCurrency(lucro);
-  } catch (error) {
-    console.error('Error updating financial summary:', error);
-  }
-}
-
-function switchFinancialTab(tab) {
-  try {
-    document.querySelectorAll('.financial-tabs .tab-btn').forEach(btn => {
-      btn.classList.remove('active');
-    });
-    const activeBtn = document.querySelector(`[data-tab="${tab}"]`);
-    if (activeBtn) {
-      activeBtn.classList.add('active');
-    }
-    
-    currentTransactionType = tab;
-    loadTransactions(tab);
-  } catch (error) {
-    console.error('Error switching financial tab:', error);
-  }
-}
-
-function loadTransactions(type) {
-  try {
-    const data = getData();
-    const transactions = data[type] || [];
-    const tbody = document.getElementById('transactions-table-body');
-    if (tbody) {
-      tbody.innerHTML = '';
-      
-      transactions.forEach(transaction => {
-        const row = createTransactionRow(transaction, type);
-        tbody.appendChild(row);
-      });
-    }
-  } catch (error) {
-    console.error('Error loading transactions:', error);
-  }
-}
-
-function createTransactionRow(transaction, type) {
-  const row = document.createElement('tr');
-  const statusCol = type === 'despesas' ? 
-    `<td><span class="status-badge ${transaction.pago ? 'ativo' : 'inativo'}">${transaction.pago ? 'Pago' : 'Pendente'}</span></td>` :
-    '<td><span class="status-badge ativo">Recebido</span></td>';
-  
-  row.innerHTML = `
-    <td>${transaction.descricao}</td>
-    <td>${formatCurrency(transaction.valor)}</td>
-    <td>${formatDate(transaction.data)}</td>
-    <td>${transaction.categoria}</td>
-    ${statusCol}
-  `;
-  return row;
-}
-
-function openTransactionModal(transactionId = null) {
-  try {
-    const data = getData();
-    const transaction = transactionId ? data[currentTransactionType].find(t => t.id === transactionId) : null;
-    
-    const title = transaction ? `Editar ${currentTransactionType === 'receitas' ? 'Receita' : 'Despesa'}` : 
-                                `Nova ${currentTransactionType === 'receitas' ? 'Receita' : 'Despesa'}`;
-    
-    const form = `
-      <form id="transaction-form">
-        <div class="form-group">
-          <label class="form-label">Descrição</label>
-          <input type="text" class="form-control" id="transaction-description" value="${transaction ? transaction.descricao : ''}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Valor</label>
-          <input type="number" class="form-control" id="transaction-value" value="${transaction ? transaction.valor : ''}" step="0.01" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Data</label>
-          <input type="date" class="form-control" id="transaction-date" value="${transaction ? transaction.data : ''}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Categoria</label>
-          <input type="text" class="form-control" id="transaction-category" value="${transaction ? transaction.categoria : ''}" required>
-        </div>
-        ${currentTransactionType === 'despesas' ? `
-          <div class="form-group">
-            <label class="form-label">Status</label>
-            <select class="form-control" id="transaction-status">
-              <option value="true" ${transaction && transaction.pago ? 'selected' : ''}>Pago</option>
-              <option value="false" ${transaction && !transaction.pago ? 'selected' : ''}>Pendente</option>
-            </select>
-          </div>
-        ` : ''}
-        <button type="submit" class="btn btn--primary">${transaction ? 'Salvar' : 'Criar'}</button>
-      </form>
-    `;
-    
-    openModal(title, form);
-    
-    setTimeout(() => {
-      const transactionForm = document.getElementById('transaction-form');
-      if (transactionForm) {
-        transactionForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          saveTransaction(transactionId);
-        });
-      }
-    }, 100);
-  } catch (error) {
-    console.error('Error opening transaction modal:', error);
-  }
-}
-
-function saveTransaction(transactionId) {
-  try {
-    const data = getData();
-    const transactionData = {
-      descricao: document.getElementById('transaction-description').value,
-      valor: parseFloat(document.getElementById('transaction-value').value),
-      data: document.getElementById('transaction-date').value,
-      categoria: document.getElementById('transaction-category').value
-    };
-    
-    if (currentTransactionType === 'despesas') {
-      transactionData.pago = document.getElementById('transaction-status').value === 'true';
-    }
-    
-    if (transactionId) {
-      const index = data[currentTransactionType].findIndex(t => t.id === transactionId);
-      if (index !== -1) {
-        data[currentTransactionType][index] = { ...data[currentTransactionType][index], ...transactionData };
-        showToast(`${currentTransactionType === 'receitas' ? 'Receita' : 'Despesa'} atualizada com sucesso!`, 'success');
-      }
-    } else {
-      const newTransaction = {
-        id: generateId(data[currentTransactionType]),
-        ...transactionData
-      };
-      data[currentTransactionType].push(newTransaction);
-      showToast(`${currentTransactionType === 'receitas' ? 'Receita' : 'Despesa'} criada com sucesso!`, 'success');
-    }
-    
-    saveData(data);
-    closeModal();
-    loadFinancial();
-  } catch (error) {
-    console.error('Error saving transaction:', error);
-    showToast('Erro ao salvar transação!', 'error');
-  }
-}
-
-// CRM
-function loadCRM() {
-  try {
-    switchCrmTab(currentCrmTab);
-  } catch (error) {
-    console.error('Error loading CRM:', error);
-  }
-}
-
-function switchCrmTab(tab) {
-  try {
-    document.querySelectorAll('.crm-tabs .tab-btn').forEach(btn => {
-      btn.classList.remove('active');
-    });
-    const activeBtn = document.querySelector(`[data-tab="${tab}"]`);
-    if (activeBtn) {
-      activeBtn.classList.add('active');
-    }
-    
-    document.querySelectorAll('.crm-content .tab-content').forEach(content => {
-      content.classList.remove('active');
-    });
-    const activeContent = document.getElementById(`${tab}-content`);
-    if (activeContent) {
-      activeContent.classList.add('active');
-    }
-    
-    currentCrmTab = tab;
-    
-    if (tab === 'follow-up') {
-      loadInactiveClients();
-    } else if (tab === 'templates') {
-      loadTemplates();
-    }
-  } catch (error) {
-    console.error('Error switching CRM tab:', error);
-  }
-}
-
-function loadInactiveClients() {
-  try {
-    const data = getData();
-    const inactiveClients = data.clientes.filter(c => c.status === 'inativo');
-    const container = document.getElementById('inactive-clients-list');
-    if (container) {
-      container.innerHTML = '';
-      
-      inactiveClients.forEach(client => {
-        const clientCard = createInactiveClientCard(client);
-        container.appendChild(clientCard);
-      });
-    }
-  } catch (error) {
-    console.error('Error loading inactive clients:', error);
-  }
-}
-
-function createInactiveClientCard(client) {
-  const card = document.createElement('div');
-  card.className = 'inactive-client-card';
-  
-  card.innerHTML = `
-    <div class="client-info">
-      <h4>${client.nome}</h4>
-      <p>Último contato: ${formatDate(client.created_at)}</p>
-      <p>Telefone: ${client.telefone}</p>
-    </div>
-    <div class="client-actions">
-      <button class="btn btn--primary btn--sm" onclick="sendFollowUpMessage(${client.id})">Enviar Mensagem</button>
-    </div>
-  `;
-  
-  return card;
-}
-
-function sendFollowUpMessage(clientId) {
-  try {
-    const data = getData();
-    const client = data.clientes.find(c => c.id === clientId);
-    const template = data.templates_whatsapp.find(t => t.tipo === 'seguimento');
-    
-    if (template && client) {
-      const message = template.mensagem
-        .replace('{nome}', client.nome)
-        .replace('{carro}', client.carro);
-      
-      const whatsappUrl = `https://wa.me/55${client.telefone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
-      
-      showToast(`Mensagem enviada para ${client.nome}!`, 'success');
-    }
-  } catch (error) {
-    console.error('Error sending follow-up message:', error);
-  }
-}
-
-function sendPromotionToAll() {
-  try {
-    const data = getData();
-    const inactiveClients = data.clientes.filter(c => c.status === 'inativo');
-    const template = data.templates_whatsapp.find(t => t.tipo === 'promocao');
-    
-    if (template && inactiveClients.length > 0) {
-      inactiveClients.forEach((client, index) => {
-        const message = template.mensagem;
-        const whatsappUrl = `https://wa.me/55${client.telefone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-        setTimeout(() => window.open(whatsappUrl, '_blank'), index * 100);
-      });
-      
-      showToast(`Promoção enviada para ${inactiveClients.length} clientes!`, 'success');
-    }
-  } catch (error) {
-    console.error('Error sending promotion to all:', error);
-  }
-}
-
-function loadTemplates() {
-  try {
-    const data = getData();
-    const container = document.getElementById('templates-list');
-    if (container) {
-      container.innerHTML = '';
-      
-      data.templates_whatsapp.forEach(template => {
-        const templateCard = createTemplateCard(template);
-        container.appendChild(templateCard);
-      });
-    }
-  } catch (error) {
-    console.error('Error loading templates:', error);
-  }
-}
-
-function createTemplateCard(template) {
-  const card = document.createElement('div');
-  card.className = 'template-card';
-  
-  card.innerHTML = `
-    <div class="template-header">
-      <div class="template-name">${template.nome}</div>
-      <div class="template-type">${template.tipo}</div>
-    </div>
-    <div class="template-message">${template.mensagem}</div>
-    <div class="template-actions" style="margin-top: 12px;">
-      <button class="btn btn--sm btn--outline" onclick="editTemplate(${template.id})">Editar</button>
-      <button class="btn btn--sm btn--secondary" onclick="deleteTemplate(${template.id})">Excluir</button>
-    </div>
-  `;
-  
-  return card;
-}
-
-function openTemplateModal(templateId = null) {
-  try {
-    const data = getData();
-    const template = templateId ? data.templates_whatsapp.find(t => t.id === templateId) : null;
-    
-    const title = template ? 'Editar Template' : 'Novo Template';
-    const form = `
-      <form id="template-form">
-        <div class="form-group">
-          <label class="form-label">Nome</label>
-          <input type="text" class="form-control" id="template-name" value="${template ? template.nome : ''}" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Tipo</label>
-          <select class="form-control" id="template-type">
-            <option value="lembrete" ${template && template.tipo === 'lembrete' ? 'selected' : ''}>Lembrete</option>
-            <option value="promocao" ${template && template.tipo === 'promocao' ? 'selected' : ''}>Promoção</option>
-            <option value="seguimento" ${template && template.tipo === 'seguimento' ? 'selected' : ''}>Seguimento</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Mensagem</label>
-          <textarea class="form-control" id="template-message" rows="5" required>${template ? template.mensagem : ''}</textarea>
-          <small>Use {nome}, {carro}, {servico}, {horario} para personalizar</small>
-        </div>
-        <button type="submit" class="btn btn--primary">${template ? 'Salvar' : 'Criar'}</button>
-      </form>
-    `;
-    
-    openModal(title, form);
-    
-    setTimeout(() => {
-      const templateForm = document.getElementById('template-form');
-      if (templateForm) {
-        templateForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          saveTemplate(templateId);
-        });
-      }
-    }, 100);
-  } catch (error) {
-    console.error('Error opening template modal:', error);
-  }
-}
-
-function saveTemplate(templateId) {
-  try {
-    const data = getData();
-    const templateData = {
-      nome: document.getElementById('template-name').value,
-      tipo: document.getElementById('template-type').value,
-      mensagem: document.getElementById('template-message').value
-    };
-    
-    if (templateId) {
-      const index = data.templates_whatsapp.findIndex(t => t.id === templateId);
-      if (index !== -1) {
-        data.templates_whatsapp[index] = { ...data.templates_whatsapp[index], ...templateData };
-        showToast('Template atualizado com sucesso!', 'success');
-      }
-    } else {
-      const newTemplate = {
-        id: generateId(data.templates_whatsapp),
-        ...templateData
-      };
-      data.templates_whatsapp.push(newTemplate);
-      showToast('Template criado com sucesso!', 'success');
-    }
-    
-    saveData(data);
-    closeModal();
-    loadTemplates();
-  } catch (error) {
-    console.error('Error saving template:', error);
-    showToast('Erro ao salvar template!', 'error');
-  }
-}
-
-function editTemplate(templateId) {
-  openTemplateModal(templateId);
-}
-
-function deleteTemplate(templateId) {
-  if (confirm('Tem certeza que deseja excluir este template?')) {
-    try {
-      const data = getData();
-      data.templates_whatsapp = data.templates_whatsapp.filter(t => t.id !== templateId);
-      saveData(data);
-      loadTemplates();
-      showToast('Template excluído com sucesso!', 'success');
-    } catch (error) {
-      console.error('Error deleting template:', error);
-      showToast('Erro ao excluir template!', 'error');
-    }
-  }
-}
-
-// Configurations
-function loadConfigurations() {
-  try {
-    switchConfigTab(currentConfigTab);
-  } catch (error) {
-    console.error('Error loading configurations:', error);
-  }
-}
-
-function switchConfigTab(tab) {
-  try {
-    document.querySelectorAll('.config-tabs .tab-btn').forEach(btn => {
-      btn.classList.remove('active');
-    });
-    const activeBtn = document.querySelector(`[data-tab="${tab}"]`);
-    if (activeBtn) {
-      activeBtn.classList.add('active');
-    }
-    
-    document.querySelectorAll('.config-content .tab-content').forEach(content => {
-      content.classList.remove('active');
-    });
-    const activeContent = document.getElementById(`${tab}-content`);
-    if (activeContent) {
-      activeContent.classList.add('active');
-    }
-    
-    currentConfigTab = tab;
-  } catch (error) {
-    console.error('Error switching config tab:', error);
-  }
-}
-
-function saveCompanyData() {
-  try {
-    const data = getData();
-    data.empresa = {
-      nome: document.getElementById('company-name').value,
-      cnpj: document.getElementById('company-cnpj').value,
-      telefone: document.getElementById('company-phone').value,
-      email: document.getElementById('company-email').value,
-      endereco: document.getElementById('company-address').value
-    };
-    
-    saveData(data);
-    showToast('Dados da empresa salvos com sucesso!', 'success');
-  } catch (error) {
-    console.error('Error saving company data:', error);
-    showToast('Erro ao salvar dados da empresa!', 'error');
-  }
-}
-
-function saveSystemData() {
-  try {
-    const data = getData();
-    if (!data.configuracoes) {
-      data.configuracoes = {};
-    }
-    data.configuracoes.sistema = {
-      tema: document.getElementById('theme-select').value,
-      idioma: document.getElementById('language-select').value,
-      moeda: document.getElementById('currency-select').value
-    };
-    
-    saveData(data);
-    showToast('Configurações do sistema salvas com sucesso!', 'success');
-  } catch (error) {
-    console.error('Error saving system data:', error);
-    showToast('Erro ao salvar configurações do sistema!', 'error');
-  }
-}
-
-function createBackup() {
-  try {
-    const data = getData();
-    const backup = {
-      timestamp: new Date().toISOString(),
-      data: data
-    };
-    
-    const dataStr = JSON.stringify(backup, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `backup_rmestetica_${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
-    
-    URL.revokeObjectURL(url);
-    showToast('Backup criado com sucesso!', 'success');
-  } catch (error) {
-    console.error('Error creating backup:', error);
-    showToast('Erro ao criar backup!', 'error');
-  }
-}
-
-function restoreBackup() {
-  try {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    
-    input.onchange = function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          try {
-            const backup = JSON.parse(e.target.result);
-            if (backup.data) {
-              localStorage.setItem('rm_estetica_data', JSON.stringify(backup.data));
-              showToast('Backup restaurado com sucesso!', 'success');
-              setTimeout(() => location.reload(), 1000);
+        container.appendChild(confetti);
+        
+        // Remove confetti após animação
+        setTimeout(() => {
+            if (confetti.parentNode) {
+                confetti.parentNode.removeChild(confetti);
             }
-          } catch (error) {
-            console.error('Error restoring backup:', error);
-            showToast('Erro ao restaurar backup!', 'error');
-          }
-        };
-        reader.readAsText(file);
-      }
-    };
-    
-    input.click();
-  } catch (error) {
-    console.error('Error restoring backup:', error);
-    showToast('Erro ao restaurar backup!', 'error');
-  }
+        }, 2000);
+    }
 }
 
-function exportData() {
-  try {
-    const data = getData();
-    const dataStr = JSON.stringify(data, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
+// Formatação de moeda brasileira
+function formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    }).format(value || 0);
+}
+
+// Formatação de data e hora
+function formatDateTime(dateString) {
+    return new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(new Date(dateString));
+}
+
+// Formatação de data
+function formatDate(dateString) {
+    return new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    }).format(new Date(dateString));
+}
+
+// Formatação de telefone
+function formatPhone(value) {
+    const cleaned = value.replace(/\D/g, '');
+    const match = cleaned.match(/^(\d{2})(\d{4,5})(\d{4})$/);
+    if (match) {
+        return `(${match[1]}) ${match[2]}-${match[3]}`;
+    }
+    return value;
+}
+
+// Limpeza de telefone para WhatsApp
+function cleanPhone(value) {
+    const cleaned = value.replace(/\D/g, '');
+    return cleaned.startsWith('55') ? cleaned : '55' + cleaned;
+}
+
+// Modal de confirmação
+function showConfirmModal(title, message, callback) {
+    const modal = $('#confirm-modal');
+    const modalTitle = $('#modal-title');
+    const modalMessage = $('#modal-message');
+    const confirmBtn = $('#modal-confirm-btn');
+    const cancelBtn = $('#modal-cancel-btn');
     
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modal.classList.add('active');
+    
+    // Remove listeners anteriores
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    
+    // Adiciona novos listeners
+    newConfirmBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        callback();
+    });
+    
+    newCancelBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+}
+
+// Função para exibir estados vazios
+function renderEmptyState(targetElement, message, suggestion) {
+    targetElement.innerHTML = `
+        <div class="empty-list-message">
+            <p>${message}</p>
+            <small>${suggestion}</small>
+        </div>
+    `;
+}
+
+// Função para mostrar skeletons de carregamento
+function showSkeletons(targetElement, count = 5, type = 'list') {
+    targetElement.innerHTML = '';
+    
+    for (let i = 0; i < count; i++) {
+        const skeleton = document.createElement('div');
+        skeleton.className = 'skeleton skeleton-item';
+        
+        if (type === 'list') {
+            skeleton.innerHTML = `
+                <div class="skeleton-text long"></div>
+                <div class="skeleton-text medium"></div>
+                <div class="skeleton-text short"></div>
+            `;
+        } else if (type === 'chart') {
+            skeleton.style.height = '200px';
+            skeleton.style.width = '100%';
+        }
+        
+        targetElement.appendChild(skeleton);
+    }
+}
+
+// Debounce para otimizar buscas
+function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+// Exportação para CSV
+function exportToCsv(data, filename) {
+    if (!data || data.length === 0) {
+        showNotification('Nenhum dado para exportar', 'warning');
+        return;
+    }
+    
+    const headers = Object.keys(data[0]);
+    const csvContent = [
+        headers.join(';'),
+        ...data.map(row => 
+            headers.map(header => {
+                const value = row[header];
+                if (value === null || value === undefined) return '';
+                return String(value).replace(/;/g, ',');
+            }).join(';')
+        )
+    ].join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    link.href = url;
-    link.download = `dados_rmestetica_${new Date().toISOString().split('T')[0]}.json`;
+    link.href = URL.createObjectURL(blob);
+    link.download = `${filename}_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     
-    URL.revokeObjectURL(url);
-    showToast('Dados exportados com sucesso!', 'success');
-  } catch (error) {
-    console.error('Error exporting data:', error);
-    showToast('Erro ao exportar dados!', 'error');
-  }
+    showNotification('Arquivo exportado com sucesso!', 'success');
 }
 
-// Charts
-function initializeCharts() {
-  try {
-    if (window.Chart) {
-      createRevenueChart();
-      createAppointmentChart();
+// Validação visual de formulários
+function handleValidationIcon(inputElement) {
+    const validationIcon = inputElement.parentElement.querySelector('.validation-icon');
+    if (!validationIcon) return;
+    
+    if (inputElement.validity.valid && inputElement.value.trim() !== '') {
+        validationIcon.className = 'validation-icon fas fa-check-circle';
+        validationIcon.style.color = 'var(--accent-green)';
+        validationIcon.style.display = 'block';
+        inputElement.style.borderColor = 'var(--accent-green)';
+    } else if (!inputElement.validity.valid && inputElement.value.trim() !== '') {
+        validationIcon.className = 'validation-icon fas fa-times-circle';
+        validationIcon.style.color = 'var(--accent-red-status)';
+        validationIcon.style.display = 'block';
+        inputElement.style.borderColor = 'var(--accent-red-status)';
+    } else {
+        validationIcon.style.display = 'none';
+        inputElement.style.borderColor = 'var(--border-color)';
     }
-  } catch (error) {
-    console.error('Error initializing charts:', error);
-  }
 }
 
-function createRevenueChart() {
-  try {
-    const canvas = document.getElementById('revenueChart');
-    if (canvas && window.Chart) {
-      const ctx = canvas.getContext('2d');
-      new Chart(ctx, {
+// ============================================================================
+// SINCRONIZAÇÃO E CONECTIVIDADE
+// ============================================================================
+
+// Configuração dos listeners do Supabase
+async function setupSupabaseListeners() {
+    // Remove listeners existentes
+    state.supabaseListeners.forEach(listener => {
+        supabase.removeChannel(listener);
+    });
+    state.supabaseListeners = [];
+    
+    // Listener para clientes
+    const clientesListener = supabase
+        .channel('clientes-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => {
+            fetchAllData(false);
+        })
+        .subscribe();
+    
+    // Listener para serviços
+    const servicosListener = supabase
+        .channel('servicos-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, () => {
+            fetchAllData(false);
+        })
+        .subscribe();
+    
+    // Listener para orçamentos
+    const orcamentosListener = supabase
+        .channel('orcamentos-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orcamentos' }, () => {
+            fetchAllData(false);
+        })
+        .subscribe();
+    
+    // Listener para itens de orçamento
+    const orcamentoItensListener = supabase
+        .channel('orcamento-itens-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orcamento_itens' }, () => {
+            fetchAllData(false);
+        })
+        .subscribe();
+    
+    // Listener para interações CRM
+    const crmListener = supabase
+        .channel('crm-interactions-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'crm_interactions' }, () => {
+            fetchAllData(false);
+        })
+        .subscribe();
+    
+    // Listener para despesas
+    const despesasListener = supabase
+        .channel('despesas-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'despesas' }, () => {
+            fetchAllData(false);
+        })
+        .subscribe();
+    
+    // Armazena listeners para limpeza posterior
+    state.supabaseListeners = [
+        clientesListener,
+        servicosListener,
+        orcamentosListener,
+        orcamentoItensListener,
+        crmListener,
+        despesasListener
+    ];
+}
+
+// Detecção de status da rede
+function updateNetworkStatus() {
+    window.addEventListener('online', () => {
+        state.isOffline = false;
+        $('#offline-indicator').classList.remove('show');
+        showNotification('Conexão restaurada! Sincronizando dados...', 'success');
+        fetchAllData(true);
+    });
+    
+    window.addEventListener('offline', () => {
+        state.isOffline = true;
+        $('#offline-indicator').classList.add('show');
+        showNotification('Conectividade perdida. Modo offline ativado.', 'warning');
+    });
+}
+
+// Busca todos os dados do Supabase
+async function fetchAllData(showLoadingOverlay = true) {
+    if (state.isSyncing) return;
+    state.isSyncing = true;
+    
+    const syncOverlay = $('#sync-overlay');
+    const syncBtn = $('#sync-btn');
+    
+    if (showLoadingOverlay) {
+        syncOverlay.classList.add('active');
+    }
+    syncBtn.classList.add('syncing');
+    
+    try {
+        // Mostra skeletons enquanto carrega
+        showSkeletons($('#clientes-lista'));
+        showSkeletons($('#servicos-lista'));
+        showSkeletons($('#historico-lista'));
+        showSkeletons($('#recent-activity-list'));
+        showSkeletons($('#crm-interaction-list'));
+        showSkeletons($('#despesas-lista'));
+        
+        // Busca todos os dados em paralelo
+        const [
+            clientesResponse,
+            servicosResponse,
+            orcamentosResponse,
+            crmInteractionsResponse,
+            despesasResponse
+        ] = await Promise.all([
+            supabase.from('clientes').select('*').order('nome'),
+            supabase.from('servicos').select('*').order('descricao'),
+            supabase.from('orcamentos').select(`
+                *,
+                clientes (*),
+                orcamento_itens (
+                    id,
+                    servico_id,
+                    quantidade,
+                    valor_unitario,
+                    servicos (descricao, valor)
+                )
+            `).order('created_at', { ascending: false }),
+            supabase.from('crm_interactions').select(`
+                *,
+                clientes (nome, carro)
+            `).order('interaction_date', { ascending: false }),
+            supabase.from('despesas').select('*').order('data', { ascending: false })
+        ]);
+        
+        // Verifica erros
+        if (clientesResponse.error) throw clientesResponse.error;
+        if (servicosResponse.error) throw servicosResponse.error;
+        if (orcamentosResponse.error) throw orcamentosResponse.error;
+        if (crmInteractionsResponse.error) throw crmInteractionsResponse.error;
+        if (despesasResponse.error) throw despesasResponse.error;
+        
+        // Atualiza estado
+        state.clientes = clientesResponse.data || [];
+        state.servicos = servicosResponse.data || [];
+        state.orcamentos = orcamentosResponse.data || [];
+        state.crmInteractions = crmInteractionsResponse.data || [];
+        state.despesas = despesasResponse.data || [];
+        
+        // Extrai itens de orçamento
+        state.orcamentoItens = [];
+        state.orcamentos.forEach(orc => {
+            if (orc.orcamento_itens) {
+                state.orcamentoItens.push(...orc.orcamento_itens);
+            }
+        });
+        
+        // Renderiza todo o conteúdo
+        renderAllContent();
+        
+        if (showLoadingOverlay) {
+            showNotification('Dados sincronizados com sucesso!', 'success');
+        }
+        
+    } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+        showNotification('Erro ao sincronizar dados: ' + error.message, 'error');
+    } finally {
+        state.isSyncing = false;
+        syncOverlay.classList.remove('active');
+        syncBtn.classList.remove('syncing');
+    }
+}
+
+// Renderiza todo o conteúdo da aplicação
+function renderAllContent() {
+    updateDashboard();
+    renderClientes();
+    renderServicos();
+    renderOrcamentos();
+    renderOrcamentoClienteOptions();
+    renderOrcamentoServicoOptions();
+    renderCrmInteractions();
+    renderCrmMetrics();
+    renderDespesas();
+    renderDespesasMetrics();
+    renderDespesasChart();
+    renderInteractionClientOptions();
+    renderSuggestedFollowups();
+    renderInactiveClients();
+}
+
+// ============================================================================
+// GERENCIAMENTO DE ABAS
+// ============================================================================
+
+function showTab(tabId, filterParams = {}) {
+    // Remove classe active de todas as abas e botões
+    $$('.tab-content').forEach(tab => tab.classList.remove('active'));
+    $$('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    
+    // Ativa a aba selecionada
+    $(`#${tabId}-tab`).classList.add('active');
+    $(`.nav-btn[data-tab="${tabId}"]`).classList.add('active');
+    
+    // Scroll para o topo
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Inicialização específica por aba
+    switch(tabId) {
+        case 'dashboard':
+            updateDashboard();
+            renderMonthlyStatsChart();
+            break;
+        case 'clientes':
+            renderClientes();
+            break;
+        case 'servicos':
+            renderServicos();
+            break;
+        case 'novo-orcamento':
+            renderOrcamentoClienteOptions();
+            renderOrcamentoServicoOptions();
+            break;
+        case 'historico':
+            renderOrcamentos();
+            // Aplica filtros se fornecidos
+            if (filterParams.status) {
+                $('#filter-status').value = filterParams.status;
+                renderOrcamentos();
+            }
+            break;
+        case 'crm':
+            renderCrmInteractions();
+            renderCrmMetrics();
+            renderSuggestedFollowups();
+            renderInactiveClients();
+            break;
+        case 'despesas':
+            renderDespesas();
+            renderDespesasMetrics();
+            renderDespesasChart();
+            break;
+    }
+}
+
+// ============================================================================
+// DASHBOARD - PAINEL PRINCIPAL
+// ============================================================================
+
+function updateDashboard() {
+    // Calcula métricas
+    const totalClientes = state.clientes.length;
+    const orcamentosPendentes = state.orcamentos.filter(o => o.status === 'Orçamento').length;
+    const orcamentosAprovados = state.orcamentos.filter(o => o.status === 'Aprovado').length;
+    
+    const inicioMes = new Date();
+    inicioMes.setDate(1);
+    const finalizadosMes = state.orcamentos.filter(o => 
+        o.status === 'Finalizado' && 
+        new Date(o.updated_at) >= inicioMes
+    ).length;
+    
+    const faturamentoTotal = state.orcamentos
+        .filter(o => o.status === 'Finalizado')
+        .reduce((total, o) => total + (o.valor_total || 0), 0);
+    
+    // Atualiza elementos
+    $('#stat-clientes').textContent = totalClientes;
+    $('#stat-pendentes').textContent = orcamentosPendentes;
+    $('#stat-aprovados').textContent = orcamentosAprovados;
+    $('#stat-finalizados-mes').textContent = finalizadosMes;
+    $('#stat-faturamento-total').textContent = formatCurrency(faturamentoTotal);
+    
+    // Renderiza atividade recente
+    renderRecentActivity();
+}
+
+function renderMonthlyStatsChart() {
+    const canvas = $('#monthly-finalized-chart-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Destrói chart existente
+    if (state.monthlyChart) {
+        state.monthlyChart.destroy();
+    }
+    
+    // Prepara dados dos últimos 6 meses
+    const monthlyData = [];
+    const monthLabels = [];
+    
+    for (let i = 5; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        
+        const finalizados = state.orcamentos.filter(o => 
+            o.status === 'Finalizado' && 
+            new Date(o.updated_at) >= monthStart && 
+            new Date(o.updated_at) <= monthEnd
+        ).length;
+        
+        monthlyData.push(finalizados);
+        monthLabels.push(date.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }));
+    }
+    
+    // Cria novo chart
+    state.monthlyChart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-          datasets: [{
-            label: 'Receitas',
-            data: [2800, 3200, 2900, 3500, 3100, 3400],
-            backgroundColor: '#1FB8CD',
-            borderColor: '#1FB8CD',
-            borderWidth: 1
-          }, {
-            label: 'Despesas',
-            data: [1200, 1400, 1300, 1500, 1350, 1450],
-            backgroundColor: '#B4413C',
-            borderColor: '#B4413C',
-            borderWidth: 1
-          }]
+            labels: monthLabels,
+            datasets: [{
+                label: 'Orçamentos Finalizados',
+                data: monthlyData,
+                backgroundColor: '#1FB8CD',
+                borderColor: '#16a34a',
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'top',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.parsed.y} orçamentos finalizados`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#a0aec0'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: '#a0aec0',
+                        precision: 0
+                    },
+                    grid: {
+                        color: '#4a5568'
+                    }
+                }
             }
-          },
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
         }
-      });
-    }
-  } catch (error) {
-    console.error('Error creating revenue chart:', error);
-  }
+    });
 }
 
-function createAppointmentChart() {
-  try {
-    const canvas = document.getElementById('appointmentChart');
-    if (canvas && window.Chart) {
-      const ctx = canvas.getContext('2d');
-      new Chart(ctx, {
+function renderRecentActivity() {
+    const recentList = $('#recent-activity-list');
+    const recentOrcamentos = state.orcamentos.slice(0, 8);
+    
+    if (recentOrcamentos.length === 0) {
+        renderEmptyState(recentList, 'Nenhuma atividade recente', 'Crie seu primeiro orçamento para começar');
+        return;
+    }
+    
+    recentList.innerHTML = recentOrcamentos.map(orc => `
+        <li>
+            <div>
+                <strong>${orc.clientes?.nome || 'Cliente não encontrado'}</strong>
+                <small>${orc.clientes?.carro || 'Carro não informado'}</small>
+                <small>${formatDate(orc.created_at)}</small>
+            </div>
+            <div class="item-actions">
+                <span class="status-indicator status-${orc.status.toLowerCase()}">${orc.status}</span>
+                <span style="font-weight: bold; color: var(--accent-green);">${formatCurrency(orc.valor_total)}</span>
+                <button class="btn btn-sm btn-primary view-historico-btn" data-id="${orc.id}">
+                    <i class="fas fa-eye"></i> Ver
+                </button>
+            </div>
+        </li>
+    `).join('');
+    
+    // Adiciona event listeners
+    recentList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('view-historico-btn') || e.target.parentElement.classList.contains('view-historico-btn')) {
+            const orcamentoId = e.target.dataset.id || e.target.parentElement.dataset.id;
+            showTab('historico');
+            setTimeout(() => handleHistoricoClick(orcamentoId), 100);
+        }
+    });
+}
+
+// ============================================================================
+// CLIENTES - GESTÃO DE CLIENTES
+// ============================================================================
+
+function renderClientes() {
+    const searchTerm = $('#search-cliente').value.toLowerCase();
+    const sortBy = $('#sort-clientes').value;
+    
+    // Filtra clientes
+    let filteredClientes = state.clientes.filter(cliente => 
+        cliente.nome.toLowerCase().includes(searchTerm) ||
+        cliente.placa.toLowerCase().includes(searchTerm) ||
+        formatPhone(cliente.telefone).includes(searchTerm)
+    );
+    
+    // Ordena clientes
+    filteredClientes.sort((a, b) => {
+        const [field, direction] = sortBy.split('-');
+        const aValue = a[field]?.toLowerCase() || '';
+        const bValue = b[field]?.toLowerCase() || '';
+        
+        if (direction === 'asc') {
+            return aValue.localeCompare(bValue);
+        } else {
+            return bValue.localeCompare(aValue);
+        }
+    });
+    
+    const clientesList = $('#clientes-lista');
+    
+    if (filteredClientes.length === 0) {
+        renderEmptyState(clientesList, 'Nenhum cliente encontrado', 'Cadastre o primeiro cliente para começar');
+        return;
+    }
+    
+    clientesList.innerHTML = filteredClientes.map(cliente => `
+        <li data-id="${cliente.id}" ${state.editandoClienteId === cliente.id ? 'class="editing"' : ''}>
+            <div>
+                <strong data-field="nome">${cliente.nome}</strong>
+                <small>${cliente.carro} - ${cliente.placa}</small>
+                <small>${formatPhone(cliente.telefone)}</small>
+                <input type="text" class="inline-edit-input edit-mode-input" value="${cliente.nome}" data-field="nome">
+                <input type="text" class="inline-edit-input edit-mode-input" value="${cliente.carro}" data-field="carro">
+                <input type="text" class="inline-edit-input edit-mode-input" value="${cliente.placa}" data-field="placa">
+                <input type="text" class="inline-edit-input edit-mode-input" value="${cliente.telefone}" data-field="telefone">
+            </div>
+            <div class="item-actions">
+                <button class="btn btn-sm btn-secondary edit-cliente-btn" data-id="${cliente.id}">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                <button class="btn btn-sm btn-primary details-cliente-btn" data-id="${cliente.id}">
+                    <i class="fas fa-eye"></i> Detalhes
+                </button>
+                <button class="btn btn-sm btn-danger delete-cliente-btn" data-id="${cliente.id}">
+                    <i class="fas fa-trash"></i> Excluir
+                </button>
+            </div>
+        </li>
+    `).join('');
+    
+    // Adiciona event listeners
+    clientesList.addEventListener('click', (e) => {
+        const clienteId = e.target.dataset.id || e.target.parentElement.dataset.id;
+        
+        if (e.target.classList.contains('edit-cliente-btn') || e.target.parentElement.classList.contains('edit-cliente-btn')) {
+            handleEditCliente(clienteId);
+        } else if (e.target.classList.contains('details-cliente-btn') || e.target.parentElement.classList.contains('details-cliente-btn')) {
+            displayClientDetails(clienteId);
+        } else if (e.target.classList.contains('delete-cliente-btn') || e.target.parentElement.classList.contains('delete-cliente-btn')) {
+            handleDeleteCliente(clienteId);
+        }
+    });
+}
+
+async function handleClienteSubmit(e) {
+    e.preventDefault();
+    
+    const id = $('#cliente-id').value;
+    const nome = $('#cliente-nome').value.trim();
+    const telefone = $('#cliente-telefone').value.trim();
+    const carro = $('#cliente-carro').value.trim();
+    const placa = $('#cliente-placa').value.trim().toUpperCase();
+    
+    // Validações
+    if (!nome) {
+        showNotification('Nome é obrigatório', 'error');
+        return;
+    }
+    
+    if (!telefone) {
+        showNotification('Telefone é obrigatório', 'error');
+        return;
+    }
+    
+    if (!carro) {
+        showNotification('Carro é obrigatório', 'error');
+        return;
+    }
+    
+    if (!placa) {
+        showNotification('Placa é obrigatória', 'error');
+        return;
+    }
+    
+    // Validação de placa
+    const placaRegex = /^[A-Z]{3}[-]?\d{4}$|^[A-Z]{3}[-]?\d{1}[A-Z]{1}\d{2}$/;
+    if (!placaRegex.test(placa)) {
+        showNotification('Placa deve ter formato ABC-1234 ou ABC1D23', 'error');
+        return;
+    }
+    
+    // Validação de telefone
+    const telefoneRegex = /^\(\d{2}\)\s\d{4,5}-\d{4}$/;
+    if (!telefoneRegex.test(telefone)) {
+        showNotification('Telefone deve ter formato (XX) XXXXX-XXXX', 'error');
+        return;
+    }
+    
+    try {
+        const clienteData = { nome, telefone, carro, placa };
+        
+        if (id) {
+            // Atualizar cliente existente
+            const { error } = await supabase
+                .from('clientes')
+                .update(clienteData)
+                .eq('id', id);
+            
+            if (error) throw error;
+            
+            showNotification('Cliente atualizado com sucesso!', 'success');
+            triggerConfetti();
+        } else {
+            // Criar novo cliente
+            const { error } = await supabase
+                .from('clientes')
+                .insert([clienteData]);
+            
+            if (error) throw error;
+            
+            showNotification('Cliente cadastrado com sucesso!', 'success');
+            triggerConfetti();
+        }
+        
+        resetClienteForm();
+        
+    } catch (error) {
+        console.error('Erro ao salvar cliente:', error);
+        showNotification('Erro ao salvar cliente: ' + error.message, 'error');
+    }
+}
+
+function handleEditCliente(id) {
+    const cliente = state.clientes.find(c => c.id === id);
+    if (!cliente) return;
+    
+    $('#cliente-id').value = cliente.id;
+    $('#cliente-nome').value = cliente.nome;
+    $('#cliente-telefone').value = formatPhone(cliente.telefone);
+    $('#cliente-carro').value = cliente.carro;
+    $('#cliente-placa').value = cliente.placa;
+    
+    $('#cliente-form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Cliente';
+    $('#cancelar-edicao-cliente').style.display = 'inline-flex';
+    
+    state.editandoClienteId = id;
+    renderClientes();
+}
+
+function handleDeleteCliente(id) {
+    showConfirmModal(
+        'Excluir Cliente',
+        'Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.',
+        async () => {
+            try {
+                const { error } = await supabase
+                    .from('clientes')
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                showNotification('Cliente excluído com sucesso!', 'success');
+                triggerConfetti();
+                resetClienteForm();
+                
+                // Esconde painel de detalhes se estiver mostrando este cliente
+                if ($('#client-details-panel').style.display !== 'none') {
+                    $('#client-details-panel').style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('Erro ao excluir cliente:', error);
+                showNotification('Erro ao excluir cliente: ' + error.message, 'error');
+            }
+        }
+    );
+}
+
+function resetClienteForm() {
+    $('#cliente-form').reset();
+    $('#cliente-id').value = '';
+    $('#cliente-form-title').innerHTML = '<i class="fas fa-user-plus"></i> Cadastrar Cliente';
+    $('#cancelar-edicao-cliente').style.display = 'none';
+    state.editandoClienteId = null;
+    
+    // Remove validações visuais
+    $$('#cliente-form .validation-message').forEach(msg => msg.style.display = 'none');
+    $$('#cliente-form .validation-icon').forEach(icon => icon.style.display = 'none');
+    $$('#cliente-form input').forEach(input => input.style.borderColor = 'var(--border-color)');
+    
+    renderClientes();
+}
+
+function displayClientDetails(clientId) {
+    const cliente = state.clientes.find(c => c.id === clientId);
+    if (!cliente) return;
+    
+    // Preenche detalhes do cliente
+    $('#client-detail-name').textContent = cliente.nome;
+    $('#client-detail-phone').textContent = formatPhone(cliente.telefone);
+    $('#client-detail-car').textContent = cliente.carro;
+    $('#client-detail-plate').textContent = cliente.placa;
+    
+    // Busca orçamentos do cliente
+    const clientOrcamentos = state.orcamentos.filter(o => o.cliente_id === clientId);
+    const pastOrcamentosList = $('#client-past-orcamentos');
+    
+    if (clientOrcamentos.length === 0) {
+        renderEmptyState(pastOrcamentosList, 'Nenhum orçamento encontrado', 'Este cliente ainda não possui orçamentos');
+    } else {
+        pastOrcamentosList.innerHTML = clientOrcamentos.map(orc => `
+            <li>
+                <div>
+                    <strong>Orçamento #${orc.id}</strong>
+                    <small>${formatDate(orc.created_at)}</small>
+                    <small>Status: ${orc.status}</small>
+                </div>
+                <div class="item-actions">
+                    <span style="font-weight: bold; color: var(--accent-green);">${formatCurrency(orc.valor_total)}</span>
+                    <button class="btn btn-sm btn-primary view-orcamento-details-btn" data-id="${orc.id}">
+                        <i class="fas fa-eye"></i> Ver Detalhes
+                    </button>
+                </div>
+            </li>
+        `).join('');
+        
+        // Adiciona event listeners
+        pastOrcamentosList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('view-orcamento-details-btn') || e.target.parentElement.classList.contains('view-orcamento-details-btn')) {
+                const orcamentoId = e.target.dataset.id || e.target.parentElement.dataset.id;
+                showTab('historico');
+                setTimeout(() => handleHistoricoClick(orcamentoId), 100);
+            }
+        });
+    }
+    
+    // Mostra painel de detalhes
+    $('#client-details-panel').style.display = 'block';
+}
+
+// ============================================================================
+// SERVIÇOS - GESTÃO DE SERVIÇOS
+// ============================================================================
+
+function renderServicos() {
+    const searchTerm = $('#search-servico').value.toLowerCase();
+    const sortBy = $('#sort-servicos').value;
+    
+    // Filtra serviços
+    let filteredServicos = state.servicos.filter(servico => 
+        servico.descricao.toLowerCase().includes(searchTerm)
+    );
+    
+    // Ordena serviços
+    filteredServicos.sort((a, b) => {
+        const [field, direction] = sortBy.split('-');
+        
+        if (field === 'valor') {
+            const aValue = parseFloat(a.valor) || 0;
+            const bValue = parseFloat(b.valor) || 0;
+            return direction === 'asc' ? aValue - bValue : bValue - aValue;
+        } else {
+            const aValue = a[field]?.toLowerCase() || '';
+            const bValue = b[field]?.toLowerCase() || '';
+            return direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        }
+    });
+    
+    const servicosList = $('#servicos-lista');
+    
+    if (filteredServicos.length === 0) {
+        renderEmptyState(servicosList, 'Nenhum serviço encontrado', 'Cadastre o primeiro serviço para começar');
+        return;
+    }
+    
+    servicosList.innerHTML = filteredServicos.map(servico => `
+        <li data-id="${servico.id}" ${state.editandoServicoId === servico.id ? 'class="editing"' : ''}>
+            <div>
+                <strong data-field="descricao">${servico.descricao}</strong>
+                <small>${formatCurrency(servico.valor)}</small>
+                <input type="text" class="inline-edit-input edit-mode-input" value="${servico.descricao}" data-field="descricao">
+                <input type="number" class="inline-edit-input edit-mode-input" value="${servico.valor}" data-field="valor" step="0.01">
+            </div>
+            <div class="item-actions">
+                <button class="btn btn-sm btn-secondary edit-servico-btn" data-id="${servico.id}">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                <button class="btn btn-sm btn-danger delete-servico-btn" data-id="${servico.id}">
+                    <i class="fas fa-trash"></i> Excluir
+                </button>
+            </div>
+        </li>
+    `).join('');
+    
+    // Adiciona event listeners
+    servicosList.addEventListener('click', (e) => {
+        const servicoId = e.target.dataset.id || e.target.parentElement.dataset.id;
+        
+        if (e.target.classList.contains('edit-servico-btn') || e.target.parentElement.classList.contains('edit-servico-btn')) {
+            handleEditServico(servicoId);
+        } else if (e.target.classList.contains('delete-servico-btn') || e.target.parentElement.classList.contains('delete-servico-btn')) {
+            handleDeleteServico(servicoId);
+        }
+    });
+}
+
+async function handleServicoSubmit(e) {
+    e.preventDefault();
+    
+    const id = $('#servico-id').value;
+    const descricao = $('#servico-descricao').value.trim();
+    const valor = parseFloat($('#servico-valor').value);
+    
+    // Validações
+    if (!descricao) {
+        showNotification('Descrição é obrigatória', 'error');
+        return;
+    }
+    
+    if (!valor || valor <= 0) {
+        showNotification('Valor deve ser maior que zero', 'error');
+        return;
+    }
+    
+    try {
+        const servicoData = { descricao, valor };
+        
+        if (id) {
+            // Atualizar serviço existente
+            const { error } = await supabase
+                .from('servicos')
+                .update(servicoData)
+                .eq('id', id);
+            
+            if (error) throw error;
+            
+            showNotification('Serviço atualizado com sucesso!', 'success');
+            triggerConfetti();
+        } else {
+            // Criar novo serviço
+            const { error } = await supabase
+                .from('servicos')
+                .insert([servicoData]);
+            
+            if (error) throw error;
+            
+            showNotification('Serviço cadastrado com sucesso!', 'success');
+            triggerConfetti();
+        }
+        
+        resetServicoForm();
+        
+    } catch (error) {
+        console.error('Erro ao salvar serviço:', error);
+        showNotification('Erro ao salvar serviço: ' + error.message, 'error');
+    }
+}
+
+function handleEditServico(id) {
+    const servico = state.servicos.find(s => s.id === id);
+    if (!servico) return;
+    
+    $('#servico-id').value = servico.id;
+    $('#servico-descricao').value = servico.descricao;
+    $('#servico-valor').value = servico.valor;
+    
+    $('#servico-form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Serviço';
+    $('#cancelar-edicao-servico').style.display = 'inline-flex';
+    
+    state.editandoServicoId = id;
+    renderServicos();
+}
+
+function handleDeleteServico(id) {
+    // Validação CRÍTICA: Verifica se o serviço está sendo usado em orçamentos
+    const servicoEmUso = state.orcamentoItens.some(item => item.servico_id === id);
+    
+    if (servicoEmUso) {
+        showNotification('Não é possível excluir este serviço pois ele está sendo usado em orçamentos existentes.', 'error');
+        return;
+    }
+    
+    showConfirmModal(
+        'Excluir Serviço',
+        'Tem certeza que deseja excluir este serviço? Esta ação não pode ser desfeita.',
+        async () => {
+            try {
+                const { error } = await supabase
+                    .from('servicos')
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                showNotification('Serviço excluído com sucesso!', 'success');
+                triggerConfetti();
+                resetServicoForm();
+                
+            } catch (error) {
+                console.error('Erro ao excluir serviço:', error);
+                showNotification('Erro ao excluir serviço: ' + error.message, 'error');
+            }
+        }
+    );
+}
+
+function resetServicoForm() {
+    $('#servico-form').reset();
+    $('#servico-id').value = '';
+    $('#servico-form-title').innerHTML = '<i class="fas fa-plus"></i> Cadastrar Serviço';
+    $('#cancelar-edicao-servico').style.display = 'none';
+    state.editandoServicoId = null;
+    
+    // Remove validações visuais
+    $$('#servico-form .validation-message').forEach(msg => msg.style.display = 'none');
+    $$('#servico-form .validation-icon').forEach(icon => icon.style.display = 'none');
+    $$('#servico-form input').forEach(input => input.style.borderColor = 'var(--border-color)');
+    
+    renderServicos();
+}
+
+// ============================================================================
+// ORÇAMENTOS - CRIAÇÃO E GESTÃO
+// ============================================================================
+
+function renderOrcamentoClienteOptions() {
+    const clienteSelect = $('#orcamento-cliente');
+    clienteSelect.innerHTML = '<option value="">Selecione um cliente</option>';
+    
+    state.clientes.forEach(cliente => {
+        const option = document.createElement('option');
+        option.value = cliente.id;
+        option.textContent = `${cliente.nome} - ${cliente.carro}`;
+        clienteSelect.appendChild(option);
+    });
+}
+
+function renderOrcamentoServicoOptions() {
+    const servicoSelect = $('#orcamento-servico-select');
+    servicoSelect.innerHTML = '<option value="">Selecione um serviço</option>';
+    
+    state.servicos.forEach(servico => {
+        const option = document.createElement('option');
+        option.value = servico.id;
+        option.textContent = `${servico.descricao} - ${formatCurrency(servico.valor)}`;
+        servicoSelect.appendChild(option);
+    });
+}
+
+function handleAddServicoToOrcamento() {
+    const servicoId = $('#orcamento-servico-select').value;
+    const quantidade = parseInt($('#orcamento-servico-quantidade').value);
+    
+    if (!servicoId) {
+        showNotification('Selecione um serviço', 'warning');
+        return;
+    }
+    
+    if (!quantidade || quantidade <= 0) {
+        showNotification('Quantidade deve ser maior que zero', 'warning');
+        return;
+    }
+    
+    const servico = state.servicos.find(s => s.id === servicoId);
+    if (!servico) return;
+    
+    // Verifica se o serviço já foi adicionado
+    const existingIndex = state.novoOrcamentoItens.findIndex(item => item.servico_id === servicoId);
+    
+    if (existingIndex >= 0) {
+        // Atualiza quantidade
+        state.novoOrcamentoItens[existingIndex].quantidade = quantidade;
+    } else {
+        // Adiciona novo item
+        state.novoOrcamentoItens.push({
+            servico_id: servicoId,
+            descricao_servico: servico.descricao,
+            valor_cobrado: servico.valor,
+            quantidade: quantidade
+        });
+    }
+    
+    // Limpa campos
+    $('#orcamento-servico-select').value = '';
+    $('#orcamento-servico-quantidade').value = 1;
+    
+    renderNovoOrcamentoItens();
+    updateOrcamentoTotal();
+}
+
+function renderNovoOrcamentoItens() {
+    const servicosContainer = $('#orcamento-servicos-adicionados');
+    
+    if (state.novoOrcamentoItens.length === 0) {
+        servicosContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Nenhum serviço adicionado</p>';
+        return;
+    }
+    
+    servicosContainer.innerHTML = state.novoOrcamentoItens.map((item, index) => `
+        <li>
+            <div>
+                <strong>${item.descricao_servico}</strong>
+                <small>${formatCurrency(item.valor_cobrado)} cada</small>
+            </div>
+            <div class="item-actions">
+                <input type="number" class="orcamento-item-quantity" value="${item.quantidade}" min="1" data-index="${index}">
+                <button type="button" class="btn btn-sm btn-danger remove-servico-btn" data-index="${index}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </li>
+    `).join('');
+    
+    // Adiciona event listeners para quantidade
+    servicosContainer.addEventListener('change', (e) => {
+        if (e.target.classList.contains('orcamento-item-quantity')) {
+            const index = parseInt(e.target.dataset.index);
+            const newQuantity = parseInt(e.target.value);
+            
+            if (newQuantity > 0) {
+                state.novoOrcamentoItens[index].quantidade = newQuantity;
+                updateOrcamentoTotal();
+            }
+        }
+    });
+    
+    // Adiciona event listeners para remoção
+    servicosContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-servico-btn') || e.target.parentElement.classList.contains('remove-servico-btn')) {
+            const index = parseInt(e.target.dataset.index || e.target.parentElement.dataset.index);
+            state.novoOrcamentoItens.splice(index, 1);
+            renderNovoOrcamentoItens();
+            updateOrcamentoTotal();
+        }
+    });
+}
+
+function updateOrcamentoTotal() {
+    const subtotal = state.novoOrcamentoItens.reduce((total, item) => {
+        return total + (item.valor_cobrado * item.quantidade);
+    }, 0);
+    
+    const desconto = parseFloat($('#orcamento-desconto').value) || 0;
+    const total = Math.max(0, subtotal - desconto);
+    
+    $('#orcamento-total').innerHTML = `<strong>Total: ${formatCurrency(total)}</strong>`;
+}
+
+async function handleOrcamentoSubmit(e) {
+    e.preventDefault();
+    
+    const orcamentoId = $('#orcamento-id-to-edit').value;
+    const clienteId = $('#orcamento-cliente').value;
+    const desconto = parseFloat($('#orcamento-desconto').value) || 0;
+    const formasPagamento = Array.from($$('#payment-options .payment-option.active')).map(btn => btn.dataset.value);
+    
+    // Validações
+    if (!clienteId) {
+        showNotification('Selecione um cliente', 'error');
+        return;
+    }
+    
+    if (state.novoOrcamentoItens.length === 0) {
+        showNotification('Adicione pelo menos um serviço', 'error');
+        return;
+    }
+    
+    if (formasPagamento.length === 0) {
+        showNotification('Selecione pelo menos uma forma de pagamento', 'error');
+        $('#payment-options-validation').style.display = 'block';
+        return;
+    }
+    
+    $('#payment-options-validation').style.display = 'none';
+    
+    // Calcula valores
+    const subtotal = state.novoOrcamentoItens.reduce((total, item) => {
+        return total + (item.valor_cobrado * item.quantidade);
+    }, 0);
+    const valorTotal = Math.max(0, subtotal - desconto);
+    
+    try {
+        const orcamentoData = {
+            cliente_id: clienteId,
+            desconto,
+            valor_total: valorTotal,
+            formas_pagamento: formasPagamento,
+            updated_at: new Date().toISOString()
+        };
+        
+        let finalOrcamentoId;
+        
+        if (orcamentoId) {
+            // Atualizar orçamento existente
+            const { error } = await supabase
+                .from('orcamentos')
+                .update(orcamentoData)
+                .eq('id', orcamentoId);
+            
+            if (error) throw error;
+            
+            // Remove itens existentes
+            await supabase
+                .from('orcamento_itens')
+                .delete()
+                .eq('orcamento_id', orcamentoId);
+            
+            finalOrcamentoId = orcamentoId;
+            showNotification('Orçamento atualizado com sucesso!', 'success');
+        } else {
+            // Criar novo orçamento
+            orcamentoData.status = 'Orçamento';
+            orcamentoData.created_at = new Date().toISOString();
+            
+            const { data, error } = await supabase
+                .from('orcamentos')
+                .insert([orcamentoData])
+                .select();
+            
+            if (error) throw error;
+            
+            finalOrcamentoId = data[0].id;
+            showNotification('Orçamento criado com sucesso!', 'success');
+        }
+        
+        // Inserir itens do orçamento
+        const itensData = state.novoOrcamentoItens.map(item => ({
+            orcamento_id: finalOrcamentoId,
+            servico_id: item.servico_id,
+            quantidade: item.quantidade,
+            valor_unitario: item.valor_cobrado
+        }));
+        
+        const { error: itensError } = await supabase
+            .from('orcamento_itens')
+            .insert(itensData);
+        
+        if (itensError) throw itensError;
+        
+        triggerConfetti();
+        resetOrcamentoForm();
+        showTab('historico');
+        
+    } catch (error) {
+        console.error('Erro ao salvar orçamento:', error);
+        showNotification('Erro ao salvar orçamento: ' + error.message, 'error');
+    }
+}
+
+function resetOrcamentoForm() {
+    $('#orcamento-form').reset();
+    $('#orcamento-id-to-edit').value = '';
+    $('#orcamento-form-title').innerHTML = '<i class="fas fa-file-invoice"></i> Novo Orçamento';
+    $('#cancelar-edicao-orcamento').style.display = 'none';
+    
+    state.novoOrcamentoItens = [];
+    renderNovoOrcamentoItens();
+    updateOrcamentoTotal();
+    
+    // Remove seleção de formas de pagamento
+    $$('#payment-options .payment-option').forEach(btn => btn.classList.remove('active'));
+    $('#payment-options-validation').style.display = 'none';
+}
+
+// ============================================================================
+// HISTÓRICO - GESTÃO DE ORÇAMENTOS
+// ============================================================================
+
+function renderOrcamentos() {
+    const searchTerm = $('#search-historico').value.toLowerCase();
+    const statusFilter = $('#filter-status').value;
+    const startDate = $('#filter-start-date').value;
+    const endDate = $('#filter-end-date').value;
+    
+    // Filtra orçamentos
+    let filteredOrcamentos = state.orcamentos.filter(orcamento => {
+        const matchesSearch = 
+            orcamento.clientes?.nome.toLowerCase().includes(searchTerm) ||
+            orcamento.clientes?.placa.toLowerCase().includes(searchTerm) ||
+            formatDate(orcamento.created_at).includes(searchTerm) ||
+            orcamento.status.toLowerCase().includes(searchTerm) ||
+            formatCurrency(orcamento.valor_total).includes(searchTerm);
+        
+        const matchesStatus = !statusFilter || orcamento.status === statusFilter;
+        
+        const matchesDateRange = (!startDate || orcamento.created_at >= startDate) &&
+                                (!endDate || orcamento.created_at <= endDate);
+        
+        return matchesSearch && matchesStatus && matchesDateRange;
+    });
+    
+    const orcamentosList = $('#historico-lista');
+    
+    if (filteredOrcamentos.length === 0) {
+        renderEmptyState(orcamentosList, 'Nenhum orçamento encontrado', 'Crie o primeiro orçamento para começar');
+        return;
+    }
+    
+    orcamentosList.innerHTML = filteredOrcamentos.map(orcamento => `
+        <li data-id="${orcamento.id}" ${state.orcamentoSelecionado?.id === orcamento.id ? 'class="selected"' : ''}>
+            <div>
+                <strong>${orcamento.clientes?.nome || 'Cliente não encontrado'}</strong>
+                <small>${orcamento.clientes?.carro || 'Carro não informado'} - ${orcamento.clientes?.placa || 'Placa não informada'}</small>
+                <small>${formatDate(orcamento.created_at)}</small>
+            </div>
+            <div class="item-actions">
+                <span class="status-indicator status-${orcamento.status.toLowerCase()}">${orcamento.status}</span>
+                <span style="font-weight: bold; color: var(--accent-green);">${formatCurrency(orcamento.valor_total)}</span>
+            </div>
+        </li>
+    `).join('');
+    
+    // Adiciona event listeners
+    orcamentosList.addEventListener('click', (e) => {
+        const orcamentoId = e.currentTarget.dataset.id || e.target.closest('li').dataset.id;
+        if (orcamentoId) {
+            handleHistoricoClick(orcamentoId);
+        }
+    });
+}
+
+function handleHistoricoClick(id) {
+    // Marca como selecionado
+    const orcamento = state.orcamentos.find(o => o.id === id);
+    if (!orcamento) return;
+    
+    state.orcamentoSelecionado = orcamento;
+    renderOrcamentos();
+    displayOrcamentoDetails();
+}
+
+function displayOrcamentoDetails() {
+    const orcamento = state.orcamentoSelecionado;
+    if (!orcamento) return;
+    
+    // Mostra container de detalhes
+    $('#detalhes-orcamento-container').style.display = 'block';
+    
+    // Gera texto do orçamento
+    const orcamentoTexto = generateOrcamentoText(orcamento);
+    $('#detalhes-orcamento-texto').textContent = orcamentoTexto;
+    
+    // Gera texto do recibo
+    const reciboTexto = generateReciboText(orcamento);
+    $('#detalhes-recibo-texto').textContent = reciboTexto;
+    
+    // Gerencia visibilidade dos botões baseado no status
+    const editBtn = $('#edit-orcamento-btn');
+    const approveBtn = $('#approve-orcamento-btn');
+    const finalizeBtn = $('#finalize-orcamento-btn');
+    const cancelBtn = $('#cancel-orcamento-btn');
+    
+    // Mostra/esconde botões baseado no status
+    switch(orcamento.status) {
+        case 'Orçamento':
+            editBtn.style.display = 'inline-flex';
+            approveBtn.style.display = 'inline-flex';
+            finalizeBtn.style.display = 'none';
+            cancelBtn.style.display = 'inline-flex';
+            break;
+        case 'Aprovado':
+            editBtn.style.display = 'inline-flex';
+            approveBtn.style.display = 'none';
+            finalizeBtn.style.display = 'inline-flex';
+            cancelBtn.style.display = 'inline-flex';
+            break;
+        case 'Finalizado':
+            editBtn.style.display = 'none';
+            approveBtn.style.display = 'none';
+            finalizeBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            break;
+        case 'Cancelado':
+            editBtn.style.display = 'none';
+            approveBtn.style.display = 'none';
+            finalizeBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            break;
+    }
+}
+
+function switchDetailView(view) {
+    const orcamentoBtn = $('#btn-view-orcamento');
+    const reciboBtn = $('#btn-view-recibo');
+    const orcamentoBloco = $('#detalhe-orcamento-bloco');
+    const reciboBloco = $('#detalhe-recibo-bloco');
+    
+    if (view === 'orcamento') {
+        orcamentoBtn.classList.add('active');
+        reciboBtn.classList.remove('active');
+        orcamentoBloco.style.display = 'block';
+        reciboBloco.style.display = 'none';
+    } else {
+        orcamentoBtn.classList.remove('active');
+        reciboBtn.classList.add('active');
+        orcamentoBloco.style.display = 'none';
+        reciboBloco.style.display = 'block';
+    }
+}
+
+function generateOrcamentoText(orcamento) {
+    const cliente = orcamento.clientes;
+    const itens = orcamento.orcamento_itens || [];
+    
+    let texto = `
+═══════════════════════════════════════════════════════════
+                    ORÇAMENTO DETALHADO
+═══════════════════════════════════════════════════════════
+
+🏢 ESTABELECIMENTO:
+${ESTABELECIMENTO.nome}
+CNPJ: ${ESTABELECIMENTO.cnpj}
+📍 ${ESTABELECIMENTO.endereco}
+📞 ${formatPhone(ESTABELECIMENTO.telefone)}
+
+─────────────────────────────────────────────────────────
+
+👤 CLIENTE:
+Nome: ${cliente?.nome || 'Não informado'}
+Telefone: ${formatPhone(cliente?.telefone || '')}
+Veículo: ${cliente?.carro || 'Não informado'}
+Placa: ${cliente?.placa || 'Não informada'}
+
+─────────────────────────────────────────────────────────
+
+📋 SERVIÇOS SOLICITADOS:
+`;
+
+    itens.forEach((item, index) => {
+        const subtotal = item.valor_unitario * item.quantidade;
+        texto += `
+${index + 1}. ${item.servicos?.descricao || 'Serviço não encontrado'}
+   Quantidade: ${item.quantidade}
+   Valor unitário: ${formatCurrency(item.valor_unitario)}
+   Subtotal: ${formatCurrency(subtotal)}
+`;
+    });
+    
+    const subtotalGeral = itens.reduce((total, item) => total + (item.valor_unitario * item.quantidade), 0);
+    const desconto = orcamento.desconto || 0;
+    const total = subtotalGeral - desconto;
+    
+    texto += `
+─────────────────────────────────────────────────────────
+
+💰 VALORES:
+Subtotal: ${formatCurrency(subtotalGeral)}
+Desconto: ${formatCurrency(desconto)}
+TOTAL: ${formatCurrency(total)}
+
+─────────────────────────────────────────────────────────
+
+💳 FORMAS DE PAGAMENTO ACEITAS:
+${orcamento.formas_pagamento?.join(', ') || 'Não informado'}
+
+─────────────────────────────────────────────────────────
+
+📅 Data do Orçamento: ${formatDate(orcamento.created_at)}
+Status: ${orcamento.status}
+
+${ESTABELECIMENTO.agradecimento}
+
+═══════════════════════════════════════════════════════════
+`;
+    
+    return texto.trim();
+}
+
+function generateReciboText(orcamento) {
+    const cliente = orcamento.clientes;
+    const itens = orcamento.orcamento_itens || [];
+    
+    let texto = `
+═══════════════════════════════════════════════════════════
+                     RECIBO NÃO FISCAL
+═══════════════════════════════════════════════════════════
+
+🏢 PRESTADOR DE SERVIÇO:
+${ESTABELECIMENTO.nome}
+CNPJ: ${ESTABELECIMENTO.cnpj}
+📍 ${ESTABELECIMENTO.endereco}
+📞 ${formatPhone(ESTABELECIMENTO.telefone)}
+
+─────────────────────────────────────────────────────────
+
+👤 CLIENTE:
+Nome: ${cliente?.nome || 'Não informado'}
+Telefone: ${formatPhone(cliente?.telefone || '')}
+Veículo: ${cliente?.carro || 'Não informado'}
+Placa: ${cliente?.placa || 'Não informada'}
+
+─────────────────────────────────────────────────────────
+
+🔧 SERVIÇOS EXECUTADOS:
+`;
+
+    itens.forEach((item, index) => {
+        const subtotal = item.valor_unitario * item.quantidade;
+        texto += `
+${index + 1}. ${item.servicos?.descricao || 'Serviço não encontrado'}
+   Quantidade: ${item.quantidade}
+   Valor unitário: ${formatCurrency(item.valor_unitario)}
+   Subtotal: ${formatCurrency(subtotal)}
+`;
+    });
+    
+    const subtotalGeral = itens.reduce((total, item) => total + (item.valor_unitario * item.quantidade), 0);
+    const desconto = orcamento.desconto || 0;
+    const total = subtotalGeral - desconto;
+    
+    texto += `
+─────────────────────────────────────────────────────────
+
+💰 RESUMO FINANCEIRO:
+Subtotal dos Serviços: ${formatCurrency(subtotalGeral)}
+Desconto Aplicado: ${formatCurrency(desconto)}
+VALOR TOTAL PAGO: ${formatCurrency(total)}
+
+─────────────────────────────────────────────────────────
+
+💳 FORMA DE PAGAMENTO:
+${orcamento.formas_pagamento?.join(', ') || 'Não informado'}
+
+─────────────────────────────────────────────────────────
+
+📅 Data do Serviço: ${formatDate(orcamento.updated_at)}
+Recibo #${orcamento.id}
+
+${ESTABELECIMENTO.agradecimento}
+
+═══════════════════════════════════════════════════════════
+`;
+    
+    return texto.trim();
+}
+
+function populateOrcamentoFormForEdit(orcamento) {
+    // Preenche dados básicos
+    $('#orcamento-id-to-edit').value = orcamento.id;
+    $('#orcamento-cliente').value = orcamento.cliente_id;
+    $('#orcamento-desconto').value = orcamento.desconto || 0;
+    
+    // Preenche formas de pagamento
+    $$('#payment-options .payment-option').forEach(btn => {
+        btn.classList.remove('active');
+        if (orcamento.formas_pagamento?.includes(btn.dataset.value)) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Preenche itens
+    state.novoOrcamentoItens = orcamento.orcamento_itens.map(item => ({
+        servico_id: item.servico_id,
+        descricao_servico: item.servicos.descricao,
+        valor_cobrado: item.valor_unitario,
+        quantidade: item.quantidade
+    }));
+    
+    // Atualiza interface
+    renderNovoOrcamentoItens();
+    updateOrcamentoTotal();
+    
+    // Altera título
+    $('#orcamento-form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Orçamento';
+    $('#cancelar-edicao-orcamento').style.display = 'inline-flex';
+}
+
+function handleEditOrcamento() {
+    if (!state.orcamentoSelecionado) return;
+    
+    populateOrcamentoFormForEdit(state.orcamentoSelecionado);
+    showTab('novo-orcamento');
+}
+
+async function updateStatusOrcamento(newStatus) {
+    if (!state.orcamentoSelecionado) return;
+    
+    const statusMessages = {
+        'Aprovado': 'Tem certeza que deseja aprovar este orçamento?',
+        'Finalizado': 'Tem certeza que deseja finalizar este orçamento?',
+        'Cancelado': 'Tem certeza que deseja cancelar este orçamento?'
+    };
+    
+    showConfirmModal(
+        `${newStatus} Orçamento`,
+        statusMessages[newStatus],
+        async () => {
+            try {
+                const { error } = await supabase
+                    .from('orcamentos')
+                    .update({ 
+                        status: newStatus,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', state.orcamentoSelecionado.id);
+                
+                if (error) throw error;
+                
+                showNotification(`Orçamento ${newStatus.toLowerCase()} com sucesso!`, 'success');
+                triggerConfetti();
+                
+                // Atualiza estado local
+                state.orcamentoSelecionado.status = newStatus;
+                displayOrcamentoDetails();
+                
+            } catch (error) {
+                console.error('Erro ao atualizar status:', error);
+                showNotification('Erro ao atualizar status: ' + error.message, 'error');
+            }
+        }
+    );
+}
+
+async function handleDeleteOrcamento() {
+    if (!state.orcamentoSelecionado) return;
+    
+    showConfirmModal(
+        'Excluir Orçamento',
+        'Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.',
+        async () => {
+            try {
+                const { error } = await supabase
+                    .from('orcamentos')
+                    .delete()
+                    .eq('id', state.orcamentoSelecionado.id);
+                
+                if (error) throw error;
+                
+                showNotification('Orçamento excluído com sucesso!', 'success');
+                triggerConfetti();
+                
+                // Esconde detalhes
+                $('#detalhes-orcamento-container').style.display = 'none';
+                state.orcamentoSelecionado = null;
+                
+            } catch (error) {
+                console.error('Erro ao excluir orçamento:', error);
+                showNotification('Erro ao excluir orçamento: ' + error.message, 'error');
+            }
+        }
+    );
+}
+
+// Funções para copiar, WhatsApp e PDF
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('Texto copiado para a área de transferência!', 'success');
+    }).catch(() => {
+        showNotification('Erro ao copiar texto', 'error');
+    });
+}
+
+function sendToWhatsApp(text, phone) {
+    const cleanedPhone = cleanPhone(phone);
+    const encodedText = encodeURIComponent(text);
+    const url = `https://wa.me/${cleanedPhone}?text=${encodedText}`;
+    window.open(url, '_blank');
+}
+
+function generatePDF(content, filename) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Configura fonte
+    doc.setFont('helvetica');
+    doc.setFontSize(8);
+    
+    // Adiciona conteúdo
+    const lines = content.split('\n');
+    let y = 20;
+    
+    lines.forEach(line => {
+        if (y > 280) {
+            doc.addPage();
+            y = 20;
+        }
+        doc.text(line, 10, y);
+        y += 4;
+    });
+    
+    // Salva PDF
+    doc.save(`${filename}.pdf`);
+    showNotification('PDF gerado com sucesso!', 'success');
+}
+
+// ============================================================================
+// CRM - GESTÃO DE RELACIONAMENTO
+// ============================================================================
+
+function renderCrmMetrics() {
+    const totalInteractions = state.crmInteractions.length;
+    const activeClients = state.clientes.filter(cliente => {
+        const ultimoOrcamento = state.orcamentos
+            .filter(o => o.cliente_id === cliente.id)
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+        
+        if (!ultimoOrcamento) return false;
+        
+        const diasSemOrcamento = Math.floor((new Date() - new Date(ultimoOrcamento.created_at)) / (1000 * 60 * 60 * 24));
+        return diasSemOrcamento <= 30;
+    }).length;
+    
+    const pendingFollowups = state.clientes.filter(cliente => {
+        const ultimoOrcamento = state.orcamentos
+            .filter(o => o.cliente_id === cliente.id && o.status === 'Finalizado')
+            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))[0];
+        
+        if (!ultimoOrcamento) return false;
+        
+        const diasSemContato = Math.floor((new Date() - new Date(ultimoOrcamento.updated_at)) / (1000 * 60 * 60 * 24));
+        return diasSemContato >= 7 && diasSemContato <= 30;
+    }).length;
+    
+    $('#crm-total-interactions').textContent = totalInteractions;
+    $('#crm-active-clients').textContent = activeClients;
+    $('#crm-pending-followups').textContent = pendingFollowups;
+}
+
+function renderCrmInteractions() {
+    const searchTerm = $('#search-crm-interactions').value.toLowerCase();
+    
+    let filteredInteractions = state.crmInteractions.filter(interaction => 
+        interaction.clientes?.nome.toLowerCase().includes(searchTerm) ||
+        interaction.type.toLowerCase().includes(searchTerm) ||
+        interaction.notes.toLowerCase().includes(searchTerm)
+    );
+    
+    const interactionsList = $('#crm-interaction-list');
+    
+    if (filteredInteractions.length === 0) {
+        renderEmptyState(interactionsList, 'Nenhuma interação encontrada', 'Registre a primeira interação para começar');
+        return;
+    }
+    
+    interactionsList.innerHTML = filteredInteractions.map(interaction => `
+        <li>
+            <div>
+                <strong>${interaction.clientes?.nome || 'Cliente não encontrado'}</strong>
+                <small>${interaction.type} - ${formatDate(interaction.interaction_date)}</small>
+                <small>${interaction.notes || 'Sem observações'}</small>
+            </div>
+            <div class="item-actions">
+                <span class="status-indicator status-info">${interaction.type}</span>
+            </div>
+        </li>
+    `).join('');
+}
+
+function renderInteractionClientOptions() {
+    const clientSelect = $('#interaction-client');
+    clientSelect.innerHTML = '<option value="">Selecione um cliente</option>';
+    
+    state.clientes.forEach(cliente => {
+        const option = document.createElement('option');
+        option.value = cliente.id;
+        option.textContent = `${cliente.nome} - ${cliente.carro}`;
+        clientSelect.appendChild(option);
+    });
+}
+
+async function handleCrmInteractionSubmit(e) {
+    e.preventDefault();
+    
+    const clienteId = $('#interaction-client').value;
+    const type = $('#interaction-type').value;
+    const notes = $('#interaction-notes').value.trim();
+    const interactionDate = $('#interaction-date').value;
+    
+    if (!clienteId) {
+        showNotification('Selecione um cliente', 'error');
+        return;
+    }
+    
+    if (!type) {
+        showNotification('Selecione o tipo de interação', 'error');
+        return;
+    }
+    
+    if (!interactionDate) {
+        showNotification('Selecione a data', 'error');
+        return;
+    }
+    
+    try {
+        const { error } = await supabase
+            .from('crm_interactions')
+            .insert([{
+                cliente_id: clienteId,
+                type,
+                notes,
+                interaction_date: interactionDate,
+                created_at: new Date().toISOString()
+            }]);
+        
+        if (error) throw error;
+        
+        showNotification('Interação registrada com sucesso!', 'success');
+        triggerConfetti();
+        
+        // Limpa formulário
+        $('#crm-interaction-form').reset();
+        $('#interaction-date').value = new Date().toISOString().split('T')[0];
+        
+    } catch (error) {
+        console.error('Erro ao registrar interação:', error);
+        showNotification('Erro ao registrar interação: ' + error.message, 'error');
+    }
+}
+
+function renderSuggestedFollowups() {
+    const followupsList = $('#suggested-followups-list');
+    
+    // Busca clientes que finalizaram orçamentos há 7-30 dias
+    const followupClients = state.clientes.filter(cliente => {
+        const ultimoOrcamento = state.orcamentos
+            .filter(o => o.cliente_id === cliente.id && o.status === 'Finalizado')
+            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))[0];
+        
+        if (!ultimoOrcamento) return false;
+        
+        const diasSemContato = Math.floor((new Date() - new Date(ultimoOrcamento.updated_at)) / (1000 * 60 * 60 * 24));
+        return diasSemContato >= 7 && diasSemContato <= 30;
+    });
+    
+    if (followupClients.length === 0) {
+        renderEmptyState(followupsList, 'Nenhum follow-up pendente', 'Ótimo! Todos os clientes foram contactados recentemente');
+        return;
+    }
+    
+    followupsList.innerHTML = followupClients.map(cliente => {
+        const ultimoOrcamento = state.orcamentos
+            .filter(o => o.cliente_id === cliente.id && o.status === 'Finalizado')
+            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))[0];
+        
+        const diasSemContato = Math.floor((new Date() - new Date(ultimoOrcamento.updated_at)) / (1000 * 60 * 60 * 24));
+        
+        return `
+            <li>
+                <div>
+                    <strong>${cliente.nome}</strong>
+                    <small>${cliente.carro} - ${cliente.placa}</small>
+                    <small>Último serviço: ${formatDate(ultimoOrcamento.updated_at)} (${diasSemContato} dias atrás)</small>
+                </div>
+                <div class="item-actions">
+                    <button class="btn btn-sm btn-success contact-followup-btn" data-id="${cliente.id}">
+                        <i class="fas fa-phone"></i> Contatar
+                    </button>
+                </div>
+            </li>
+        `;
+    }).join('');
+    
+    // Adiciona event listeners
+    followupsList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('contact-followup-btn') || e.target.parentElement.classList.contains('contact-followup-btn')) {
+            const clienteId = e.target.dataset.id || e.target.parentElement.dataset.id;
+            handleContactFollowup(clienteId);
+        }
+    });
+}
+
+function handleContactFollowup(clienteId) {
+    const cliente = state.clientes.find(c => c.id === clienteId);
+    if (!cliente) return;
+    
+    // Preenche formulário de nova interação
+    $('#interaction-client').value = clienteId;
+    $('#interaction-type').value = 'WhatsApp';
+    $('#interaction-date').value = new Date().toISOString().split('T')[0];
+    
+    // Gera mensagem de follow-up
+    const template = $('#template-followup').value;
+    const mensagem = template
+        .replace(/\[NOME\]/g, cliente.nome)
+        .replace(/\[CARRO\]/g, cliente.carro);
+    
+    $('#interaction-notes').value = mensagem;
+    
+    // Envia para WhatsApp
+    sendToWhatsApp(mensagem, cliente.telefone);
+    
+    showNotification('Follow-up iniciado! Registre a interação após o contato.', 'success');
+}
+
+function renderInactiveClients() {
+    const inactivityDays = parseInt($('#inactivity-filter').value);
+    const inactiveClientsList = $('#inactive-clients-list');
+    
+    // Busca clientes inativos
+    const inactiveClients = state.clientes.filter(cliente => {
+        const ultimoOrcamento = state.orcamentos
+            .filter(o => o.cliente_id === cliente.id)
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+        
+        if (!ultimoOrcamento) return true; // Cliente sem orçamentos
+        
+        const diasSemOrcamento = Math.floor((new Date() - new Date(ultimoOrcamento.created_at)) / (1000 * 60 * 60 * 24));
+        return diasSemOrcamento >= inactivityDays;
+    });
+    
+    if (inactiveClients.length === 0) {
+        renderEmptyState(inactiveClientsList, 'Nenhum cliente inativo', 'Todos os clientes estão ativos!');
+        return;
+    }
+    
+    inactiveClientsList.innerHTML = inactiveClients.map(cliente => {
+        const ultimoOrcamento = state.orcamentos
+            .filter(o => o.cliente_id === cliente.id)
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+        
+        const diasSemOrcamento = ultimoOrcamento ? 
+            Math.floor((new Date() - new Date(ultimoOrcamento.created_at)) / (1000 * 60 * 60 * 24)) : 
+            'Nunca';
+        
+        return `
+            <li>
+                <div>
+                    <strong>${cliente.nome}</strong>
+                    <small>${cliente.carro} - ${cliente.placa}</small>
+                    <small>${ultimoOrcamento ? `Último orçamento: ${diasSemOrcamento} dias atrás` : 'Nunca fez orçamento'}</small>
+                </div>
+                <div class="item-actions">
+                    <input type="checkbox" class="inactive-client-checkbox" data-id="${cliente.id}">
+                    <label>Selecionar</label>
+                </div>
+            </li>
+        `;
+    }).join('');
+}
+
+function handleBulkContact() {
+    const selectedClients = Array.from($$('.inactive-client-checkbox:checked')).map(cb => cb.dataset.id);
+    
+    if (selectedClients.length === 0) {
+        showNotification('Selecione pelo menos um cliente', 'warning');
+        return;
+    }
+    
+    // Preenche modal de disparo
+    state.selectedDispatchClients = new Set(selectedClients);
+    renderDispatchClientList();
+    $('#dispatch-view-modal').classList.add('active');
+}
+
+function renderDispatchClientList() {
+    const clientList = $('#dispatch-client-list');
+    
+    clientList.innerHTML = state.clientes
+        .filter(cliente => state.selectedDispatchClients.has(cliente.id))
+        .map(cliente => `
+            <li data-id="${cliente.id}" class="active">
+                <strong>${cliente.nome}</strong>
+                <small>${cliente.carro} - ${formatPhone(cliente.telefone)}</small>
+            </li>
+        `).join('');
+    
+    // Mostra compositor
+    $('#composer-placeholder').classList.add('hidden');
+    $('#composer-content').classList.remove('hidden');
+}
+
+function handleTemplateSelect() {
+    const templateType = $('#composer-template-select').value;
+    if (!templateType) return;
+    
+    const template = $(`#template-${templateType}`).value;
+    $('#composer-message').value = template;
+}
+
+function handleSendWhatsApp() {
+    const message = $('#composer-message').value.trim();
+    if (!message) {
+        showNotification('Digite uma mensagem', 'error');
+        return;
+    }
+    
+    state.selectedDispatchClients.forEach(clienteId => {
+        const cliente = state.clientes.find(c => c.id === clienteId);
+        if (cliente) {
+            const personalizedMessage = message
+                .replace(/\[NOME\]/g, cliente.nome)
+                .replace(/\[CARRO\]/g, cliente.carro);
+            
+            sendToWhatsApp(personalizedMessage, cliente.telefone);
+        }
+    });
+    
+    showNotification(`Mensagem enviada para ${state.selectedDispatchClients.size} cliente(s)!`, 'success');
+    triggerConfetti();
+    
+    // Fecha modal
+    $('#dispatch-view-modal').classList.remove('active');
+    state.selectedDispatchClients.clear();
+}
+
+// ============================================================================
+// DESPESAS - GESTÃO DE DESPESAS
+// ============================================================================
+
+function renderDespesas() {
+    const monthFilter = $('#filter-despesas-mes').value;
+    
+    let filteredDespesas = state.despesas;
+    
+    if (monthFilter) {
+        filteredDespesas = state.despesas.filter(despesa => {
+            const despesaMonth = despesa.data.substring(0, 7); // YYYY-MM
+            return despesaMonth === monthFilter;
+        });
+    }
+    
+    const despesasList = $('#despesas-lista');
+    
+    if (filteredDespesas.length === 0) {
+        renderEmptyState(despesasList, 'Nenhuma despesa encontrada', 'Registre a primeira despesa para começar');
+        return;
+    }
+    
+    despesasList.innerHTML = filteredDespesas.map(despesa => `
+        <li data-id="${despesa.id}" ${state.editandoDespesaId === despesa.id ? 'class="editing"' : ''}>
+            <div>
+                <strong data-field="descricao">${despesa.descricao}</strong>
+                <small>${despesa.categoria} - ${formatDate(despesa.data)}</small>
+                <small>${formatCurrency(despesa.valor)}</small>
+                <input type="text" class="inline-edit-input edit-mode-input" value="${despesa.descricao}" data-field="descricao">
+                <input type="number" class="inline-edit-input edit-mode-input" value="${despesa.valor}" data-field="valor" step="0.01">
+            </div>
+            <div class="item-actions">
+                <button class="btn btn-sm btn-secondary edit-despesa-btn" data-id="${despesa.id}">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                <button class="btn btn-sm btn-danger delete-despesa-btn" data-id="${despesa.id}">
+                    <i class="fas fa-trash"></i> Excluir
+                </button>
+            </div>
+        </li>
+    `).join('');
+    
+    // Adiciona event listeners
+    despesasList.addEventListener('click', (e) => {
+        const despesaId = e.target.dataset.id || e.target.parentElement.dataset.id;
+        
+        if (e.target.classList.contains('edit-despesa-btn') || e.target.parentElement.classList.contains('edit-despesa-btn')) {
+            handleEditDespesa(despesaId);
+        } else if (e.target.classList.contains('delete-despesa-btn') || e.target.parentElement.classList.contains('delete-despesa-btn')) {
+            handleDeleteDespesa(despesaId);
+        }
+    });
+}
+
+function renderDespesasMetrics() {
+    const hoje = new Date().toISOString().split('T')[0];
+    const inicioMes = new Date();
+    inicioMes.setDate(1);
+    const inicioMesStr = inicioMes.toISOString().split('T')[0];
+    
+    const totalMes = state.despesas
+        .filter(d => d.data >= inicioMesStr)
+        .reduce((total, d) => total + d.valor, 0);
+    
+    const totalHoje = state.despesas
+        .filter(d => d.data === hoje)
+        .reduce((total, d) => total + d.valor, 0);
+    
+    const diasNoMes = new Date().getDate();
+    const mediaDiaria = totalMes / diasNoMes;
+    
+    $('#despesas-total-mes').textContent = formatCurrency(totalMes);
+    $('#despesas-hoje').textContent = formatCurrency(totalHoje);
+    $('#despesas-media-diaria').textContent = formatCurrency(mediaDiaria);
+}
+
+function renderDespesasChart() {
+    const canvas = $('#despesas-chart');
+    const ctx = canvas.getContext('2d');
+    
+    // Destrói chart existente
+    if (state.despesasChart) {
+        state.despesasChart.destroy();
+    }
+    
+    // Agrupa despesas por categoria
+    const categorias = {};
+    state.despesas.forEach(despesa => {
+        if (!categorias[despesa.categoria]) {
+            categorias[despesa.categoria] = 0;
+        }
+        categorias[despesa.categoria] += despesa.valor;
+    });
+    
+    const labels = Object.keys(categorias);
+    const data = Object.values(categorias);
+    const colors = ['#1FB8CD', '#FFC185', '#B4413C', '#ECEBD5', '#5D878F'];
+    
+    // Cria novo chart
+    state.despesasChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: ['Agendados', 'Confirmados', 'Concluídos'],
-          datasets: [{
-            data: [5, 3, 4],
-            backgroundColor: ['#FFC185', '#1FB8CD', '#5D878F'],
-            borderColor: ['#FFC185', '#1FB8CD', '#5D878F'],
-            borderWidth: 1
-          }]
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors.slice(0, labels.length),
+                borderWidth: 2,
+                borderColor: '#2d3748'
+            }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#a0aec0',
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${formatCurrency(context.parsed)}`;
+                        }
+                    }
+                }
             }
-          }
         }
-      });
-    }
-  } catch (error) {
-    console.error('Error creating appointment chart:', error);
-  }
+    });
 }
 
-// Modal Management
-function initializeModals() {
-  try {
-    const closeBtn = document.getElementById('modal-close-btn');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        closeModal();
-      });
+async function handleDespesaSubmit(e) {
+    e.preventDefault();
+    
+    const id = $('#despesa-id').value;
+    const descricao = $('#despesa-descricao').value.trim();
+    const valor = parseFloat($('#despesa-valor').value);
+    const categoria = $('#despesa-categoria').value;
+    const data = $('#despesa-data').value;
+    
+    // Validações
+    if (!descricao) {
+        showNotification('Descrição é obrigatória', 'error');
+        return;
     }
     
-    const overlay = document.getElementById('modal-overlay');
-    if (overlay) {
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) {
-          closeModal();
+    if (!valor || valor <= 0) {
+        showNotification('Valor deve ser maior que zero', 'error');
+        return;
+    }
+    
+    if (!categoria) {
+        showNotification('Selecione uma categoria', 'error');
+        return;
+    }
+    
+    if (!data) {
+        showNotification('Data é obrigatória', 'error');
+        return;
+    }
+    
+    try {
+        const despesaData = { descricao, valor, categoria, data };
+        
+        if (id) {
+            // Atualizar despesa existente
+            const { error } = await supabase
+                .from('despesas')
+                .update(despesaData)
+                .eq('id', id);
+            
+            if (error) throw error;
+            
+            showNotification('Despesa atualizada com sucesso!', 'success');
+            triggerConfetti();
+        } else {
+            // Criar nova despesa
+            const { error } = await supabase
+                .from('despesas')
+                .insert([despesaData]);
+            
+            if (error) throw error;
+            
+            showNotification('Despesa registrada com sucesso!', 'success');
+            triggerConfetti();
         }
-      });
+        
+        resetDespesaForm();
+        
+    } catch (error) {
+        console.error('Erro ao salvar despesa:', error);
+        showNotification('Erro ao salvar despesa: ' + error.message, 'error');
     }
-  } catch (error) {
-    console.error('Error initializing modals:', error);
-  }
 }
 
-function openModal(title, content) {
-  try {
-    const titleEl = document.getElementById('modal-title');
-    const bodyEl = document.getElementById('modal-body');
-    const overlayEl = document.getElementById('modal-overlay');
+function handleEditDespesa(id) {
+    const despesa = state.despesas.find(d => d.id === id);
+    if (!despesa) return;
     
-    if (titleEl) titleEl.textContent = title;
-    if (bodyEl) bodyEl.innerHTML = content;
-    if (overlayEl) overlayEl.classList.add('show');
-  } catch (error) {
-    console.error('Error opening modal:', error);
-  }
-}
-
-function closeModal() {
-  try {
-    const overlayEl = document.getElementById('modal-overlay');
-    if (overlayEl) {
-      overlayEl.classList.remove('show');
-    }
-  } catch (error) {
-    console.error('Error closing modal:', error);
-  }
-}
-
-// Utility Functions
-function formatCurrency(value) {
-  try {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  } catch (error) {
-    return `R$ ${value.toFixed(2)}`;
-  }
-}
-
-function formatDate(dateString) {
-  try {
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  } catch (error) {
-    return dateString;
-  }
-}
-
-function formatDateTime(dateTimeString) {
-  try {
-    return new Date(dateTimeString).toLocaleString('pt-BR');
-  } catch (error) {
-    return dateTimeString;
-  }
-}
-
-function showToast(message, type = 'info') {
-  try {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
+    $('#despesa-id').value = despesa.id;
+    $('#despesa-descricao').value = despesa.descricao;
+    $('#despesa-valor').value = despesa.valor;
+    $('#despesa-categoria').value = despesa.categoria;
+    $('#despesa-data').value = despesa.data;
     
-    const container = document.getElementById('toast-container');
-    if (container) {
-      container.appendChild(toast);
-      
-      setTimeout(() => {
-        toast.classList.add('show');
-      }, 100);
-      
-      setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => {
-          if (toast.parentNode) {
-            toast.remove();
-          }
-        }, 300);
-      }, 3000);
-    }
-  } catch (error) {
-    console.error('Error showing toast:', error);
-  }
+    $('#despesa-form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Despesa';
+    $('#cancelar-edicao-despesa').style.display = 'inline-flex';
+    
+    state.editandoDespesaId = id;
+    renderDespesas();
 }
+
+function handleDeleteDespesa(id) {
+    showConfirmModal(
+        'Excluir Despesa',
+        'Tem certeza que deseja excluir esta despesa? Esta ação não pode ser desfeita.',
+        async () => {
+            try {
+                const { error } = await supabase
+                    .from('despesas')
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                showNotification('Despesa excluída com sucesso!', 'success');
+                triggerConfetti();
+                resetDespesaForm();
+                
+            } catch (error) {
+                console.error('Erro ao excluir despesa:', error);
+                showNotification('Erro ao excluir despesa: ' + error.message, 'error');
+            }
+        }
+    );
+}
+
+function resetDespesaForm() {
+    $('#despesa-form').reset();
+    $('#despesa-id').value = '';
+    $('#despesa-form-title').innerHTML = '<i class="fas fa-plus"></i> Nova Despesa';
+    $('#cancelar-edicao-despesa').style.display = 'none';
+    $('#despesa-data').value = new Date().toISOString().split('T')[0];
+    state.editandoDespesaId = null;
+    renderDespesas();
+}
+
+// ============================================================================
+// INICIALIZAÇÃO DA APLICAÇÃO
+// ============================================================================
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Configurações iniciais
+    updateNetworkStatus();
+    
+    // Define data atual nos campos de data
+    $('#interaction-date').value = new Date().toISOString().split('T')[0];
+    $('#despesa-data').value = new Date().toISOString().split('T')[0];
+    
+    // Event listeners para navegação
+    $$('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const tabId = e.target.dataset.tab;
+            showTab(tabId);
+        });
+    });
+    
+    // Event listeners para dashboard
+    $$('.stat-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            const filter = e.currentTarget.dataset.filter;
+            if (filter === 'clientes') {
+                showTab('clientes');
+            } else if (filter === 'pendentes') {
+                showTab('historico', { status: 'Orçamento' });
+            } else if (filter === 'aprovados') {
+                showTab('historico', { status: 'Aprovado' });
+            } else if (filter === 'finalizados') {
+                showTab('historico', { status: 'Finalizado' });
+            }
+        });
+    });
+    
+    // Event listeners para formulários
+    $('#cliente-form').addEventListener('submit', handleClienteSubmit);
+    $('#servico-form').addEventListener('submit', handleServicoSubmit);
+    $('#orcamento-form').addEventListener('submit', handleOrcamentoSubmit);
+    $('#crm-interaction-form').addEventListener('submit', handleCrmInteractionSubmit);
+    $('#despesa-form').addEventListener('submit', handleDespesaSubmit);
+    
+    // Event listeners para botões de cancelar edição
+    $('#cancelar-edicao-cliente').addEventListener('click', resetClienteForm);
+    $('#cancelar-edicao-servico').addEventListener('click', resetServicoForm);
+    $('#cancelar-edicao-orcamento').addEventListener('click', resetOrcamentoForm);
+    $('#cancelar-edicao-despesa').addEventListener('click', resetDespesaForm);
+    
+    // Event listeners para buscas
+    $('#search-cliente').addEventListener('input', debounce(renderClientes, 300));
+    $('#search-servico').addEventListener('input', debounce(renderServicos, 300));
+    $('#search-historico').addEventListener('input', debounce(renderOrcamentos, 300));
+    $('#search-crm-interactions').addEventListener('input', debounce(renderCrmInteractions, 300));
+    
+    // Event listeners para ordenação
+    $('#sort-clientes').addEventListener('change', renderClientes);
+    $('#sort-servicos').addEventListener('change', renderServicos);
+    
+    // Event listeners para filtros
+    $('#filter-status').addEventListener('change', renderOrcamentos);
+    $('#filter-start-date').addEventListener('change', renderOrcamentos);
+    $('#filter-end-date').addEventListener('change', renderOrcamentos);
+    $('#filter-despesas-mes').addEventListener('change', renderDespesas);
+    $('#inactivity-filter').addEventListener('change', renderInactiveClients);
+    
+    // Event listeners para botões de limpar filtros
+    $('#clear-filters-btn').addEventListener('click', () => {
+        $('#filter-status').value = '';
+        $('#filter-start-date').value = '';
+        $('#filter-end-date').value = '';
+        renderOrcamentos();
+    });
+    
+    // Event listeners para orçamento
+    $('#add-servico-btn').addEventListener('click', handleAddServicoToOrcamento);
+    $('#orcamento-desconto').addEventListener('input', updateOrcamentoTotal);
+    
+    // Event listeners para formas de pagamento
+    $('#payment-options').addEventListener('click', (e) => {
+        if (e.target.classList.contains('payment-option')) {
+            e.target.classList.toggle('active');
+        }
+    });
+    
+    // Event listeners para detalhes do orçamento
+    $('#btn-view-orcamento').addEventListener('click', () => switchDetailView('orcamento'));
+    $('#btn-view-recibo').addEventListener('click', () => switchDetailView('recibo'));
+    
+    // Event listeners para ações dos detalhes
+    $('#copy-orcamento-btn').addEventListener('click', () => {
+        const texto = $('#detalhes-orcamento-texto').textContent;
+        copyToClipboard(texto);
+    });
+    
+    $('#copy-recibo-btn').addEventListener('click', () => {
+        const texto = $('#detalhes-recibo-texto').textContent;
+        copyToClipboard(texto);
+    });
+    
+    $('#whatsapp-orcamento-btn').addEventListener('click', () => {
+        const texto = $('#detalhes-orcamento-texto').textContent;
+        const phone = state.orcamentoSelecionado?.clientes?.telefone;
+        if (phone) {
+            sendToWhatsApp(texto, phone);
+        }
+    });
+    
+    $('#whatsapp-recibo-btn').addEventListener('click', () => {
+        const texto = $('#detalhes-recibo-texto').textContent;
+        const phone = state.orcamentoSelecionado?.clientes?.telefone;
+        if (phone) {
+            sendToWhatsApp(texto, phone);
+        }
+    });
+    
+    $('#pdf-orcamento-btn').addEventListener('click', () => {
+        const texto = $('#detalhes-orcamento-texto').textContent;
+        generatePDF(texto, `orcamento_${state.orcamentoSelecionado?.id}`);
+    });
+    
+    $('#pdf-recibo-btn').addEventListener('click', () => {
+        const texto = $('#detalhes-recibo-texto').textContent;
+        generatePDF(texto, `recibo_${state.orcamentoSelecionado?.id}`);
+    });
+    
+    // Event listeners para ações de status
+    $('#edit-orcamento-btn').addEventListener('click', handleEditOrcamento);
+    $('#approve-orcamento-btn').addEventListener('click', () => updateStatusOrcamento('Aprovado'));
+    $('#finalize-orcamento-btn').addEventListener('click', () => updateStatusOrcamento('Finalizado'));
+    $('#cancel-orcamento-btn').addEventListener('click', () => updateStatusOrcamento('Cancelado'));
+    $('#delete-orcamento-btn').addEventListener('click', handleDeleteOrcamento);
+    
+    // Event listeners para detalhes do cliente
+    $('#close-details-btn').addEventListener('click', () => {
+        $('#client-details-panel').style.display = 'none';
+    });
+    
+    // Event listeners para CRM
+    $('#bulk-contact-btn').addEventListener('click', handleBulkContact);
+    $('#composer-template-select').addEventListener('change', handleTemplateSelect);
+    $('#send-whatsapp-btn').addEventListener('click', handleSendWhatsApp);
+    
+    // Event listeners para modal de disparo
+    $('#close-dispatch-modal').addEventListener('click', () => {
+        $('#dispatch-view-modal').classList.remove('active');
+    });
+    
+    // Event listeners para exportação CSV
+    $('#export-clientes-csv').addEventListener('click', () => {
+        const data = state.clientes.map(c => ({
+            Nome: c.nome,
+            Telefone: c.telefone,
+            Carro: c.carro,
+            Placa: c.placa
+        }));
+        exportToCsv(data, 'clientes');
+    });
+    
+    $('#export-servicos-csv').addEventListener('click', () => {
+        const data = state.servicos.map(s => ({
+            Descrição: s.descricao,
+            Valor: s.valor
+        }));
+        exportToCsv(data, 'servicos');
+    });
+    
+    $('#export-despesas-csv').addEventListener('click', () => {
+        const data = state.despesas.map(d => ({
+            Descrição: d.descricao,
+            Valor: d.valor,
+            Categoria: d.categoria,
+            Data: d.data
+        }));
+        exportToCsv(data, 'despesas');
+    });
+    
+    // Event listeners para validação de formulários
+    $$('input[required]').forEach(input => {
+        input.addEventListener('input', () => handleValidationIcon(input));
+        input.addEventListener('blur', () => handleValidationIcon(input));
+    });
+    
+    // Event listener para sincronização
+    $('#sync-btn').addEventListener('click', () => fetchAllData(true));
+    
+    // Event listener para voltar ao topo
+    const backToTopBtn = $('#back-to-top-btn');
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            backToTopBtn.classList.add('show');
+        } else {
+            backToTopBtn.classList.remove('show');
+        }
+    });
+    
+    backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    
+    // Inicialização
+    try {
+        showNotification('Inicializando aplicação...', 'info');
+        await setupSupabaseListeners();
+        await fetchAllData(true);
+        showNotification('Aplicação inicializada com sucesso!', 'success');
+    } catch (error) {
+        console.error('Erro na inicialização:', error);
+        showNotification('Erro ao inicializar aplicação: ' + error.message, 'error');
+    }
+});
+
+// ============================================================================
+// FUNÇÕES GLOBAIS PARA ACESSO EXTERNO
+// ============================================================================
+
+window.rmEstetica = {
+    state,
+    showTab,
+    fetchAllData,
+    showNotification,
+    triggerConfetti,
+    formatCurrency,
+    formatDate,
+    formatPhone
+};
