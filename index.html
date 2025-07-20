@@ -3,1129 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R.M. Estética PRO+ - Sistema de Gerenciamento</title>
+    <title>🚗 R.M. Estética PRO+ - Sistema Completo</title>
     
     <!-- External CDN Libraries -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <style>
-/* CSS Variables - Dark Theme */
-:root {
-  /* Colors */
-  --bg-dark: #1a202c;
-  --bg-card: #2d3748;
-  --bg-input: #374151;
-  --text-light: #f7fafc;
-  --text-muted: #a0aec0;
-  --primary-red: #dc2626;
-  --primary-red-dark: #b91c1c;
-  --accent-green: #16a34a;
-  --accent-green-dark: #15803d;
-  --accent-blue: #2563eb;
-  --accent-blue-dark: #1d4ed8;
-  --accent-orange: #ea580c;
-  --accent-orange-dark: #c2410c;
-  --accent-red-status: #ef4444;
-  --border-color: #4a5568;
-  --shadow-color: rgba(0, 0, 0, 0.3);
-  --header-border: #4a5568;
-  --skeleton-base: #2d3748;
-  --skeleton-highlight: #374151;
-  
-  /* Typography */
-  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-poppins: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  
-  /* Spacing */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
-  
-  /* Border Radius */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  
-  /* Transitions */
-  --transition-fast: 0.15s ease-in-out;
-  --transition-normal: 0.3s ease-in-out;
-  --transition-slow: 0.5s ease-in-out;
-}
-
-/* Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: var(--font-inter);
-  background-color: var(--bg-dark);
-  color: var(--text-light);
-  line-height: 1.6;
-  overflow-x: hidden;
-  display: flex;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 20px;
-}
-
-/* Typography */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-poppins);
-  font-weight: 600;
-  margin-bottom: var(--spacing-md);
-}
-
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-h3 { font-size: 1.75rem; }
-h4 { font-size: 1.5rem; }
-h5 { font-size: 1.25rem; }
-h6 { font-size: 1rem; }
-
-/* Main App Container */
-.app-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0;
-  border-radius: var(--radius-xl);
-  box-shadow: 0 25px 50px -12px var(--shadow-color);
-  display: flex;
-  flex-direction: column;
-  background-color: var(--bg-card);
-  min-height: calc(100vh - 40px);
-}
-
-/* Header */
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-lg) var(--spacing-xl);
-  border-bottom: 2px solid var(--header-border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background-color: var(--bg-card);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-}
-
-header h1 {
-  color: var(--text-light);
-  font-size: 1.875rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  margin-bottom: 0;
-}
-
-header h1 i {
-  color: var(--primary-red);
-  font-size: 2rem;
-}
-
-.sync-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 1.5rem;
-  transition: var(--transition-normal);
-  padding: var(--spacing-sm);
-  border-radius: var(--radius-md);
-}
-
-.sync-btn:hover {
-  color: var(--accent-blue);
-  transform: rotate(15deg);
-}
-
-.sync-btn.syncing {
-  animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
-  color: var(--accent-blue);
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Navigation */
-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-lg) var(--spacing-xl);
-  background-color: var(--bg-dark);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.nav-btn {
-  padding: var(--spacing-md) var(--spacing-lg);
-  background-color: var(--bg-input);
-  color: var(--text-muted);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: var(--transition-normal);
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-align: center;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.nav-btn:hover {
-  background-color: var(--border-color);
-  color: var(--text-light);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-}
-
-.nav-btn.active {
-  background-color: var(--primary-red);
-  color: white;
-  font-weight: bold;
-  box-shadow: 0 8px 16px rgba(220, 38, 38, 0.4);
-  transform: translateY(-2px);
-}
-
-.nav-btn i {
-  font-size: 1rem;
-}
-
-@media (min-width: 600px) {
-  .nav-btn {
-    flex-grow: 0;
-    min-width: 120px;
-  }
-}
-
-/* Tab Content */
-.tab-content {
-  display: none;
-  animation: fadeInScale 0.6s ease-out;
-  transform-origin: top;
-  padding: var(--spacing-xl);
-  flex-grow: 1;
-}
-
-.tab-content.active {
-  display: block;
-}
-
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Grid Layouts */
-.grid-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-xl);
-}
-
-@media (min-width: 768px) {
-  .grid-layout {
-    grid-template-columns: 1fr 1.5fr;
-  }
-}
-
-.historico-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-xl);
-}
-
-@media (min-width: 992px) {
-  .historico-layout {
-    grid-template-columns: 1fr 1.5fr;
-  }
-}
-
-.dashboard-main-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-xl);
-}
-
-@media (min-width: 768px) {
-  .dashboard-main-grid {
-    grid-template-columns: 1.8fr 1fr;
-  }
-}
-
-.main-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-xl);
-  margin-bottom: var(--spacing-xl);
-}
-
-@media (min-width: 768px) {
-  .main-layout {
-    grid-template-columns: 1fr 1.5fr;
-  }
-}
-
-.crm-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-xl);
-}
-
-@media (min-width: 768px) {
-  .crm-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (min-width: 1280px) {
-  .crm-grid {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-  
-  .crm-grid .card:nth-child(3) {
-    grid-column: span 2;
-  }
-}
-
-/* Cards */
-.card {
-  background-color: var(--bg-card);
-  padding: var(--spacing-xl);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: var(--spacing-xl);
-  transition: var(--transition-normal);
-}
-
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
-.card h2 {
-  margin-top: 0;
-  margin-bottom: var(--spacing-lg);
-  color: var(--primary-red);
-  border-bottom: 2px solid var(--border-color);
-  padding-bottom: var(--spacing-md);
-  font-size: 1.5rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.card h2 i {
-  color: var(--accent-blue);
-  font-size: 1.25rem;
-}
-
-/* Dashboard Metrics */
-.metrics-section {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-lg);
-}
-
-@media (min-width: 640px) {
-  .metrics-section {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .metrics-section {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.stat-card {
-  background-color: var(--bg-input);
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  border-left: 5px solid var(--accent-blue);
-  cursor: pointer;
-  transition: var(--transition-normal);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  border-left-color: var(--primary-red);
-}
-
-.stat-card i {
-  font-size: 2rem;
-  color: var(--accent-blue);
-}
-
-.stat-card h3 {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  margin-bottom: var(--spacing-xs);
-  text-transform: uppercase;
-  font-weight: 500;
-}
-
-.stat-card p {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: var(--text-light);
-  margin: 0;
-}
-
-/* Metrics Grid */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
-}
-
-@media (min-width: 768px) {
-  .metrics-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.metric-card {
-  background-color: var(--bg-input);
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  text-align: center;
-  border-left: 5px solid var(--accent-blue);
-  transition: var(--transition-normal);
-}
-
-.metric-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-}
-
-.metric-card h3 {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  margin-bottom: var(--spacing-sm);
-}
-
-.metric-card p {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-light);
-  margin: 0;
-}
-
-/* Forms */
-.form-group {
-  margin-bottom: var(--spacing-lg);
-  position: relative;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: var(--spacing-sm);
-  color: var(--text-muted);
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: var(--spacing-md);
-  background-color: var(--bg-input);
-  border: 1.5px solid var(--border-color);
-  border-radius: var(--radius-md);
-  color: var(--text-light);
-  font-size: 1rem;
-  transition: var(--transition-normal);
-  outline: none;
-  font-family: var(--font-inter);
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.form-group input[type="date"],
-.form-group input[type="month"] {
-  color-scheme: dark;
-}
-
-/* Form Validation */
-.form-group input:invalid:not(:focus):not(:placeholder-shown) {
-  border-color: var(--accent-red-status);
-}
-
-.form-group .validation-message {
-  color: var(--accent-red-status);
-  font-size: 0.75rem;
-  margin-top: var(--spacing-xs);
-  display: none;
-}
-
-.form-group input:invalid:not(:focus):not(:placeholder-shown) + .validation-message {
-  display: block;
-}
-
-.form-group .validation-icon {
-  position: absolute;
-  right: var(--spacing-md);
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1rem;
-  display: none;
-}
-
-.form-group input:not(:placeholder-shown):valid + .validation-message + .validation-icon {
-  color: var(--accent-green);
-  display: block;
-}
-
-.form-group input:invalid:not(:focus):not(:placeholder-shown) + .validation-message + .validation-icon {
-  color: var(--accent-red-status);
-  display: block;
-}
-
-/* Hide validation icons for selects and special cases */
-.form-group select + .validation-message + .validation-icon,
-.form-group input:not(:required) + .validation-message + .validation-icon,
-.form-group input:focus + .validation-message + .validation-icon,
-.form-group input:placeholder-shown + .validation-message + .validation-icon {
-  display: none;
-}
-
-/* Search Container */
-.search-container {
-  position: relative;
-  margin-bottom: var(--spacing-md);
-}
-
-.search-container input {
-  padding-left: 2.5rem;
-}
-
-.search-container i {
-  position: absolute;
-  left: var(--spacing-md);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  font-size: 1rem;
-}
-
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-weight: 500;
-  text-transform: uppercase;
-  font-size: 0.875rem;
-  transition: var(--transition-normal);
-  width: 100%;
-  text-align: center;
-  margin-top: var(--spacing-sm);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  font-family: var(--font-inter);
-}
-
-@media (min-width: 992px) {
-  .btn {
-    width: auto;
-  }
-}
-
-.btn:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.btn-primary {
-  background-color: var(--primary-red);
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-red-dark);
-  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
-}
-
-.btn-secondary {
-  background-color: #475569;
-  color: var(--text-light);
-}
-
-.btn-secondary:hover {
-  background-color: #64748b;
-  box-shadow: 0 4px 8px rgba(71, 85, 105, 0.3);
-}
-
-.btn-success {
-  background-color: var(--accent-green);
-  color: white;
-}
-
-.btn-success:hover {
-  background-color: var(--accent-green-dark);
-  box-shadow: 0 4px 8px rgba(22, 163, 74, 0.3);
-}
-
-.btn-warning {
-  background-color: var(--accent-orange);
-  color: white;
-}
-
-.btn-warning:hover {
-  background-color: var(--accent-orange-dark);
-  box-shadow: 0 4px 8px rgba(234, 88, 12, 0.3);
-}
-
-.btn-danger {
-  background-color: var(--accent-red-status);
-  color: white;
-}
-
-.btn-danger:hover {
-  background-color: #dc2626;
-  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
-}
-
-.btn-sm {
-  padding: var(--spacing-sm) var(--spacing-md);
-  font-size: 0.75rem;
-  width: auto;
-}
-
-/* Form Actions */
-.form-actions {
-  display: flex;
-  gap: var(--spacing-md);
-  flex-wrap: wrap;
-  margin-top: var(--spacing-xl);
-}
-
-.form-actions .btn {
-  flex: 1;
-  margin-top: 0;
-}
-
-/* List Controls */
-.list-controls {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-}
-
-@media (min-width: 768px) {
-  .list-controls {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-}
-
-.filter-controls {
-  display: flex;
-  gap: var(--spacing-md);
-  flex-wrap: wrap;
-}
-
-.sort-container select {
-  padding: var(--spacing-sm) var(--spacing-md);
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  color: var(--text-light);
-  font-size: 0.875rem;
-}
-
-/* Data Lists */
-.data-list ul {
-  list-style: none;
-  padding: 0;
-  max-height: 500px;
-  overflow-y: auto;
-  margin-top: var(--spacing-md);
-}
-
-.data-list ul::-webkit-scrollbar {
-  width: 8px;
-}
-
-.data-list ul::-webkit-scrollbar-track {
-  background-color: var(--bg-input);
-  border-radius: var(--radius-md);
-}
-
-.data-list ul::-webkit-scrollbar-thumb {
-  background-color: var(--border-color);
-  border-radius: var(--radius-md);
-}
-
-.data-list ul::-webkit-scrollbar-thumb:hover {
-  background-color: var(--text-muted);
-}
-
-.data-list li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-lg);
-  background-color: var(--bg-input);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--spacing-md);
-  flex-wrap: wrap;
-  gap: var(--spacing-md);
-  border-left: 5px solid var(--border-color);
-  transition: var(--transition-normal);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.data-list li.editing {
-  border-left: 5px solid var(--accent-orange);
-}
-
-.data-list li:hover {
-  border-left-color: var(--primary-red);
-  background-color: #2b3a4e;
-  transform: translateX(4px);
-}
-
-.data-list li.selected {
-  border-left-color: var(--accent-blue);
-  background-color: #2b3a4e;
-  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
-}
-
-.data-list li > div:first-child {
-  flex-grow: 1;
-}
-
-.data-list li strong {
-  font-size: 1.125rem;
-  color: var(--text-light);
-  display: block;
-  margin-bottom: var(--spacing-xs);
-}
-
-.data-list li small {
-  color: var(--text-muted);
-  font-size: 0.875rem;
-  display: block;
-}
-
-.item-actions {
-  display: flex;
-  gap: var(--spacing-sm);
-  flex-shrink: 0;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-/* Empty List Message */
-.empty-list-message {
-  text-align: center;
-  padding: var(--spacing-2xl);
-  color: var(--text-muted);
-  background-color: var(--bg-input);
-  border-radius: var(--radius-lg);
-  border: 2px dashed var(--border-color);
-  margin-top: var(--spacing-md);
-}
-
-.empty-list-message p {
-  font-size: 1.125rem;
-  margin-bottom: var(--spacing-sm);
-}
-
-.empty-list-message small {
-  font-size: 0.875rem;
-  opacity: 0.8;
-}
-
-/* Status Indicators */
-.status-indicator {
-  display: inline-block;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-sm);
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  margin-left: var(--spacing-sm);
-}
-
-.status-orcamento {
-  background-color: rgba(234, 88, 12, 0.2);
-  color: var(--accent-orange);
-  border: 1px solid var(--accent-orange);
-}
-
-.status-aprovado {
-  background-color: rgba(37, 99, 235, 0.2);
-  color: var(--accent-blue);
-  border: 1px solid var(--accent-blue);
-}
-
-.status-finalizado {
-  background-color: rgba(22, 163, 74, 0.2);
-  color: var(--accent-green);
-  border: 1px solid var(--accent-green);
-}
-
-.status-cancelado {
-  background-color: rgba(239, 68, 68, 0.2);
-  color: var(--accent-red-status);
-  border: 1px solid var(--accent-red-status);
-}
-
-/* Payment Options */
-.payment-options-group {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-md);
-}
-
-.payment-option {
-  padding: var(--spacing-md);
-  background-color: var(--bg-input);
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: var(--transition-normal);
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  text-align: center;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.payment-option:hover {
-  background-color: var(--border-color);
-  color: var(--text-light);
-}
-
-.payment-option.active {
-  background-color: var(--accent-blue);
-  color: white;
-  border-color: var(--accent-blue);
-  font-weight: 700;
-  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
-}
-
-.payment-option i {
-  display: block;
-  margin-bottom: var(--spacing-xs);
-  font-size: 1.25rem;
-}
-
-/* Notification */
-#notification {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: var(--spacing-lg) var(--spacing-xl);
-  border-radius: var(--radius-lg);
-  color: white;
-  z-index: 1002;
-  text-align: center;
-  visibility: hidden;
-  transition: all var(--transition-normal);
-  max-width: 400px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  font-weight: 500;
-  min-width: 300px;
-}
-
-#notification.show {
-  transform: translateX(-50%) translateY(0);
-  visibility: visible;
-}
-
-#notification.success {
-  background-color: var(--accent-green);
-}
-
-#notification.error {
-  background-color: #ef4444;
-}
-
-#notification.warning {
-  background-color: var(--accent-orange);
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.85);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: var(--spacing-lg);
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease-out;
-}
-
-.modal-overlay.active {
-  display: flex;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.modal-content {
-  background-color: var(--bg-card);
-  padding: var(--spacing-xl);
-  border-radius: var(--radius-lg);
-  text-align: center;
-  max-width: 400px;
-  width: 100%;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-  animation: slideInUp 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-}
-
-@keyframes slideInUp {
-  from {
-    transform: translateY(50px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.modal-content h3 {
-  margin-bottom: var(--spacing-lg);
-  color: var(--primary-red);
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.modal-content p {
-  margin-bottom: var(--spacing-xl);
-  color: var(--text-light);
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: center;
-  gap: var(--spacing-md);
-}
-
-.modal-actions .btn {
-  margin-top: 0;
-  width: auto;
-  min-width: 100px;
-}
-
-/* Chart Container */
-.chart-container {
-  padding: var(--spacing-lg);
-  background-color: var(--bg-card);
-  border-radius: var(--radius-lg);
-  margin-top: var(--spacing-lg);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  height: 300px;
-}
-
-.chart-container h2 {
-  text-align: center;
-  margin-bottom: var(--spacing-lg);
-}
-
-.chart-container canvas {
-  max-height: 250px;
-}
-
-/* Skeleton Loading */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--skeleton-base) 25%,
-    var(--skeleton-highlight) 50%,
-    var(--skeleton-base) 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
-  border-radius: var(--radius-md);
-}
-
-@keyframes skeleton-loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-.skeleton-item {
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-md);
-  border-radius: var(--radius-md);
-}
-
-.skeleton-text {
-  height: 20px;
-  margin-bottom: var(--spacing-sm);
-}
-
-.skeleton-text.short {
-  width: 60%;
-}
-
-.skeleton-text.medium {
-  width: 80%;
-}
-
-.skeleton-text.long {
-  width: 100%;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .app-container {
-    margin: 0;
-    border-radius: 0;
-    min-height: 100vh;
-  }
-  
-  header {
-    padding: var(--spacing-md) var(--spacing-lg);
-    border-radius: 0;
-  }
-  
-  header h1 {
-    font-size: 1.5rem;
-  }
-  
-  nav {
-    padding: var(--spacing-md) var(--spacing-lg);
-  }
-  
-  .tab-content {
-    padding: var(--spacing-lg);
-  }
-  
-  .form-actions {
-    flex-direction: column;
-  }
-  
-  .form-actions .btn {
-    width: 100%;
-  }
-  
-  .list-controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .filter-controls {
-    flex-direction: column;
-  }
-  
-  .item-actions {
-    justify-content: center;
-    width: 100%;
-    margin-top: var(--spacing-md);
-  }
-  
-  .data-list li {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-/* Offline Indicator */
-#offline-indicator {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background-color: var(--accent-red-status);
-  color: white;
-  text-align: center;
-  padding: var(--spacing-md);
-  z-index: 1004;
-  transform: translateY(-100%);
-  transition: transform var(--transition-normal);
-  font-weight: 500;
-}
-
-#offline-indicator.show {
-  transform: translateY(0);
-}
-
-#offline-indicator i {
-  margin-right: var(--spacing-sm);
-}
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-theme="dark">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="modal-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <i class="fas fa-car-wash"></i>
+            </div>
+            <h3>🚗 Carregando R.M. Estética PRO+</h3>
+            <p>Preparando o sistema...</p>
+        </div>
+    </div>
+
     <!-- Offline Indicator -->
     <div id="offline-indicator" role="alert" aria-live="assertive">
-        <i class="fas fa-wifi"></i>
-        <span>Conexão perdida - Modo offline</span>
+        <i class="fas fa-wifi-slash"></i>
+        <span>📶 Conexão perdida - Modo offline</span>
     </div>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top-btn" title="Voltar ao topo">
+        <i class="fas fa-chevron-up"></i>
+    </button>
 
     <!-- Main App Container -->
     <div class="app-container">
@@ -1133,42 +39,51 @@ nav {
         <header>
             <h1>
                 <i class="fas fa-car-wash"></i>
-                R.M. Estética PRO+
+                🚗 R.M. Estética PRO+
             </h1>
-            <button class="sync-btn" id="sync-btn" title="Sincronizar dados">
-                <i class="fas fa-sync-alt"></i>
-            </button>
+            <div class="header-controls">
+                <button class="theme-toggle-btn" id="theme-toggle-btn" title="🎨 Alternar tema">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button class="sync-btn" id="sync-btn" title="📡 Status de sincronização">
+                    <i class="fas fa-check-circle"></i>
+                </button>
+            </div>
         </header>
 
         <!-- Navigation -->
         <nav role="navigation" aria-label="Navegação Principal">
             <button class="nav-btn active" data-tab="dashboard">
                 <i class="fas fa-chart-line"></i>
-                Painel
+                <span>📊 Painel</span>
             </button>
             <button class="nav-btn" data-tab="clientes">
                 <i class="fas fa-users"></i>
-                Clientes
+                <span>👥 Clientes</span>
             </button>
             <button class="nav-btn" data-tab="servicos">
                 <i class="fas fa-tools"></i>
-                Serviços
+                <span>🔧 Serviços</span>
             </button>
             <button class="nav-btn" data-tab="novo-orcamento">
                 <i class="fas fa-file-invoice"></i>
-                Orçamento
+                <span>📝 Orçamento</span>
             </button>
             <button class="nav-btn" data-tab="historico">
                 <i class="fas fa-history"></i>
-                Histórico
+                <span>📋 Histórico</span>
             </button>
             <button class="nav-btn" data-tab="crm">
                 <i class="fas fa-handshake"></i>
-                CRM
+                <span>💬 CRM</span>
             </button>
             <button class="nav-btn" data-tab="despesas">
                 <i class="fas fa-credit-card"></i>
-                Despesas
+                <span>💰 Despesas</span>
+            </button>
+            <button class="nav-btn" data-tab="configuracoes">
+                <i class="fas fa-cog"></i>
+                <span>⚙️ Config</span>
             </button>
         </nav>
 
@@ -1179,38 +94,38 @@ nav {
                 <div class="dashboard-main-grid">
                     <!-- Metrics Cards -->
                     <div class="metrics-section">
-                        <div class="stat-card" data-filter="clientes">
+                        <div class="stat-card metric-bounce" data-filter="clientes">
                             <i class="fas fa-users"></i>
                             <div>
-                                <h3>Total de Clientes</h3>
+                                <h3>👥 Total de Clientes</h3>
                                 <p id="stat-clientes">0</p>
                             </div>
                         </div>
-                        <div class="stat-card" data-filter="pendentes">
+                        <div class="stat-card metric-bounce" data-filter="pendentes">
                             <i class="fas fa-clock"></i>
                             <div>
-                                <h3>Orçamentos Pendentes</h3>
+                                <h3>⏳ Orçamentos Pendentes</h3>
                                 <p id="stat-pendentes">0</p>
                             </div>
                         </div>
-                        <div class="stat-card" data-filter="aprovados">
+                        <div class="stat-card metric-bounce" data-filter="aprovados">
                             <i class="fas fa-check-circle"></i>
                             <div>
-                                <h3>Aprovados</h3>
+                                <h3>👍 Aprovados</h3>
                                 <p id="stat-aprovados">0</p>
                             </div>
                         </div>
-                        <div class="stat-card" data-filter="finalizados">
+                        <div class="stat-card metric-bounce" data-filter="finalizados">
                             <i class="fas fa-trophy"></i>
                             <div>
-                                <h3>Finalizados no Mês</h3>
+                                <h3>🏆 Finalizados no Mês</h3>
                                 <p id="stat-finalizados-mes">0</p>
                             </div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card metric-bounce">
                             <i class="fas fa-dollar-sign"></i>
                             <div>
-                                <h3>Faturamento Total</h3>
+                                <h3>💰 Faturamento Total</h3>
                                 <p id="stat-faturamento-total">R$ 0,00</p>
                             </div>
                         </div>
@@ -1219,17 +134,17 @@ nav {
                     <!-- Chart and Recent Activity -->
                     <div class="dashboard-side-content">
                         <div class="card">
-                            <h2><i class="fas fa-chart-bar"></i> Estatísticas Mensais</h2>
+                            <h2><i class="fas fa-chart-bar"></i> 📊 Estatísticas Mensais</h2>
                             <div class="chart-container">
                                 <canvas id="monthly-finalized-chart-canvas"></canvas>
                             </div>
                         </div>
                         
                         <div class="card data-list">
-                            <h2><i class="fas fa-clock"></i> Atividade Recente</h2>
+                            <h2><i class="fas fa-clock"></i> 🕐 Atividade Recente</h2>
                             <ul id="recent-activity-list">
                                 <div class="empty-list-message">
-                                    <p>Nenhuma atividade recente</p>
+                                    <p>📭 Nenhuma atividade recente</p>
                                     <small>Crie seu primeiro orçamento para começar</small>
                                 </div>
                             </ul>
@@ -1242,75 +157,79 @@ nav {
             <section id="clientes-tab" class="tab-content" role="tabpanel">
                 <div class="grid-layout">
                     <div class="card">
-                        <h2 id="cliente-form-title"><i class="fas fa-user-plus"></i> Cadastrar Cliente</h2>
+                        <h2 id="cliente-form-title"><i class="fas fa-user-plus"></i> 👤 Cadastrar Cliente</h2>
                         <form id="cliente-form">
                             <input type="hidden" id="cliente-id">
                             
                             <div class="form-group">
-                                <label for="cliente-nome">Nome Completo *</label>
-                                <input type="text" id="cliente-nome" required placeholder="Digite o nome completo">
-                                <div class="validation-message">Nome é obrigatório</div>
+                                <label for="cliente-nome">👤 Nome Completo *</label>
+                                <input type="text" id="cliente-nome" required placeholder="Digite o nome completo" minlength="2">
+                                <div class="validation-message">Nome é obrigatório (mínimo 2 caracteres)</div>
                                 <i class="validation-icon fas"></i>
                             </div>
 
                             <div class="form-group">
-                                <label for="cliente-telefone">Telefone *</label>
-                                <input type="tel" id="cliente-telefone" required placeholder="(99) 99999-9999">
-                                <div class="validation-message">Telefone deve ter formato válido</div>
+                                <label for="cliente-telefone">📱 Telefone *</label>
+                                <input type="tel" id="cliente-telefone" required placeholder="(99) 99999-9999" maxlength="15">
+                                <div class="validation-message">Telefone deve ter formato (XX) XXXXX-XXXX</div>
                                 <i class="validation-icon fas"></i>
                             </div>
 
                             <div class="form-group">
-                                <label for="cliente-carro">Carro *</label>
-                                <input type="text" id="cliente-carro" required placeholder="Ex: Honda Civic 2020">
-                                <div class="validation-message">Carro é obrigatório</div>
+                                <label for="cliente-carro">🚗 Carro *</label>
+                                <input type="text" id="cliente-carro" required placeholder="Ex: Honda Civic 2020" minlength="3">
+                                <div class="validation-message">Carro é obrigatório (mínimo 3 caracteres)</div>
                                 <i class="validation-icon fas"></i>
                             </div>
 
                             <div class="form-group">
-                                <label for="cliente-placa">Placa *</label>
-                                <input type="text" id="cliente-placa" required placeholder="ABC-1234 ou ABC1D23">
-                                <div class="validation-message">Placa deve ter formato válido</div>
+                                <label for="cliente-placa">🚙 Placa *</label>
+                                <input type="text" id="cliente-placa" required placeholder="ABC-1234 ou ABC1D23" maxlength="8">
+                                <div class="validation-message">Placa deve ter formato ABC-1234 ou ABC1D23</div>
                                 <i class="validation-icon fas"></i>
                             </div>
 
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Salvar Cliente
+                                <button type="submit" class="btn btn-primary btn-hover-effect">
+                                    <i class="fas fa-save"></i> <span>💾 Salvar Cliente</span>
                                 </button>
                                 <button type="button" class="btn btn-secondary" id="cancelar-edicao-cliente" style="display: none;">
-                                    <i class="fas fa-times"></i> Cancelar Edição
+                                    <i class="fas fa-times"></i> <span>❌ Cancelar Edição</span>
                                 </button>
                             </div>
                         </form>
                     </div>
 
                     <div class="card data-list">
-                        <h2><i class="fas fa-users"></i> Lista de Clientes</h2>
+                        <h2><i class="fas fa-users"></i> 📋 Lista de Clientes</h2>
                         
                         <div class="list-controls">
                             <div class="search-container">
-                                <input type="text" id="search-cliente" placeholder="Buscar por nome, placa ou telefone...">
+                                <input type="text" id="search-cliente" placeholder="🔍 Buscar por nome, placa ou telefone...">
                                 <i class="fas fa-search"></i>
                             </div>
                             
-                            <div class="sort-container">
-                                <select id="sort-clientes">
-                                    <option value="nome-asc">Nome (A-Z)</option>
-                                    <option value="nome-desc">Nome (Z-A)</option>
-                                    <option value="carro-asc">Carro (A-Z)</option>
-                                    <option value="carro-desc">Carro (Z-A)</option>
-                                </select>
+                            <div class="control-buttons">
+                                <div class="sort-container">
+                                    <select id="sort-clientes" class="form-control">
+                                        <option value="nome-asc">👤 Nome (A-Z)</option>
+                                        <option value="nome-desc">👤 Nome (Z-A)</option>
+                                        <option value="carro-asc">🚗 Carro (A-Z)</option>
+                                        <option value="carro-desc">🚗 Carro (Z-A)</option>
+                                        <option value="created_at-desc">🆕 Mais Recentes</option>
+                                        <option value="created_at-asc">📅 Mais Antigos</option>
+                                    </select>
+                                </div>
+                                
+                                <button class="btn btn-sm btn-secondary btn-hover-effect" id="export-clientes-csv">
+                                    <i class="fas fa-download"></i> <span>📥 Exportar</span>
+                                </button>
                             </div>
-                            
-                            <button class="btn btn-sm btn-secondary" id="export-clientes-csv">
-                                <i class="fas fa-download"></i> Exportar CSV
-                            </button>
                         </div>
 
                         <ul id="clientes-lista">
                             <div class="empty-list-message">
-                                <p>Nenhum cliente cadastrado</p>
+                                <p>📭 Nenhum cliente cadastrado</p>
                                 <small>Cadastre o primeiro cliente para começar</small>
                             </div>
                         </ul>
@@ -1322,61 +241,61 @@ nav {
             <section id="servicos-tab" class="tab-content" role="tabpanel">
                 <div class="grid-layout">
                     <div class="card">
-                        <h2 id="servico-form-title"><i class="fas fa-plus"></i> Cadastrar Serviço</h2>
+                        <h2 id="servico-form-title"><i class="fas fa-plus"></i> 🔧 Cadastrar Serviço</h2>
                         <form id="servico-form">
                             <input type="hidden" id="servico-id">
                             
                             <div class="form-group">
-                                <label for="servico-descricao">Descrição *</label>
-                                <input type="text" id="servico-descricao" required placeholder="Ex: Lavagem completa">
-                                <div class="validation-message">Descrição é obrigatória</div>
+                                <label for="servico-descricao">🔧 Descrição *</label>
+                                <input type="text" id="servico-descricao" required placeholder="Ex: Lavagem completa" minlength="3">
+                                <div class="validation-message">Descrição é obrigatória (mínimo 3 caracteres)</div>
                                 <i class="validation-icon fas"></i>
                             </div>
 
                             <div class="form-group">
-                                <label for="servico-valor">Valor (R$) *</label>
-                                <input type="number" id="servico-valor" required step="0.01" min="0.01" placeholder="0.00">
+                                <label for="servico-valor">💰 Valor (R$) *</label>
+                                <input type="number" id="servico-valor" required step="0.01" min="0.01" placeholder="0.00" max="9999.99">
                                 <div class="validation-message">Valor deve ser maior que zero</div>
                                 <i class="validation-icon fas"></i>
                             </div>
 
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Salvar Serviço
+                                <button type="submit" class="btn btn-primary btn-hover-effect">
+                                    <i class="fas fa-save"></i> <span>💾 Salvar Serviço</span>
                                 </button>
                                 <button type="button" class="btn btn-secondary" id="cancelar-edicao-servico" style="display: none;">
-                                    <i class="fas fa-times"></i> Cancelar Edição
+                                    <i class="fas fa-times"></i> <span>❌ Cancelar Edição</span>
                                 </button>
                             </div>
                         </form>
                     </div>
 
                     <div class="card data-list">
-                        <h2><i class="fas fa-tools"></i> Lista de Serviços</h2>
+                        <h2><i class="fas fa-tools"></i> 🛠️ Lista de Serviços</h2>
                         
                         <div class="list-controls">
                             <div class="search-container">
-                                <input type="text" id="search-servico" placeholder="Buscar por descrição...">
+                                <input type="text" id="search-servico" placeholder="🔍 Buscar por descrição...">
                                 <i class="fas fa-search"></i>
                             </div>
                             
-                            <div class="sort-container">
-                                <select id="sort-servicos">
-                                    <option value="descricao-asc">Descrição (A-Z)</option>
-                                    <option value="descricao-desc">Descrição (Z-A)</option>
-                                    <option value="valor-asc">Valor (Menor)</option>
-                                    <option value="valor-desc">Valor (Maior)</option>
-                                </select>
+                            <div class="control-buttons">
+                                <div class="sort-container">
+                                    <select id="sort-servicos" class="form-control">
+                                        <option value="descricao-asc">🔧 Descrição (A-Z)</option>
+                                        <option value="descricao-desc">🔧 Descrição (Z-A)</option>
+                                        <option value="valor-asc">💰 Valor (Menor)</option>
+                                        <option value="valor-desc">💰 Valor (Maior)</option>
+                                        <option value="created_at-desc">🆕 Mais Recentes</option>
+                                        <option value="created_at-asc">📅 Mais Antigos</option>
+                                    </select>
+                                </div>
                             </div>
-                            
-                            <button class="btn btn-sm btn-secondary" id="export-servicos-csv">
-                                <i class="fas fa-download"></i> Exportar CSV
-                            </button>
                         </div>
 
                         <ul id="servicos-lista">
                             <div class="empty-list-message">
-                                <p>Nenhum serviço cadastrado</p>
+                                <p>📭 Nenhum serviço cadastrado</p>
                                 <small>Cadastre o primeiro serviço para começar</small>
                             </div>
                         </ul>
@@ -1387,81 +306,102 @@ nav {
             <!-- Novo Orçamento Tab -->
             <section id="novo-orcamento-tab" class="tab-content" role="tabpanel">
                 <div class="card">
-                    <h2 id="orcamento-form-title"><i class="fas fa-file-invoice"></i> Novo Orçamento</h2>
+                    <h2 id="orcamento-form-title"><i class="fas fa-file-invoice"></i> 📝 Novo Orçamento</h2>
                     <form id="orcamento-form">
                         <input type="hidden" id="orcamento-id-to-edit">
                         
                         <div class="form-group">
-                            <label for="orcamento-cliente">Cliente *</label>
-                            <select id="orcamento-cliente" required>
+                            <label for="orcamento-cliente">👤 Cliente *</label>
+                            <select id="orcamento-cliente" class="form-control" required>
                                 <option value="">Selecione um cliente</option>
                             </select>
+                            <div class="validation-message">Selecione um cliente</div>
                         </div>
 
                         <div class="service-selection">
                             <div class="form-group">
-                                <label for="orcamento-servico-select">Serviço</label>
-                                <select id="orcamento-servico-select">
+                                <label for="orcamento-servico-select">🔧 Serviço</label>
+                                <select id="orcamento-servico-select" class="form-control">
                                     <option value="">Selecione um serviço</option>
                                 </select>
                             </div>
                             
                             <div class="form-group">
-                                <label for="orcamento-servico-quantidade">Quantidade</label>
-                                <input type="number" id="orcamento-servico-quantidade" min="1" value="1">
+                                <label for="orcamento-servico-quantidade">🔢 Quantidade</label>
+                                <input type="number" id="orcamento-servico-quantidade" class="form-control" min="1" value="1" max="99">
                             </div>
                             
-                            <button type="button" class="btn btn-secondary" id="add-servico-btn">
-                                <i class="fas fa-plus"></i> Adicionar
+                            <button type="button" class="btn btn-secondary btn-hover-effect" id="add-servico-btn">
+                                <i class="fas fa-plus"></i> <span>➕ Adicionar</span>
                             </button>
                         </div>
 
                         <div class="services-added">
-                            <h3><i class="fas fa-list"></i> Serviços Adicionados</h3>
+                            <h3><i class="fas fa-list"></i> 📋 Serviços Adicionados</h3>
                             <ul id="orcamento-servicos-adicionados">
-                                <p style="text-align: center; color: var(--text-muted);">Nenhum serviço adicionado</p>
+                                <p style="text-align: center; color: var(--color-text-secondary);">📭 Nenhum serviço adicionado</p>
                             </ul>
                         </div>
 
                         <div class="form-group">
-                            <label for="orcamento-desconto">Desconto (R$)</label>
-                            <input type="number" id="orcamento-desconto" step="0.01" min="0" value="0" placeholder="0.00">
+                            <label for="orcamento-desconto">🎯 Desconto (R$)</label>
+                            <input type="number" id="orcamento-desconto" class="form-control" step="0.01" min="0" value="0" placeholder="0.00" max="9999.99">
                         </div>
 
                         <div class="form-group">
-                            <label>Formas de Pagamento *</label>
-                            <div id="payment-options" class="payment-options-group">
-                                <button type="button" class="payment-option" data-value="Pix">
-                                    <i class="fas fa-qrcode"></i> Pix
-                                </button>
-                                <button type="button" class="payment-option" data-value="Dinheiro">
-                                    <i class="fas fa-money-bill"></i> Dinheiro
-                                </button>
-                                <button type="button" class="payment-option" data-value="Crédito">
-                                    <i class="fas fa-credit-card"></i> Crédito
-                                </button>
-                                <button type="button" class="payment-option" data-value="Débito">
-                                    <i class="fas fa-credit-card"></i> Débito
-                                </button>
-                                <button type="button" class="payment-option" data-value="Boleto">
-                                    <i class="fas fa-barcode"></i> Boleto
-                                </button>
+                            <label>💳 Formas de Pagamento * (Selecione uma ou mais)</label>
+                            <div id="payment-options" class="payment-options-checkboxes">
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="payment-pix" value="Pix">
+                                    <label for="payment-pix" class="checkbox-label">
+                                        <i class="fab fa-pix"></i>
+                                        <span>💰 Pix</span>
+                                    </label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="payment-dinheiro" value="Dinheiro">
+                                    <label for="payment-dinheiro" class="checkbox-label">
+                                        <i class="fas fa-money-bill"></i>
+                                        <span>💵 Dinheiro</span>
+                                    </label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="payment-credito" value="Crédito">
+                                    <label for="payment-credito" class="checkbox-label">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span>💳 Crédito</span>
+                                    </label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="payment-debito" value="Débito">
+                                    <label for="payment-debito" class="checkbox-label">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span>💸 Débito</span>
+                                    </label>
+                                </div>
+                                <div class="checkbox-group">
+                                    <input type="checkbox" id="payment-boleto" value="Boleto">
+                                    <label for="payment-boleto" class="checkbox-label">
+                                        <i class="fas fa-barcode"></i>
+                                        <span>🧾 Boleto</span>
+                                    </label>
+                                </div>
                             </div>
                             <div id="payment-options-validation" class="validation-message" style="display: none;">
                                 Selecione pelo menos uma forma de pagamento
                             </div>
                         </div>
 
-                        <div id="orcamento-total">
-                            <strong>Total: R$ 0,00</strong>
+                        <div id="orcamento-total" class="orcamento-total-display">
+                            <strong>💰 Total: R$ 0,00</strong>
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Salvar Orçamento
+                            <button type="submit" class="btn btn-primary btn-hover-effect">
+                                <i class="fas fa-save"></i> <span>💾 Salvar Orçamento</span>
                             </button>
                             <button type="button" class="btn btn-secondary" id="cancelar-edicao-orcamento" style="display: none;">
-                                <i class="fas fa-times"></i> Cancelar Edição
+                                <i class="fas fa-times"></i> <span>❌ Cancelar Edição</span>
                             </button>
                         </div>
                     </form>
@@ -1472,43 +412,98 @@ nav {
             <section id="historico-tab" class="tab-content" role="tabpanel">
                 <div class="historico-layout">
                     <div class="card data-list">
-                        <h2><i class="fas fa-history"></i> Histórico de Orçamentos</h2>
+                        <h2><i class="fas fa-history"></i> 📋 Histórico de Orçamentos</h2>
                         
                         <div class="list-controls">
                             <div class="search-container">
-                                <input type="text" id="search-historico" placeholder="Buscar por cliente, placa ou data...">
+                                <input type="text" id="search-historico" placeholder="🔍 Buscar por cliente, placa ou data...">
                                 <i class="fas fa-search"></i>
                             </div>
                             
                             <div class="filter-controls">
-                                <select id="filter-status">
-                                    <option value="">Todos os Status</option>
-                                    <option value="Orçamento">Orçamento</option>
-                                    <option value="Aprovado">Aprovado</option>
-                                    <option value="Finalizado">Finalizado</option>
-                                    <option value="Cancelado">Cancelado</option>
+                                <select id="filter-status" class="form-control">
+                                    <option value="">📊 Todos os Status</option>
+                                    <option value="Orçamento">📝 Orçamento</option>
+                                    <option value="Aprovado">👍 Aprovado</option>
+                                    <option value="Pago">💰 Pago</option>
+                                    <option value="Finalizado">✅ Finalizado</option>
+                                    <option value="Cancelado">❌ Cancelado</option>
                                 </select>
                                 
-                                <input type="date" id="filter-start-date" title="Data inicial">
-                                <input type="date" id="filter-end-date" title="Data final">
-                                
-                                <button class="btn btn-sm btn-secondary" id="clear-filters-btn">
-                                    <i class="fas fa-eraser"></i> Limpar
+                                <button class="btn btn-sm btn-secondary btn-hover-effect" id="clear-filters-btn">
+                                    <i class="fas fa-eraser"></i> <span>🧹 Limpar</span>
                                 </button>
                             </div>
                         </div>
 
                         <ul id="historico-lista">
                             <div class="empty-list-message">
-                                <p>Nenhum orçamento encontrado</p>
+                                <p>📭 Nenhum orçamento encontrado</p>
                                 <small>Crie o primeiro orçamento para começar</small>
                             </div>
                         </ul>
                     </div>
 
-                    <div class="card" id="detalhes-orcamento-container" style="display: none;">
-                        <h2><i class="fas fa-file-alt"></i> Detalhes do Orçamento</h2>
-                        <p>Selecione um orçamento da lista para ver os detalhes aqui.</p>
+                    <div class="card" id="detalhes-panel" style="display: none;">
+                        <h2><i class="fas fa-file-alt"></i> 📄 Detalhes do Orçamento</h2>
+                        
+                        <div class="detalhe-view-switcher">
+                            <button class="detalhe-view-btn active" data-view="orcamento">
+                                <i class="fas fa-file-invoice"></i> <span>📄 Orçamento</span>
+                            </button>
+                            <button class="detalhe-view-btn" data-view="recibo">
+                                <i class="fas fa-receipt"></i> <span>🧾 Recibo</span>
+                            </button>
+                        </div>
+
+                        <div id="detalhes-orcamento" class="detalhe-content">
+                            <h3><i class="fas fa-file-invoice"></i> 📄 Orçamento Detalhado</h3>
+                            <pre id="texto-orcamento">Selecione um orçamento da lista para ver os detalhes aqui.</pre>
+                            
+                            <div class="detalhe-actions">
+                                <button class="btn btn-sm btn-secondary btn-hover-effect" onclick="copyText('orcamento')">
+                                    <i class="fas fa-copy"></i> <span>📋 Copiar</span>
+                                </button>
+                                <button class="btn btn-sm btn-primary btn-hover-effect" onclick="baixarPDF('orcamento')">
+                                    <i class="fas fa-file-pdf"></i> <span>📄 PDF</span>
+                                </button>
+                                <button class="btn btn-sm btn-success btn-hover-effect" onclick="enviarWhatsApp('orcamento')">
+                                    <i class="fab fa-whatsapp"></i> <span>📱 WhatsApp</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="detalhes-recibo" class="detalhe-content" style="display: none;">
+                            <h3><i class="fas fa-receipt"></i> 🧾 Recibo de Pagamento</h3>
+                            <pre id="texto-recibo">Selecione um orçamento da lista para ver os detalhes aqui.</pre>
+                            
+                            <div class="detalhe-actions">
+                                <button class="btn btn-sm btn-secondary btn-hover-effect" onclick="copyText('recibo')">
+                                    <i class="fas fa-copy"></i> <span>📋 Copiar</span>
+                                </button>
+                                <button class="btn btn-sm btn-primary btn-hover-effect" onclick="baixarPDF('recibo')">
+                                    <i class="fas fa-file-pdf"></i> <span>📄 PDF</span>
+                                </button>
+                                <button class="btn btn-sm btn-success btn-hover-effect" onclick="enviarWhatsApp('recibo')">
+                                    <i class="fab fa-whatsapp"></i> <span>📱 WhatsApp</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="status-actions">
+                            <button class="btn btn-success btn-sm btn-hover-effect" onclick="alterarStatus('Pago')">
+                                <i class="fas fa-dollar-sign"></i> <span>💰 Marcar Pago</span>
+                            </button>
+                            <button class="btn btn-primary btn-sm btn-hover-effect" onclick="alterarStatus('Aprovado')">
+                                <i class="fas fa-thumbs-up"></i> <span>👍 Aprovar</span>
+                            </button>
+                            <button class="btn btn-warning btn-sm btn-hover-effect" onclick="editarOrcamento()">
+                                <i class="fas fa-edit"></i> <span>✏️ Editar</span>
+                            </button>
+                            <button class="btn btn-danger btn-sm btn-hover-effect" onclick="excluirOrcamento()">
+                                <i class="fas fa-trash"></i> <span>🗑️ Excluir</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1516,128 +511,226 @@ nav {
             <!-- CRM Tab -->
             <section id="crm-tab" class="tab-content" role="tabpanel">
                 <div class="metrics-grid">
-                    <div class="metric-card">
-                        <h3>Total de Interações</h3>
+                    <div class="metric-card metric-bounce">
+                        <h3>💬 Total de Interações</h3>
                         <p id="crm-total-interactions">0</p>
                     </div>
-                    <div class="metric-card">
-                        <h3>Clientes Ativos</h3>
+                    <div class="metric-card metric-bounce">
+                        <h3>👥 Clientes Ativos</h3>
                         <p id="crm-active-clients">0</p>
                     </div>
-                    <div class="metric-card">
-                        <h3>Follow-ups Pendentes</h3>
+                    <div class="metric-card metric-bounce">
+                        <h3>📞 Follow-ups Pendentes</h3>
                         <p id="crm-pending-followups">0</p>
                     </div>
                 </div>
 
                 <div class="card">
-                    <h2><i class="fas fa-comment-dots"></i> Modelos de Mensagem</h2>
-                    <div class="template-group">
-                        <label>Agradecimento</label>
-                        <textarea id="template-agradecimento" placeholder="Modelo de agradecimento...">Olá [NOME]! Obrigado por escolher a R.M. Estética Automotiva. Ficamos muito felizes em cuidar do seu [CARRO]!</textarea>
-                    </div>
-                    <div class="template-group">
-                        <label>Follow-up</label>
-                        <textarea id="template-followup" placeholder="Modelo de follow-up...">Oi [NOME]! Como está o seu [CARRO] após nosso serviço? Estamos aqui para qualquer dúvida ou novo agendamento!</textarea>
-                    </div>
-                    <div class="template-group">
-                        <label>Promoção</label>
-                        <textarea id="template-promocao" placeholder="Modelo de promoção...">🚗 Oferta especial para você, [NOME]! Aproveite nossos serviços com desconto especial. Entre em contato!</textarea>
-                    </div>
-                    <div class="template-group">
-                        <label>Lembrete</label>
-                        <textarea id="template-lembrete" placeholder="Modelo de lembrete...">Olá [NOME]! Que tal agendar uma nova sessão para o seu [CARRO]? Estamos com agenda disponível!</textarea>
-                    </div>
-                    <div class="template-group">
-                        <label>Pesquisa</label>
-                        <textarea id="template-pesquisa" placeholder="Modelo de pesquisa...">Oi [NOME]! Gostaria de saber sua opinião sobre o serviço realizado no seu [CARRO]. Sua avaliação é muito importante!</textarea>
-                    </div>
-                    <div class="template-group">
-                        <label>Reativação</label>
-                        <textarea id="template-reativacao" placeholder="Modelo de reativação...">Olá [NOME]! Sentimos sua falta! Que tal voltar a cuidar do seu [CARRO] com a gente? Temos novidades!</textarea>
-                    </div>
+                    <h2><i class="fas fa-plus-circle"></i> 📝 Registrar Nova Interação</h2>
+                    <form id="crm-interaction-form">
+                        <div class="form-group">
+                            <label for="interaction-client">👤 Cliente *</label>
+                            <select id="interaction-client" class="form-control" required>
+                                <option value="">Selecione um cliente</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="interaction-type">📞 Tipo de Interação *</label>
+                            <select id="interaction-type" class="form-control" required>
+                                <option value="">Selecione o tipo</option>
+                                <option value="WhatsApp">📱 WhatsApp</option>
+                                <option value="Telefone">☎️ Telefone</option>
+                                <option value="E-mail">📧 E-mail</option>
+                                <option value="Presencial">🏢 Presencial</option>
+                                <option value="Instagram">📸 Instagram</option>
+                                <option value="Facebook">👍 Facebook</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="interaction-notes">📝 Observações</label>
+                            <textarea id="interaction-notes" class="form-control" placeholder="Descreva brevemente a interação..." rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="interaction-date">📅 Data *</label>
+                            <input type="date" id="interaction-date" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-hover-effect">
+                                <i class="fas fa-save"></i> <span>💾 Registrar Interação</span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </section>
 
             <!-- Despesas Tab -->
             <section id="despesas-tab" class="tab-content" role="tabpanel">
                 <div class="metrics-grid">
-                    <div class="metric-card">
-                        <h3>Total do Mês</h3>
+                    <div class="metric-card metric-bounce">
+                        <h3>📅 Total do Mês</h3>
                         <p id="despesas-total-mes">R$ 0,00</p>
                     </div>
-                    <div class="metric-card">
-                        <h3>Despesas de Hoje</h3>
+                    <div class="metric-card metric-bounce">
+                        <h3>📆 Despesas de Hoje</h3>
                         <p id="despesas-hoje">R$ 0,00</p>
                     </div>
-                    <div class="metric-card">
-                        <h3>Média Diária</h3>
+                    <div class="metric-card metric-bounce">
+                        <h3>📊 Média Diária</h3>
                         <p id="despesas-media-diaria">R$ 0,00</p>
                     </div>
                 </div>
 
                 <div class="main-layout">
                     <div class="card">
-                        <h2 id="despesa-form-title"><i class="fas fa-plus"></i> Nova Despesa</h2>
+                        <h2 id="despesa-form-title"><i class="fas fa-plus"></i> 💰 Nova Despesa</h2>
                         <form id="despesa-form">
                             <input type="hidden" id="despesa-id">
                             
                             <div class="form-group">
-                                <label for="despesa-descricao">Descrição *</label>
-                                <input type="text" id="despesa-descricao" required placeholder="Ex: Compra de produtos">
+                                <label for="despesa-descricao">📝 Descrição *</label>
+                                <input type="text" id="despesa-descricao" class="form-control" required placeholder="Ex: Compra de produtos" minlength="3">
+                                <div class="validation-message">Descrição é obrigatória (mínimo 3 caracteres)</div>
+                                <i class="validation-icon fas"></i>
                             </div>
 
                             <div class="form-group">
-                                <label for="despesa-valor">Valor (R$) *</label>
-                                <input type="number" id="despesa-valor" required step="0.01" min="0.01" placeholder="0.00">
+                                <label for="despesa-valor">💰 Valor (R$) *</label>
+                                <input type="number" id="despesa-valor" class="form-control" required step="0.01" min="0.01" placeholder="0.00" max="99999.99">
+                                <div class="validation-message">Valor deve ser maior que zero</div>
+                                <i class="validation-icon fas"></i>
                             </div>
 
                             <div class="form-group">
-                                <label for="despesa-categoria">Categoria *</label>
-                                <select id="despesa-categoria" required>
+                                <label for="despesa-categoria">📂 Categoria *</label>
+                                <select id="despesa-categoria" class="form-control" required>
                                     <option value="">Selecione uma categoria</option>
-                                    <option value="Produtos">Produtos</option>
-                                    <option value="Equipamentos">Equipamentos</option>
-                                    <option value="Marketing">Marketing</option>
-                                    <option value="Combustível">Combustível</option>
-                                    <option value="Outros">Outros</option>
+                                    <option value="Produtos">🧴 Produtos</option>
+                                    <option value="Equipamentos">🔧 Equipamentos</option>
+                                    <option value="Marketing">📢 Marketing</option>
+                                    <option value="Combustível">⛽ Combustível</option>
+                                    <option value="Manutenção">🔨 Manutenção</option>
+                                    <option value="Aluguel">🏠 Aluguel</option>
+                                    <option value="Água/Luz">💡 Água/Luz</option>
+                                    <option value="Telefone/Internet">📞 Telefone/Internet</option>
+                                    <option value="Outros">📦 Outros</option>
                                 </select>
+                                <div class="validation-message">Selecione uma categoria</div>
                             </div>
 
                             <div class="form-group">
-                                <label for="despesa-data">Data *</label>
-                                <input type="date" id="despesa-data" required>
+                                <label for="despesa-data">📅 Data *</label>
+                                <input type="date" id="despesa-data" class="form-control" required>
+                                <div class="validation-message">Data é obrigatória</div>
                             </div>
 
                             <div class="form-actions">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Salvar Despesa
+                                <button type="submit" class="btn btn-primary btn-hover-effect">
+                                    <i class="fas fa-save"></i> <span>💾 Salvar Despesa</span>
                                 </button>
                                 <button type="button" class="btn btn-secondary" id="cancelar-edicao-despesa" style="display: none;">
-                                    <i class="fas fa-times"></i> Cancelar Edição
+                                    <i class="fas fa-times"></i> <span>❌ Cancelar Edição</span>
                                 </button>
                             </div>
                         </form>
                     </div>
 
                     <div class="card data-list">
-                        <h2><i class="fas fa-credit-card"></i> Lista de Despesas</h2>
+                        <h2><i class="fas fa-credit-card"></i> 💳 Lista de Despesas</h2>
                         
                         <div class="list-controls">
-                            <div class="filter-controls">
-                                <input type="month" id="filter-despesas-mes" title="Filtrar por mês">
-                                <button class="btn btn-sm btn-secondary" id="export-despesas-csv">
-                                    <i class="fas fa-download"></i> Exportar CSV
-                                </button>
+                            <div class="control-buttons">
+                                <input type="month" id="filter-despesas-mes" class="form-control" title="Filtrar por mês">
                             </div>
                         </div>
 
-                        <ul id="despesas-lista">
+                        <ul id="despesas-lista" class="expandable-list">
                             <div class="empty-list-message">
-                                <p>Nenhuma despesa cadastrada</p>
+                                <p>📭 Nenhuma despesa cadastrada</p>
                                 <small>Registre a primeira despesa para começar</small>
                             </div>
                         </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-chart-pie"></i> 📊 Despesas por Categoria</h2>
+                    <div class="chart-container">
+                        <canvas id="despesas-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Configurações Tab -->
+            <section id="configuracoes-tab" class="tab-content" role="tabpanel">
+                <div class="config-grid">
+                    <div class="card">
+                        <h2><i class="fas fa-building"></i> 🏢 Dados da Empresa</h2>
+                        <form id="empresa-form">
+                            <div class="form-group">
+                                <label for="empresa-nome">🏢 Nome da Empresa *</label>
+                                <input type="text" id="empresa-nome" class="form-control" required placeholder="Nome da empresa">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="empresa-cnpj">📄 CNPJ</label>
+                                <input type="text" id="empresa-cnpj" class="form-control" placeholder="00.000.000/0000-00">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="empresa-telefone">📞 Telefone</label>
+                                <input type="tel" id="empresa-telefone" class="form-control" placeholder="(99) 99999-9999">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="empresa-endereco">📍 Endereço</label>
+                                <textarea id="empresa-endereco" class="form-control" rows="3" placeholder="Endereço completo"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="empresa-agradecimento">💌 Mensagem de Agradecimento</label>
+                                <textarea id="empresa-agradecimento" class="form-control" rows="2" placeholder="Obrigado pela preferência!"></textarea>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary btn-hover-effect">
+                                    <i class="fas fa-save"></i> 💾 Salvar Dados
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="card">
+                        <h2><i class="fas fa-palette"></i> 🎨 Aparência</h2>
+                        <div class="theme-options">
+                            <div class="theme-option">
+                                <input type="radio" id="theme-auto" name="theme-choice" value="auto" checked>
+                                <label for="theme-auto" class="theme-label">
+                                    <i class="fas fa-magic"></i>
+                                    <span>🤖 Automático</span>
+                                    <small>Seguir sistema</small>
+                                </label>
+                            </div>
+                            <div class="theme-option">
+                                <input type="radio" id="theme-light" name="theme-choice" value="light">
+                                <label for="theme-light" class="theme-label">
+                                    <i class="fas fa-sun"></i>
+                                    <span>☀️ Claro</span>
+                                    <small>Sempre claro</small>
+                                </label>
+                            </div>
+                            <div class="theme-option">
+                                <input type="radio" id="theme-dark" name="theme-choice" value="dark">
+                                <label for="theme-dark" class="theme-label">
+                                    <i class="fas fa-moon"></i>
+                                    <span>🌙 Escuro</span>
+                                    <small>Sempre escuro</small>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1651,520 +744,20 @@ nav {
 
     <div id="confirm-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3 id="modal-title">Confirmação</h3>
+            <h3 id="modal-title">❓ Confirmação</h3>
             <p id="modal-message">Tem certeza que deseja realizar esta ação?</p>
             <div class="modal-actions">
-                <button class="btn btn-primary" id="modal-confirm-btn">Confirmar</button>
-                <button class="btn btn-secondary" id="modal-cancel-btn">Cancelar</button>
+                <button class="btn btn-primary btn-hover-effect" id="modal-confirm-btn">✅ Confirmar</button>
+                <button class="btn btn-secondary" id="modal-cancel-btn">❌ Cancelar</button>
             </div>
         </div>
     </div>
 
     <!-- External JavaScript Libraries -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
-    <script>
-// R.M. Estética Automotiva PRO+ - Sistema de Gerenciamento
-// JavaScript Principal - Todas as funcionalidades integradas
-
-// ============================================================================
-// CONFIGURAÇÕES E CONSTANTES
-// ============================================================================
-
-// Dados do estabelecimento
-const ESTABELECIMENTO = {
-    nome: "R.M. Estética Automotiva",
-    cnpj: "18.637.639/0001-48",
-    telefone: "24999486232",
-    endereco: "Rua 40, TV - Recanto dos Pássaros, Pq. Mambucaba, Angra dos Reis - RJ",
-    agradecimento: "Obrigado pela preferência e volte sempre! 👍"
-};
-
-// Estado global da aplicação
-const state = {
-    // Dados principais
-    clientes: [],
-    servicos: [],
-    orcamentos: [],
-    despesas: [],
-    
-    // Variáveis de controle
-    isOnline: navigator.onLine
-};
-
-// ============================================================================
-// UTILITÁRIOS E SELETORES DOM
-// ============================================================================
-
-// Seletores DOM simplificados
-const $ = (selector) => document.querySelector(selector);
-const $$ = (selector) => document.querySelectorAll(selector);
-
-// Função para mostrar notificações
-function showNotification(message, type = 'success') {
-    const notification = $('#notification');
-    const messageElement = $('#notification-message');
-    
-    messageElement.textContent = message;
-    notification.className = `show ${type}`;
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 4000);
-}
-
-// Formatação de moeda brasileira
-function formatCurrency(value) {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    }).format(value || 0);
-}
-
-// Formatação de data
-function formatDate(dateString) {
-    if (!dateString) return 'Data não informada';
-    return new Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-    }).format(new Date(dateString));
-}
-
-// Formatação de telefone
-function formatPhone(value) {
-    if (!value) return '';
-    const cleaned = value.replace(/\D/g, '');
-    const match = cleaned.match(/^(\d{2})(\d{4,5})(\d{4})$/);
-    if (match) {
-        return `(${match[1]}) ${match[2]}-${match[3]}`;
-    }
-    return value;
-}
-
-// ============================================================================
-// GERENCIAMENTO DE ABAS
-// ============================================================================
-
-function showTab(tabId, filterParams = {}) {
-    // Remove classe active de todas as abas e botões
-    $$('.tab-content').forEach(tab => tab.classList.remove('active'));
-    $$('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    
-    // Ativa a aba selecionada
-    $(`#${tabId}-tab`).classList.add('active');
-    $(`.nav-btn[data-tab="${tabId}"]`).classList.add('active');
-    
-    // Scroll para o topo
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Simulação de dados para demonstração
-    if (tabId === 'dashboard') {
-        updateDashboard();
-    } else if (tabId === 'clientes') {
-        renderClientes();
-    } else if (tabId === 'servicos') {
-        renderServicos();
-    } else if (tabId === 'despesas') {
-        renderDespesas();
-    }
-    
-    showNotification(`Navegando para: ${getTabName(tabId)}`, 'success');
-}
-
-function getTabName(tabId) {
-    const names = {
-        'dashboard': 'Painel',
-        'clientes': 'Clientes',
-        'servicos': 'Serviços',
-        'novo-orcamento': 'Orçamento',
-        'historico': 'Histórico',
-        'crm': 'CRM',
-        'despesas': 'Despesas'
-    };
-    return names[tabId] || tabId;
-}
-
-// ============================================================================
-// DASHBOARD - PAINEL PRINCIPAL
-// ============================================================================
-
-function updateDashboard() {
-    // Simulação de métricas para demonstração
-    $('#stat-clientes').textContent = state.clientes.length;
-    $('#stat-pendentes').textContent = '3';
-    $('#stat-aprovados').textContent = '5';
-    $('#stat-finalizados-mes').textContent = '12';
-    $('#stat-faturamento-total').textContent = formatCurrency(15000);
-    
-    // Simula atividade recente
-    const recentList = $('#recent-activity-list');
-    recentList.innerHTML = `
-        <li>
-            <div>
-                <strong>João Silva</strong>
-                <small>Honda Civic - ABC-1234</small>
-                <small>${formatDate(new Date())}</small>
-            </div>
-            <div class="item-actions">
-                <span class="status-indicator status-finalizado">Finalizado</span>
-                <span style="font-weight: bold; color: var(--accent-green);">${formatCurrency(150)}</span>
-            </div>
-        </li>
-        <li>
-            <div>
-                <strong>Maria Santos</strong>
-                <small>Toyota Corolla - XYZ-5678</small>
-                <small>${formatDate(new Date())}</small>
-            </div>
-            <div class="item-actions">
-                <span class="status-indicator status-aprovado">Aprovado</span>
-                <span style="font-weight: bold; color: var(--accent-green);">${formatCurrency(200)}</span>
-            </div>
-        </li>
-    `;
-}
-
-// ============================================================================
-// CLIENTES - GESTÃO DE CLIENTES
-// ============================================================================
-
-function renderClientes() {
-    const clientesList = $('#clientes-lista');
-    
-    if (state.clientes.length === 0) {
-        clientesList.innerHTML = `
-            <div class="empty-list-message">
-                <p>Nenhum cliente cadastrado</p>
-                <small>Cadastre o primeiro cliente para começar</small>
-            </div>
-        `;
-        return;
-    }
-    
-    clientesList.innerHTML = state.clientes.map(cliente => `
-        <li data-id="${cliente.id}">
-            <div>
-                <strong>${cliente.nome}</strong>
-                <small>${cliente.carro} - ${cliente.placa}</small>
-                <small>${formatPhone(cliente.telefone)}</small>
-            </div>
-            <div class="item-actions">
-                <button class="btn btn-sm btn-secondary">
-                    <i class="fas fa-edit"></i> Editar
-                </button>
-                <button class="btn btn-sm btn-primary">
-                    <i class="fas fa-eye"></i> Detalhes
-                </button>
-                <button class="btn btn-sm btn-danger">
-                    <i class="fas fa-trash"></i> Excluir
-                </button>
-            </div>
-        </li>
-    `).join('');
-}
-
-async function handleClienteSubmit(e) {
-    e.preventDefault();
-    
-    const nome = $('#cliente-nome').value.trim();
-    const telefone = $('#cliente-telefone').value.trim();
-    const carro = $('#cliente-carro').value.trim();
-    const placa = $('#cliente-placa').value.trim().toUpperCase();
-    
-    // Validações básicas
-    if (!nome || !telefone || !carro || !placa) {
-        showNotification('Todos os campos são obrigatórios', 'error');
-        return;
-    }
-    
-    // Cria cliente local (demonstração)
-    const novoCliente = {
-        id: Date.now().toString(),
-        nome,
-        telefone,
-        carro,
-        placa,
-        created_at: new Date().toISOString()
-    };
-    
-    state.clientes.push(novoCliente);
-    
-    showNotification('Cliente cadastrado com sucesso!', 'success');
-    $('#cliente-form').reset();
-    renderClientes();
-    updateDashboard();
-}
-
-// ============================================================================
-// SERVIÇOS - GESTÃO DE SERVIÇOS
-// ============================================================================
-
-function renderServicos() {
-    const servicosList = $('#servicos-lista');
-    
-    if (state.servicos.length === 0) {
-        servicosList.innerHTML = `
-            <div class="empty-list-message">
-                <p>Nenhum serviço cadastrado</p>
-                <small>Cadastre o primeiro serviço para começar</small>
-            </div>
-        `;
-        return;
-    }
-    
-    servicosList.innerHTML = state.servicos.map(servico => `
-        <li data-id="${servico.id}">
-            <div>
-                <strong>${servico.descricao}</strong>
-                <small>${formatCurrency(servico.valor)}</small>
-            </div>
-            <div class="item-actions">
-                <button class="btn btn-sm btn-secondary">
-                    <i class="fas fa-edit"></i> Editar
-                </button>
-                <button class="btn btn-sm btn-danger">
-                    <i class="fas fa-trash"></i> Excluir
-                </button>
-            </div>
-        </li>
-    `).join('');
-}
-
-async function handleServicoSubmit(e) {
-    e.preventDefault();
-    
-    const descricao = $('#servico-descricao').value.trim();
-    const valor = parseFloat($('#servico-valor').value);
-    
-    // Validações básicas
-    if (!descricao || !valor || valor <= 0) {
-        showNotification('Preencha todos os campos corretamente', 'error');
-        return;
-    }
-    
-    // Cria serviço local (demonstração)
-    const novoServico = {
-        id: Date.now().toString(),
-        descricao,
-        valor,
-        created_at: new Date().toISOString()
-    };
-    
-    state.servicos.push(novoServico);
-    
-    showNotification('Serviço cadastrado com sucesso!', 'success');
-    $('#servico-form').reset();
-    renderServicos();
-}
-
-// ============================================================================
-// DESPESAS - GESTÃO DE DESPESAS
-// ============================================================================
-
-function renderDespesas() {
-    const despesasList = $('#despesas-lista');
-    
-    if (state.despesas.length === 0) {
-        despesasList.innerHTML = `
-            <div class="empty-list-message">
-                <p>Nenhuma despesa cadastrada</p>
-                <small>Registre a primeira despesa para começar</small>
-            </div>
-        `;
-        return;
-    }
-    
-    despesasList.innerHTML = state.despesas.map(despesa => `
-        <li data-id="${despesa.id}">
-            <div>
-                <strong>${despesa.descricao}</strong>
-                <small>${despesa.categoria} - ${formatDate(despesa.data)}</small>
-                <small>${formatCurrency(despesa.valor)}</small>
-            </div>
-            <div class="item-actions">
-                <button class="btn btn-sm btn-secondary">
-                    <i class="fas fa-edit"></i> Editar
-                </button>
-                <button class="btn btn-sm btn-danger">
-                    <i class="fas fa-trash"></i> Excluir
-                </button>
-            </div>
-        </li>
-    `).join('');
-    
-    // Atualiza métricas
-    const totalMes = state.despesas.reduce((total, d) => total + d.valor, 0);
-    $('#despesas-total-mes').textContent = formatCurrency(totalMes);
-    $('#despesas-hoje').textContent = formatCurrency(0);
-    $('#despesas-media-diaria').textContent = formatCurrency(totalMes / 30);
-}
-
-async function handleDespesaSubmit(e) {
-    e.preventDefault();
-    
-    const descricao = $('#despesa-descricao').value.trim();
-    const valor = parseFloat($('#despesa-valor').value);
-    const categoria = $('#despesa-categoria').value;
-    const data = $('#despesa-data').value;
-    
-    // Validações básicas
-    if (!descricao || !valor || valor <= 0 || !categoria || !data) {
-        showNotification('Preencha todos os campos corretamente', 'error');
-        return;
-    }
-    
-    // Cria despesa local (demonstração)
-    const novaDespesa = {
-        id: Date.now().toString(),
-        descricao,
-        valor,
-        categoria,
-        data,
-        created_at: new Date().toISOString()
-    };
-    
-    state.despesas.push(novaDespesa);
-    
-    showNotification('Despesa registrada com sucesso!', 'success');
-    $('#despesa-form').reset();
-    $('#despesa-data').value = new Date().toISOString().split('T')[0];
-    renderDespesas();
-}
-
-// ============================================================================
-// INICIALIZAÇÃO DA APLICAÇÃO
-// ============================================================================
-
-document.addEventListener('DOMContentLoaded', async () => {
-    // Define data atual nos campos de data
-    $('#despesa-data').value = new Date().toISOString().split('T')[0];
-    
-    // Event listeners para navegação
-    $$('.nav-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const tabId = e.currentTarget.dataset.tab;
-            showTab(tabId);
-        });
-    });
-    
-    // Event listeners para dashboard
-    $$('.stat-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-            const filter = e.currentTarget.dataset.filter;
-            if (filter === 'clientes') {
-                showTab('clientes');
-            } else if (filter === 'pendentes') {
-                showTab('historico', { status: 'Orçamento' });
-            } else if (filter === 'aprovados') {
-                showTab('historico', { status: 'Aprovado' });
-            } else if (filter === 'finalizados') {
-                showTab('historico', { status: 'Finalizado' });
-            }
-        });
-    });
-    
-    // Event listeners para formulários
-    $('#cliente-form').addEventListener('submit', handleClienteSubmit);
-    $('#servico-form').addEventListener('submit', handleServicoSubmit);
-    $('#despesa-form').addEventListener('submit', handleDespesaSubmit);
-    
-    // Event listeners para formas de pagamento
-    $('#payment-options').addEventListener('click', (e) => {
-        if (e.target.classList.contains('payment-option')) {
-            e.target.classList.toggle('active');
-            showNotification(`Forma de pagamento ${e.target.dataset.value} ${e.target.classList.contains('active') ? 'selecionada' : 'removida'}`, 'success');
-        }
-    });
-    
-    // Event listener para sincronização
-    $('#sync-btn').addEventListener('click', () => {
-        $('#sync-btn').classList.add('syncing');
-        setTimeout(() => {
-            $('#sync-btn').classList.remove('syncing');
-            showNotification('Dados sincronizados com sucesso!', 'success');
-        }, 2000);
-    });
-    
-    // Event listeners para exportação CSV (demonstração)
-    $('#export-clientes-csv').addEventListener('click', () => {
-        showNotification('Funcionalidade de exportação disponível na versão completa', 'warning');
-    });
-    
-    $('#export-servicos-csv').addEventListener('click', () => {
-        showNotification('Funcionalidade de exportação disponível na versão completa', 'warning');
-    });
-    
-    $('#export-despesas-csv').addEventListener('click', () => {
-        showNotification('Funcionalidade de exportação disponível na versão completa', 'warning');
-    });
-    
-    // Dados de demonstração
-    state.clientes = [
-        {
-            id: '1',
-            nome: 'João Silva',
-            telefone: '11999887766',
-            carro: 'Honda Civic 2020',
-            placa: 'ABC-1234',
-            created_at: new Date().toISOString()
-        },
-        {
-            id: '2', 
-            nome: 'Maria Santos',
-            telefone: '11888776655',
-            carro: 'Toyota Corolla 2021',
-            placa: 'XYZ-5678',
-            created_at: new Date().toISOString()
-        }
-    ];
-    
-    state.servicos = [
-        {
-            id: '1',
-            descricao: 'Lavagem Completa',
-            valor: 25.00,
-            created_at: new Date().toISOString()
-        },
-        {
-            id: '2',
-            descricao: 'Enceramento',
-            valor: 40.00,
-            created_at: new Date().toISOString()
-        }
-    ];
-    
-    state.despesas = [
-        {
-            id: '1',
-            descricao: 'Compra de produtos de limpeza',
-            valor: 150.00,
-            categoria: 'Produtos',
-            data: new Date().toISOString().split('T')[0],
-            created_at: new Date().toISOString()
-        }
-    ];
-    
-    // Inicialização
-    showNotification('Sistema R.M. Estética PRO+ carregado com sucesso!', 'success');
-    updateDashboard();
-});
-
-// ============================================================================
-// FUNÇÕES GLOBAIS PARA ACESSO EXTERNO
-// ============================================================================
-
-window.rmEstetica = {
-    state,
-    showTab,
-    showNotification,
-    formatCurrency,
-    formatDate,
-    formatPhone
-};
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
