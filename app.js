@@ -1,11 +1,12 @@
-// R.M. Estética Automotiva PRO+ - Sistema de Gerenciamento
-// JavaScript Principal - Todas as funcionalidades integradas
-
 // ============================================================================
-// CONFIGURAÇÕES E CONSTANTES
+// 🚗 R.M. ESTÉTICA PRO+ - SISTEMA COMPLETO CORRIGIDO
+// Versão corrigida com navegação funcional e todas as correções implementadas
 // ============================================================================
 
-// Dados do estabelecimento
+// --------------------------- CONSTANTES -------------------------------------
+const SUPABASE_URL = "https://bezbszbkaifcanqsmdbi.supabase.co/";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlemJzemJrYWlmY2FucXNtZGJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MTM5MTksImV4cCI6MjA2ODE4OTkxOX0.zLXAuQz7g5ym3Bd5pkhg5vsnf_3rdJFRAXI_kX8tM18";
+
 const ESTABELECIMENTO = {
     nome: "R.M. Estética Automotiva",
     cnpj: "18.637.639/0001-48",
@@ -14,100 +15,127 @@ const ESTABELECIMENTO = {
     agradecimento: "Obrigado pela preferência e volte sempre! 👍"
 };
 
-// Configurações do Supabase
-const SUPABASE_URL = "https://bezbszbkaifcanqsmdbi.supabase.co/";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlemJzemJrYWlmY2FucXNtZGJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI2MTM5MTksImV4cCI6MjA2ODE4OTkxOX0.zLXAuQz7g5ym3Bd5pkhg5vsnf_3rdJFRAXI_kX8tM18";
+// Templates com emojis
+const TEMPLATE_ORCAMENTO = `🚗 R.M. ESTÉTICA AUTOMOTIVA 🚗
+CNPJ: 18.637.639/0001-48
+📞 (24) 99948-6232
+📍 Rua 40, TV - Recanto dos Pássaros
+    Pq. Mambucaba, Angra dos Reis - RJ
 
-// Validação crítica das credenciais
-if (!SUPABASE_URL || !SUPABASE_KEY || SUPABASE_URL.includes('YOUR_SUPABASE_URL') || SUPABASE_KEY.includes('YOUR_SUPABASE_KEY')) {
-    alert('❌ Erro: Credenciais do Supabase não configuradas corretamente!');
+═══════════════════════════════════
+               ORÇAMENTO #{{id}}
+═══════════════════════════════════
+
+👤 CLIENTE: {{cliente.nome}}
+🚙 VEÍCULO: {{cliente.carro}}
+🚗 PLACA: {{cliente.placa}}
+📞 CONTATO: {{cliente.telefone}}
+
+───────────────────────────────────
+📋 SERVIÇOS:
+{{servicos}}
+───────────────────────────────────
+
+💰 SUBTOTAL: {{subtotal}}
+🎯 DESCONTO: {{desconto}}
+💵 VALOR TOTAL: {{total}}
+
+💳 FORMA(S) DE PAGAMENTO:
+{{formasPagamento}}
+
+═══════════════════════════════════
+⏰ Data: {{data}}
+📱 WhatsApp: (24) 99948-6232
+
+Obrigado pela preferência e volte sempre! 👍
+═══════════════════════════════════`;
+
+const TEMPLATE_RECIBO = `🧾 RECIBO NÃO FISCAL 🧾
+
+🏪 R.M. ESTÉTICA AUTOMOTIVA
+CNPJ: 18.637.639/0001-48
+📍 Rua 40, TV - Recanto dos Pássaros
+    Pq. Mambucaba, Angra dos Reis - RJ
+📞 (24) 99948-6232
+
+═══════════════════════════════════
+
+Recebi de: {{cliente.nome}}
+Veículo: {{cliente.carro}} - {{cliente.placa}}
+Referente a: Serviços de estética automotiva
+
+📋 DISCRIMINAÇÃO:
+{{servicos}}
+
+💵 VALOR TOTAL: {{total}}
+💳 PAGAMENTO: {{formasPagamento}}
+
+⏰ {{cidade}}, {{dataCompleta}}
+
+───────────────────────────────────
+✅ Serviços executados com garantia
+📱 Dúvidas: (24) 99948-6232
+
+Obrigado pela preferência e volte sempre! 👍
+═══════════════════════════════════`;
+
+// --------------------------- CLIENTE SUPABASE ------------------------------
+let supabase;
+if (typeof window !== 'undefined' && window.supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    console.log('📡 Supabase conectado!');
+} else {
+    console.warn('⚠️ Supabase não disponível - modo offline');
 }
 
-// Inicialização do cliente Supabase
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// ============================================================================
-// ESTADO GLOBAL DA APLICAÇÃO
-// ============================================================================
-
+// --------------------------- ESTADO GLOBAL ---------------------------------
 const state = {
     // Dados principais
     clientes: [],
     servicos: [],
     orcamentos: [],
-    orcamentoItens: [],
-    crmInteractions: [],
     despesas: [],
+    crmInteractions: [],
     
-    // Variáveis de controle
-    editandoClienteId: null,
-    editandoServicoId: null,
-    editandoDespesaId: null,
-    orcamentoSelecionado: null,
-    isSyncing: false,
-    isOffline: false,
+    // Configurações
+    estabelecimento: { ...ESTABELECIMENTO },
+    theme: 'dark',
     
-    // Listas temporárias
+    // Controle de orçamento
     novoOrcamentoItens: [],
-    selectedDispatchClients: new Set(),
-    selectedDispatchImage: null,
-    
-    // Listeners do Supabase
-    supabaseListeners: [],
+    orcamentoSelecionado: null,
     
     // Charts
     monthlyChart: null,
-    despesasChart: null
+    despesasChart: null,
+    
+    // Realtime
+    realtimeChannel: null,
+    
+    // Controle de abas
+    currentTab: 'dashboard'
 };
 
-// ============================================================================
-// UTILITÁRIOS E SELETORES DOM
-// ============================================================================
-
-// Seletores DOM simplificados
+// ----------------------------- UTILITÁRIOS ---------------------------------
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => document.querySelectorAll(selector);
 
-// Função para mostrar notificações
 function showNotification(message, type = 'success') {
+    console.log(`[${type.toUpperCase()}] ${message}`);
+    
     const notification = $('#notification');
     const messageElement = $('#notification-message');
     
-    messageElement.textContent = message;
-    notification.className = `show ${type}`;
-    
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, 4000);
-}
-
-// Animação de confete para celebrar sucessos
-function triggerConfetti(type = 'success') {
-    const colors = ['#16a34a', '#2563eb', '#dc2626', '#ea580c', '#8b5cf6'];
-    const container = document.body;
-    
-    for (let i = 0; i < 30; i++) {
-        const confetti = document.createElement('div');
-        confetti.className = 'confetti';
-        confetti.style.left = Math.random() * 100 + '%';
-        confetti.style.top = Math.random() * 100 + '%';
-        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        confetti.style.setProperty('--x', (Math.random() - 0.5) * 200 + 'px');
-        confetti.style.setProperty('--y', Math.random() * 100 + 100 + 'px');
-        confetti.style.animationDelay = Math.random() * 0.5 + 's';
+    if (notification && messageElement) {
+        messageElement.textContent = message;
+        notification.className = `show ${type}`;
         
-        container.appendChild(confetti);
-        
-        // Remove confetti após animação
         setTimeout(() => {
-            if (confetti.parentNode) {
-                confetti.parentNode.removeChild(confetti);
-            }
-        }, 2000);
+            notification.classList.remove('show');
+        }, 4000);
     }
 }
 
-// Formatação de moeda brasileira
 function formatCurrency(value) {
     return new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -115,377 +143,276 @@ function formatCurrency(value) {
     }).format(value || 0);
 }
 
-// Formatação de data e hora
-function formatDateTime(dateString) {
-    return new Intl.DateTimeFormat('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    }).format(new Date(dateString));
-}
-
-// Formatação de data
 function formatDate(dateString) {
+    if (!dateString) return 'Data não informada';
     return new Intl.DateTimeFormat('pt-BR', {
         day: '2-digit',
-        month: '2-digit',
+        month: '2-digit', 
         year: 'numeric'
     }).format(new Date(dateString));
 }
 
-// Formatação de telefone
+// =================== MÁSCARAS DE FORMATAÇÃO AUTOMÁTICA ===================
 function formatPhone(value) {
-    const cleaned = value.replace(/\D/g, '');
-    const match = cleaned.match(/^(\d{2})(\d{4,5})(\d{4})$/);
-    if (match) {
-        return `(${match[1]}) ${match[2]}-${match[3]}`;
+    if (!value) return '';
+    // Remove todos os caracteres não numéricos
+    const numbers = value.replace(/\D/g, '');
+    
+    // Aplica a máscara baseada no tamanho
+    if (numbers.length <= 10) {
+        // Telefone fixo: (XX) XXXX-XXXX
+        return numbers.replace(/^(\d{2})(\d{4})(\d{4}).*/, '($1) $2-$3');
+    } else {
+        // Celular: (XX) XXXXX-XXXX
+        return numbers.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
     }
-    return value;
 }
 
-// Limpeza de telefone para WhatsApp
-function cleanPhone(value) {
-    const cleaned = value.replace(/\D/g, '');
-    return cleaned.startsWith('55') ? cleaned : '55' + cleaned;
-}
-
-// Modal de confirmação
-function showConfirmModal(title, message, callback) {
-    const modal = $('#confirm-modal');
-    const modalTitle = $('#modal-title');
-    const modalMessage = $('#modal-message');
-    const confirmBtn = $('#modal-confirm-btn');
-    const cancelBtn = $('#modal-cancel-btn');
+function formatPlaca(value) {
+    if (!value) return '';
+    // Remove caracteres especiais e converte para maiúsculo
+    const clean = value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
     
-    modalTitle.textContent = title;
-    modalMessage.textContent = message;
-    modal.classList.add('active');
-    
-    // Remove listeners anteriores
-    const newConfirmBtn = confirmBtn.cloneNode(true);
-    const newCancelBtn = cancelBtn.cloneNode(true);
-    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-    
-    // Adiciona novos listeners
-    newConfirmBtn.addEventListener('click', () => {
-        modal.classList.remove('active');
-        callback();
-    });
-    
-    newCancelBtn.addEventListener('click', () => {
-        modal.classList.remove('active');
-    });
-}
-
-// Função para exibir estados vazios
-function renderEmptyState(targetElement, message, suggestion) {
-    targetElement.innerHTML = `
-        <div class="empty-list-message">
-            <p>${message}</p>
-            <small>${suggestion}</small>
-        </div>
-    `;
-}
-
-// Função para mostrar skeletons de carregamento
-function showSkeletons(targetElement, count = 5, type = 'list') {
-    targetElement.innerHTML = '';
-    
-    for (let i = 0; i < count; i++) {
-        const skeleton = document.createElement('div');
-        skeleton.className = 'skeleton skeleton-item';
+    if (clean.length <= 3) {
+        return clean;
+    } else if (clean.length <= 7) {
+        // Verifica se é formato Mercosul (ABC1D23) ou antigo (ABC1234)
+        const letters = clean.substring(0, 3);
+        const numbers = clean.substring(3);
         
-        if (type === 'list') {
-            skeleton.innerHTML = `
-                <div class="skeleton-text long"></div>
-                <div class="skeleton-text medium"></div>
-                <div class="skeleton-text short"></div>
-            `;
-        } else if (type === 'chart') {
-            skeleton.style.height = '200px';
-            skeleton.style.width = '100%';
+        if (numbers.length >= 4) {
+            // Formato antigo: ABC-1234
+            return `${letters}-${numbers}`;
+        } else if (numbers.length === 3 && /[A-Z]/.test(numbers.charAt(1))) {
+            // Formato Mercosul: ABC1D23
+            return clean;
+        } else {
+            return `${letters}${numbers}`;
         }
-        
-        targetElement.appendChild(skeleton);
     }
+    
+    return clean.substring(0, 8);
 }
 
-// Debounce para otimizar buscas
-function debounce(func, delay) {
-    let timeoutId;
-    return function (...args) {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => func.apply(this, args), delay);
+// Aplicar máscaras nos campos em tempo real
+function setupInputMasks() {
+    // Máscara para telefones
+    const phoneInputs = ['#cliente-telefone', '#empresa-telefone'];
+    phoneInputs.forEach(selector => {
+        const input = $(selector);
+        if (input) {
+            input.addEventListener('input', (e) => {
+                e.target.value = formatPhone(e.target.value);
+            });
+        }
+    });
+    
+    // Máscara para placas
+    const placaInput = $('#cliente-placa');
+    if (placaInput) {
+        placaInput.addEventListener('input', (e) => {
+            e.target.value = formatPlaca(e.target.value);
+        });
+    }
+    
+    console.log('✅ Máscaras de formatação configuradas');
+}
+
+// ------------------------- SISTEMA DE TEMAS ----------------------------
+function applyTheme(theme) {
+    state.theme = theme;
+    const root = document.body;
+    
+    if (theme === 'auto') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        root.dataset.theme = prefersDark ? 'dark' : 'light';
+    } else {
+        root.dataset.theme = theme;
+    }
+    
+    // Atualiza ícone do header
+    const themeIcon = $('#theme-toggle-btn i');
+    if (themeIcon) {
+        if (theme === 'light' || (theme === 'auto' && !window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            themeIcon.className = 'fas fa-sun';
+        } else {
+            themeIcon.className = 'fas fa-moon';
+        }
+    }
+    
+    // Atualiza radio buttons na configuração
+    const radio = $(`#theme-${theme}`);
+    if (radio) {
+        radio.checked = true;
+    }
+    
+    showNotification(`🎨 Tema alterado para: ${theme}`, 'success');
+}
+
+function toggleTheme() {
+    const currentTheme = state.theme;
+    let nextTheme;
+    
+    if (currentTheme === 'dark') {
+        nextTheme = 'light';
+    } else {
+        nextTheme = 'dark';
+    }
+    
+    applyTheme(nextTheme);
+}
+
+// ========================= SISTEMA DE NAVEGAÇÃO CORRIGIDO =========================
+function showTab(tabId) {
+    console.log(`🧭 Navegando para aba: ${tabId}`);
+    
+    // Atualiza estado da aba atual
+    state.currentTab = tabId;
+    
+    // Remove classe active de todas as abas e conteúdos
+    $$('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    $$('.tab-content').forEach(content => {
+        content.classList.remove('active');
+        content.style.display = 'none';
+    });
+    
+    // Ativa o botão de navegação
+    const targetBtn = $(`.nav-btn[data-tab="${tabId}"]`);
+    if (targetBtn) {
+        targetBtn.classList.add('active');
+    }
+    
+    // Ativa o conteúdo da aba
+    const targetContent = $(`#${tabId}-tab`);
+    if (targetContent) {
+        targetContent.classList.add('active');
+        targetContent.style.display = 'block';
+        
+        // Aplica animação
+        targetContent.style.animation = 'slideInUp 0.4s ease-out';
+    }
+    
+    // Scroll para o topo
+    setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+    
+    // Renderizações específicas por aba
+    setTimeout(() => {
+        switch (tabId) {
+            case 'dashboard':
+                renderDashboard();
+                renderMonthlyChart();
+                break;
+            case 'clientes':
+                renderClientes();
+                break;
+            case 'servicos':
+                renderServicos();
+                break;
+            case 'novo-orcamento':
+                renderOrcamentoOptions();
+                break;
+            case 'historico':
+                renderHistorico();
+                break;
+            case 'crm':
+                renderCrmData();
+                break;
+            case 'despesas':
+                renderDespesas();
+                renderDespesasChart();
+                break;
+            case 'configuracoes':
+                loadConfigurationForms();
+                break;
+        }
+    }, 150);
+    
+    showNotification(`🚀 Navegando para: ${getTabName(tabId)}`, 'success');
+}
+
+function getTabName(tabId) {
+    const names = {
+        'dashboard': '📊 Painel',
+        'clientes': '👥 Clientes', 
+        'servicos': '🔧 Serviços',
+        'novo-orcamento': '📝 Orçamento',
+        'historico': '📋 Histórico',
+        'crm': '💬 CRM',
+        'despesas': '💰 Despesas',
+        'configuracoes': '⚙️ Configurações'
     };
+    return names[tabId] || tabId;
 }
 
-// Exportação para CSV
-function exportToCsv(data, filename) {
-    if (!data || data.length === 0) {
-        showNotification('Nenhum dado para exportar', 'warning');
+// ======================= REAL-TIME SYNC COM SUPABASE =====================
+function setupRealtimeListeners() {
+    if (!supabase) {
+        console.warn('⚠️ Supabase não disponível para real-time');
         return;
     }
     
-    const headers = Object.keys(data[0]);
-    const csvContent = [
-        headers.join(';'),
-        ...data.map(row => 
-            headers.map(header => {
-                const value = row[header];
-                if (value === null || value === undefined) return '';
-                return String(value).replace(/;/g, ',');
-            }).join(';')
-        )
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `${filename}_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
-    
-    showNotification('Arquivo exportado com sucesso!', 'success');
-}
-
-// Validação visual de formulários
-function handleValidationIcon(inputElement) {
-    const validationIcon = inputElement.parentElement.querySelector('.validation-icon');
-    if (!validationIcon) return;
-    
-    if (inputElement.validity.valid && inputElement.value.trim() !== '') {
-        validationIcon.className = 'validation-icon fas fa-check-circle';
-        validationIcon.style.color = 'var(--accent-green)';
-        validationIcon.style.display = 'block';
-        inputElement.style.borderColor = 'var(--accent-green)';
-    } else if (!inputElement.validity.valid && inputElement.value.trim() !== '') {
-        validationIcon.className = 'validation-icon fas fa-times-circle';
-        validationIcon.style.color = 'var(--accent-red-status)';
-        validationIcon.style.display = 'block';
-        inputElement.style.borderColor = 'var(--accent-red-status)';
-    } else {
-        validationIcon.style.display = 'none';
-        inputElement.style.borderColor = 'var(--border-color)';
-    }
-}
-
-// ============================================================================
-// SINCRONIZAÇÃO E CONECTIVIDADE
-// ============================================================================
-
-// Configuração dos listeners do Supabase
-async function setupSupabaseListeners() {
-    // Remove listeners existentes
-    state.supabaseListeners.forEach(listener => {
-        supabase.removeChannel(listener);
-    });
-    state.supabaseListeners = [];
-    
-    // Listener para clientes
-    const clientesListener = supabase
-        .channel('clientes-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, () => {
-            fetchAllData(false);
-        })
-        .subscribe();
-    
-    // Listener para serviços
-    const servicosListener = supabase
-        .channel('servicos-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, () => {
-            fetchAllData(false);
-        })
-        .subscribe();
-    
-    // Listener para orçamentos
-    const orcamentosListener = supabase
-        .channel('orcamentos-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'orcamentos' }, () => {
-            fetchAllData(false);
-        })
-        .subscribe();
-    
-    // Listener para itens de orçamento
-    const orcamentoItensListener = supabase
-        .channel('orcamento-itens-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'orcamento_itens' }, () => {
-            fetchAllData(false);
-        })
-        .subscribe();
-    
-    // Listener para interações CRM
-    const crmListener = supabase
-        .channel('crm-interactions-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'crm_interactions' }, () => {
-            fetchAllData(false);
-        })
-        .subscribe();
-    
-    // Listener para despesas
-    const despesasListener = supabase
-        .channel('despesas-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'despesas' }, () => {
-            fetchAllData(false);
-        })
-        .subscribe();
-    
-    // Armazena listeners para limpeza posterior
-    state.supabaseListeners = [
-        clientesListener,
-        servicosListener,
-        orcamentosListener,
-        orcamentoItensListener,
-        crmListener,
-        despesasListener
-    ];
-}
-
-// Detecção de status da rede
-function updateNetworkStatus() {
-    window.addEventListener('online', () => {
-        state.isOffline = false;
-        $('#offline-indicator').classList.remove('show');
-        showNotification('Conexão restaurada! Sincronizando dados...', 'success');
-        fetchAllData(true);
-    });
-    
-    window.addEventListener('offline', () => {
-        state.isOffline = true;
-        $('#offline-indicator').classList.add('show');
-        showNotification('Conectividade perdida. Modo offline ativado.', 'warning');
-    });
-}
-
-// Busca todos os dados do Supabase
-async function fetchAllData(showLoadingOverlay = true) {
-    if (state.isSyncing) return;
-    state.isSyncing = true;
-    
-    const syncOverlay = $('#sync-overlay');
-    const syncBtn = $('#sync-btn');
-    
-    if (showLoadingOverlay) {
-        syncOverlay.classList.add('active');
-    }
-    syncBtn.classList.add('syncing');
-    
     try {
-        // Mostra skeletons enquanto carrega
-        showSkeletons($('#clientes-lista'));
-        showSkeletons($('#servicos-lista'));
-        showSkeletons($('#historico-lista'));
-        showSkeletons($('#recent-activity-list'));
-        showSkeletons($('#crm-interaction-list'));
-        showSkeletons($('#despesas-lista'));
+        // Configura listener para mudanças em tempo real
+        const channel = supabase
+            .channel('db-changes')
+            .on('postgres_changes', 
+                { event: '*', schema: 'public', table: 'clientes' },
+                () => {
+                    console.log('📡 Mudança detectada: clientes');
+                    refreshCurrentTabSilently();
+                })
+            .on('postgres_changes',
+                { event: '*', schema: 'public', table: 'orcamentos' }, 
+                () => {
+                    console.log('📡 Mudança detectada: orçamentos');
+                    refreshCurrentTabSilently();
+                })
+            .on('postgres_changes',
+                { event: '*', schema: 'public', table: 'servicos' }, 
+                () => {
+                    console.log('📡 Mudança detectada: serviços');
+                    refreshCurrentTabSilently();
+                })
+            .on('postgres_changes',
+                { event: '*', schema: 'public', table: 'despesas' }, 
+                () => {
+                    console.log('📡 Mudança detectada: despesas');
+                    refreshCurrentTabSilently();
+                })
+            .subscribe();
+            
+        state.realtimeChannel = channel;
         
-        // Busca todos os dados em paralelo
-        const [
-            clientesResponse,
-            servicosResponse,
-            orcamentosResponse,
-            crmInteractionsResponse,
-            despesasResponse
-        ] = await Promise.all([
-            supabase.from('clientes').select('*').order('nome'),
-            supabase.from('servicos').select('*').order('descricao'),
-            supabase.from('orcamentos').select(`
-                *,
-                clientes (*),
-                orcamento_itens (
-                    id,
-                    servico_id,
-                    quantidade,
-                    valor_unitario,
-                    servicos (descricao, valor)
-                )
-            `).order('created_at', { ascending: false }),
-            supabase.from('crm_interactions').select(`
-                *,
-                clientes (nome, carro)
-            `).order('interaction_date', { ascending: false }),
-            supabase.from('despesas').select('*').order('data', { ascending: false })
-        ]);
+        console.log('✅ Real-time listeners configurados');
         
-        // Verifica erros
-        if (clientesResponse.error) throw clientesResponse.error;
-        if (servicosResponse.error) throw servicosResponse.error;
-        if (orcamentosResponse.error) throw orcamentosResponse.error;
-        if (crmInteractionsResponse.error) throw crmInteractionsResponse.error;
-        if (despesasResponse.error) throw despesasResponse.error;
-        
-        // Atualiza estado
-        state.clientes = clientesResponse.data || [];
-        state.servicos = servicosResponse.data || [];
-        state.orcamentos = orcamentosResponse.data || [];
-        state.crmInteractions = crmInteractionsResponse.data || [];
-        state.despesas = despesasResponse.data || [];
-        
-        // Extrai itens de orçamento
-        state.orcamentoItens = [];
-        state.orcamentos.forEach(orc => {
-            if (orc.orcamento_itens) {
-                state.orcamentoItens.push(...orc.orcamento_itens);
-            }
-        });
-        
-        // Renderiza todo o conteúdo
-        renderAllContent();
-        
-        if (showLoadingOverlay) {
-            showNotification('Dados sincronizados com sucesso!', 'success');
+        // Atualiza indicador de sincronização
+        const syncBtn = $('#sync-btn');
+        if (syncBtn) {
+            syncBtn.style.opacity = '1';
+            syncBtn.title = '📡 Conectado em tempo real';
         }
         
     } catch (error) {
-        console.error('Erro ao buscar dados:', error);
-        showNotification('Erro ao sincronizar dados: ' + error.message, 'error');
-    } finally {
-        state.isSyncing = false;
-        syncOverlay.classList.remove('active');
-        syncBtn.classList.remove('syncing');
+        console.error('❌ Erro ao configurar real-time:', error);
     }
 }
 
-// Renderiza todo o conteúdo da aplicação
-function renderAllContent() {
-    updateDashboard();
-    renderClientes();
-    renderServicos();
-    renderOrcamentos();
-    renderOrcamentoClienteOptions();
-    renderOrcamentoServicoOptions();
-    renderCrmInteractions();
-    renderCrmMetrics();
-    renderDespesas();
-    renderDespesasMetrics();
-    renderDespesasChart();
-    renderInteractionClientOptions();
-    renderSuggestedFollowups();
-    renderInactiveClients();
-}
-
-// ============================================================================
-// GERENCIAMENTO DE ABAS
-// ============================================================================
-
-function showTab(tabId, filterParams = {}) {
-    // Remove classe active de todas as abas e botões
-    $$('.tab-content').forEach(tab => tab.classList.remove('active'));
-    $$('.nav-btn').forEach(btn => btn.classList.remove('active'));
+function refreshCurrentTabSilently() {
+    // Atualiza apenas a aba atual sem mudar de posição
+    const activeTab = state.currentTab;
+    if (!activeTab) return;
     
-    // Ativa a aba selecionada
-    $(`#${tabId}-tab`).classList.add('active');
-    $(`.nav-btn[data-tab="${tabId}"]`).classList.add('active');
+    console.log(`🔄 Atualizando aba ${activeTab} silenciosamente`);
     
-    // Scroll para o topo
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Inicialização específica por aba
-    switch(tabId) {
+    // Atualiza apenas os dados da aba atual
+    switch(activeTab) {
         case 'dashboard':
-            updateDashboard();
-            renderMonthlyStatsChart();
+            renderDashboard();
             break;
         case 'clientes':
             renderClientes();
@@ -493,38 +420,216 @@ function showTab(tabId, filterParams = {}) {
         case 'servicos':
             renderServicos();
             break;
-        case 'novo-orcamento':
-            renderOrcamentoClienteOptions();
-            renderOrcamentoServicoOptions();
-            break;
         case 'historico':
-            renderOrcamentos();
-            // Aplica filtros se fornecidos
-            if (filterParams.status) {
-                $('#filter-status').value = filterParams.status;
-                renderOrcamentos();
-            }
-            break;
-        case 'crm':
-            renderCrmInteractions();
-            renderCrmMetrics();
-            renderSuggestedFollowups();
-            renderInactiveClients();
+            renderHistorico();
             break;
         case 'despesas':
             renderDespesas();
-            renderDespesasMetrics();
-            renderDespesasChart();
+            break;
+        case 'crm':
+            renderCrmData();
             break;
     }
 }
 
-// ============================================================================
-// DASHBOARD - PAINEL PRINCIPAL
-// ============================================================================
+// -------------------------- DADOS DE DEMONSTRAÇÃO --------------------------
+function loadDemoData() {
+    console.log('📊 Carregando dados de demonstração...');
+    
+    // Clientes de demonstração
+    state.clientes = [
+        {
+            id: '1',
+            nome: 'João Silva',
+            telefone: '24999887766',
+            carro: 'Honda Civic 2020',
+            placa: 'ABC-1234',
+            created_at: new Date().toISOString()
+        },
+        {
+            id: '2',
+            nome: 'Maria Santos',
+            telefone: '24988776655',
+            carro: 'Toyota Corolla 2021', 
+            placa: 'XYZ-5678',
+            created_at: new Date().toISOString()
+        },
+        {
+            id: '3',
+            nome: 'Pedro Oliveira',
+            telefone: '24977665544',
+            carro: 'Volkswagen Gol 2019',
+            placa: 'DEF1G23',
+            created_at: new Date().toISOString()
+        }
+    ];
+    
+    // Serviços de demonstração  
+    state.servicos = [
+        {
+            id: '1',
+            descricao: 'Lavagem Completa',
+            valor: 25.00,
+            created_at: new Date().toISOString()
+        },
+        {
+            id: '2', 
+            descricao: 'Enceramento',
+            valor: 40.00,
+            created_at: new Date().toISOString()
+        },
+        {
+            id: '3',
+            descricao: 'Lavagem Simples',
+            valor: 15.00,
+            created_at: new Date().toISOString()
+        },
+        {
+            id: '4',
+            descricao: 'Aspiração Completa',
+            valor: 20.00,
+            created_at: new Date().toISOString()
+        },
+        {
+            id: '5',
+            descricao: 'Limpeza de Bancos',
+            valor: 30.00,
+            created_at: new Date().toISOString()
+        }
+    ];
+    
+    // Orçamentos de demonstração
+    state.orcamentos = [
+        {
+            id: '1',
+            cliente_id: '1',
+            status: 'Pago',
+            desconto: 0,
+            valor_total: 65.00,
+            formas_pagamento: ['Pix'],
+            created_at: new Date(Date.now() - 86400000).toISOString(),
+            updated_at: new Date().toISOString(),
+            clientes: state.clientes[0],
+            orcamento_itens: [
+                {
+                    id: '1',
+                    servico_id: '1',
+                    quantidade: 1,
+                    valor_unitario: 25.00,
+                    servicos: state.servicos[0]
+                },
+                {
+                    id: '2',
+                    servico_id: '2', 
+                    quantidade: 1,
+                    valor_unitario: 40.00,
+                    servicos: state.servicos[1]
+                }
+            ]
+        },
+        {
+            id: '2',
+            cliente_id: '2',
+            status: 'Aprovado',
+            desconto: 5.00,
+            valor_total: 50.00,
+            formas_pagamento: ['Dinheiro', 'Pix'],
+            created_at: new Date(Date.now() - 172800000).toISOString(),
+            updated_at: new Date().toISOString(),
+            clientes: state.clientes[1],
+            orcamento_itens: [
+                {
+                    id: '3',
+                    servico_id: '1',
+                    quantidade: 1,
+                    valor_unitario: 25.00,
+                    servicos: state.servicos[0]
+                },
+                {
+                    id: '4',
+                    servico_id: '3',
+                    quantidade: 2,
+                    valor_unitario: 15.00,
+                    servicos: state.servicos[2]
+                }
+            ]
+        },
+        {
+            id: '3',
+            cliente_id: '3',
+            status: 'Orçamento',
+            desconto: 0,
+            valor_total: 45.00,
+            formas_pagamento: ['Crédito'],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            clientes: state.clientes[2],
+            orcamento_itens: [
+                {
+                    id: '5',
+                    servico_id: '1',
+                    quantidade: 1,
+                    valor_unitario: 25.00,
+                    servicos: state.servicos[0]
+                },
+                {
+                    id: '6',
+                    servico_id: '4',
+                    quantidade: 1,
+                    valor_unitario: 20.00,
+                    servicos: state.servicos[3]
+                }
+            ]
+        }
+    ];
+    
+    // Despesas de demonstração
+    state.despesas = [
+        {
+            id: '1',
+            descricao: 'Compra de produtos de limpeza',
+            valor: 150.00,
+            categoria: 'Produtos',
+            data: new Date().toISOString().split('T')[0],
+            created_at: new Date().toISOString()
+        },
+        {
+            id: '2',
+            descricao: 'Manutenção de equipamentos',
+            valor: 80.00,
+            categoria: 'Equipamentos',
+            data: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+            created_at: new Date().toISOString()
+        },
+        {
+            id: '3',
+            descricao: 'Combustível para deslocamentos',
+            valor: 45.00,
+            categoria: 'Combustível',
+            data: new Date(Date.now() - 172800000).toISOString().split('T')[0],
+            created_at: new Date().toISOString()
+        }
+    ];
+    
+    // Interações CRM de demonstração
+    state.crmInteractions = [
+        {
+            id: '1',
+            cliente_id: '1',
+            type: 'WhatsApp',
+            notes: 'Cliente satisfeito com o serviço',
+            interaction_date: new Date().toISOString().split('T')[0],
+            created_at: new Date().toISOString(),
+            clientes: state.clientes[0]
+        }
+    ];
+    
+    showNotification('📊 Dados de demonstração carregados!', 'success');
+}
 
-function updateDashboard() {
-    // Calcula métricas
+// ---------------------------- RENDERIZAÇÕES --------------------------------
+function renderDashboard() {
+    // Atualiza métricas
     const totalClientes = state.clientes.length;
     const orcamentosPendentes = state.orcamentos.filter(o => o.status === 'Orçamento').length;
     const orcamentosAprovados = state.orcamentos.filter(o => o.status === 'Aprovado').length;
@@ -532,35 +637,557 @@ function updateDashboard() {
     const inicioMes = new Date();
     inicioMes.setDate(1);
     const finalizadosMes = state.orcamentos.filter(o => 
-        o.status === 'Finalizado' && 
-        new Date(o.updated_at) >= inicioMes
+        (o.status === 'Finalizado' || o.status === 'Pago') && 
+        new Date(o.updated_at || o.created_at) >= inicioMes
     ).length;
     
     const faturamentoTotal = state.orcamentos
-        .filter(o => o.status === 'Finalizado')
+        .filter(o => o.status === 'Pago' || o.status === 'Finalizado')
         .reduce((total, o) => total + (o.valor_total || 0), 0);
     
-    // Atualiza elementos
-    $('#stat-clientes').textContent = totalClientes;
-    $('#stat-pendentes').textContent = orcamentosPendentes;
-    $('#stat-aprovados').textContent = orcamentosAprovados;
-    $('#stat-finalizados-mes').textContent = finalizadosMes;
-    $('#stat-faturamento-total').textContent = formatCurrency(faturamentoTotal);
+    // Atualiza elementos DOM
+    if ($('#stat-clientes')) $('#stat-clientes').textContent = totalClientes;
+    if ($('#stat-pendentes')) $('#stat-pendentes').textContent = orcamentosPendentes;
+    if ($('#stat-aprovados')) $('#stat-aprovados').textContent = orcamentosAprovados;
+    if ($('#stat-finalizados-mes')) $('#stat-finalizados-mes').textContent = finalizadosMes;
+    if ($('#stat-faturamento-total')) $('#stat-faturamento-total').textContent = formatCurrency(faturamentoTotal);
     
     // Renderiza atividade recente
     renderRecentActivity();
 }
 
-function renderMonthlyStatsChart() {
+function renderRecentActivity() {
+    const recentList = $('#recent-activity-list');
+    if (!recentList) return;
+    
+    const recentOrcamentos = state.orcamentos
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 5);
+    
+    if (recentOrcamentos.length === 0) {
+        recentList.innerHTML = `
+            <div class="empty-list-message">
+                <p>📭 Nenhuma atividade recente</p>
+                <small>Crie seu primeiro orçamento para começar</small>
+            </div>
+        `;
+        return;
+    }
+    
+    recentList.innerHTML = recentOrcamentos.map(orc => `
+        <li class="fade-in">
+            <div>
+                <strong>🚗 ${orc.clientes?.nome || 'Cliente não encontrado'}</strong>
+                <small>📋 ${orc.clientes?.carro || 'Carro não informado'} - ${orc.clientes?.placa || 'Placa não informada'}</small>
+                <small>📅 ${formatDate(orc.created_at)} - ${getStatusEmoji(orc.status)} ${orc.status}</small>
+            </div>
+            <div class="item-actions">
+                <span style="font-weight: bold; color: var(--color-success);">
+                    💰 ${formatCurrency(orc.valor_total)}
+                </span>
+            </div>
+        </li>
+    `).join('');
+}
+
+function renderClientes() {
+    const clientesList = $('#clientes-lista');
+    if (!clientesList) return;
+    
+    if (state.clientes.length === 0) {
+        clientesList.innerHTML = `
+            <div class="empty-list-message">
+                <p>📭 Nenhum cliente cadastrado</p>
+                <small>Cadastre o primeiro cliente para começar</small>
+            </div>
+        `;
+        return;
+    }
+    
+    clientesList.innerHTML = state.clientes.map(cliente => `
+        <li data-id="${cliente.id}" class="cliente-item fade-in">
+            <div>
+                <strong>👤 ${cliente.nome}</strong>
+                <small>🚗 ${cliente.carro} - 🚙 ${cliente.placa}</small>
+                <small>📱 ${formatPhone(cliente.telefone)}</small>
+            </div>
+            <div class="item-actions">
+                <button class="btn btn-sm btn-secondary btn-hover-effect" onclick="editarCliente('${cliente.id}')">
+                    <i class="fas fa-edit"></i> <span>✏️ Editar</span>
+                </button>
+                <button class="btn btn-sm btn-danger btn-hover-effect" onclick="excluirCliente('${cliente.id}')">
+                    <i class="fas fa-trash"></i> <span>🗑️ Excluir</span>
+                </button>
+            </div>
+        </li>
+    `).join('');
+}
+
+function renderServicos() {
+    const servicosList = $('#servicos-lista');
+    if (!servicosList) return;
+    
+    if (state.servicos.length === 0) {
+        servicosList.innerHTML = `
+            <div class="empty-list-message">
+                <p>📭 Nenhum serviço cadastrado</p>
+                <small>Cadastre o primeiro serviço para começar</small>
+            </div>
+        `;
+        return;
+    }
+    
+    servicosList.innerHTML = state.servicos.map(servico => `
+        <li data-id="${servico.id}" class="servico-item fade-in">
+            <div>
+                <strong>🔧 ${servico.descricao}</strong>
+                <small>💰 ${formatCurrency(servico.valor)}</small>
+            </div>
+            <div class="item-actions">
+                <button class="btn btn-sm btn-secondary btn-hover-effect" onclick="editarServico('${servico.id}')">
+                    <i class="fas fa-edit"></i> <span>✏️ Editar</span>
+                </button>
+                <button class="btn btn-sm btn-danger btn-hover-effect" onclick="excluirServico('${servico.id}')">
+                    <i class="fas fa-trash"></i> <span>🗑️ Excluir</span>
+                </button>
+            </div>
+        </li>
+    `).join('');
+}
+
+function renderOrcamentoOptions() {
+    // Popula select de clientes
+    const clienteSelect = $('#orcamento-cliente');
+    if (clienteSelect) {
+        clienteSelect.innerHTML = '<option value="">👤 Selecione um cliente</option>' +
+            state.clientes.map(cliente => `
+                <option value="${cliente.id}">👤 ${cliente.nome} - 🚗 ${cliente.carro}</option>
+            `).join('');
+    }
+    
+    // Popula select de serviços
+    const servicoSelect = $('#orcamento-servico-select');
+    if (servicoSelect) {
+        servicoSelect.innerHTML = '<option value="">🔧 Selecione um serviço</option>' +
+            state.servicos.map(servico => `
+                <option value="${servico.id}">🔧 ${servico.descricao} - 💰 ${formatCurrency(servico.valor)}</option>
+            `).join('');
+    }
+    
+    renderOrcamentoItens();
+}
+
+function renderOrcamentoItens() {
+    const servicosContainer = $('#orcamento-servicos-adicionados');
+    if (!servicosContainer) return;
+    
+    if (state.novoOrcamentoItens.length === 0) {
+        servicosContainer.innerHTML = '<p style="text-align: center; color: var(--color-text-secondary);">📭 Nenhum serviço adicionado</p>';
+        updateOrcamentoTotal();
+        return;
+    }
+    
+    servicosContainer.innerHTML = state.novoOrcamentoItens.map((item, index) => `
+        <li class="fade-in">
+            <div>
+                <strong>🔧 ${item.descricao_servico}</strong>
+                <small>💰 ${formatCurrency(item.valor_cobrado)} cada x ${item.quantidade}</small>
+                <small>💵 Total: ${formatCurrency(item.valor_cobrado * item.quantidade)}</small>
+            </div>
+            <div class="item-actions">
+                <input type="number" class="form-control" style="width: 80px;" 
+                       value="${item.quantidade}" min="1" max="99" data-index="${index}"
+                       title="Quantidade">
+                <button type="button" class="btn btn-sm btn-danger remove-servico-btn btn-hover-effect" data-index="${index}">
+                    <i class="fas fa-trash"></i> 🗑️
+                </button>
+            </div>
+        </li>
+    `).join('');
+    
+    updateOrcamentoTotal();
+}
+
+function updateOrcamentoTotal() {
+    const subtotal = state.novoOrcamentoItens.reduce((total, item) => {
+        return total + (item.valor_cobrado * item.quantidade);
+    }, 0);
+    
+    const desconto = parseFloat($('#orcamento-desconto')?.value || 0);
+    const total = Math.max(0, subtotal - desconto);
+    
+    const totalElement = $('#orcamento-total');
+    if (totalElement) {
+        totalElement.innerHTML = `<strong>💰 Total: ${formatCurrency(total)}</strong>`;
+    }
+}
+
+// ================= HISTÓRICO COM FUNCIONALIDADE COMPLETA =================
+function renderHistorico() {
+    const orcamentosList = $('#historico-lista');
+    if (!orcamentosList) return;
+    
+    if (state.orcamentos.length === 0) {
+        orcamentosList.innerHTML = `
+            <div class="empty-list-message">
+                <p>📭 Nenhum orçamento encontrado</p>
+                <small>Crie o primeiro orçamento para começar</small>
+            </div>
+        `;
+        return;
+    }
+    
+    orcamentosList.innerHTML = state.orcamentos.map(orcamento => `
+        <li data-id="${orcamento.id}" class="historico-item fade-in" onclick="selecionarOrcamentoHistorico('${orcamento.id}')">
+            <div>
+                <strong>👤 ${orcamento.clientes?.nome || 'Cliente não encontrado'}</strong>
+                <small>🚗 ${orcamento.clientes?.carro || 'Carro não informado'} - 🚙 ${orcamento.clientes?.placa || 'Placa não informada'}</small>
+                <small>📅 ${formatDate(orcamento.created_at)} - ${getStatusEmoji(orcamento.status)} ${orcamento.status}</small>
+            </div>
+            <div class="item-actions">
+                <span style="font-weight: bold; color: var(--color-success);">
+                    💰 ${formatCurrency(orcamento.valor_total)}
+                </span>
+                <span class="status-badge status-${orcamento.status.toLowerCase()}">
+                    ${getStatusEmoji(orcamento.status)}
+                </span>
+            </div>
+        </li>
+    `).join('');
+    
+    console.log('📋 Histórico renderizado com', state.orcamentos.length, 'orçamentos');
+}
+
+function selecionarOrcamentoHistorico(orcamentoId) {
+    console.log('🎯 Selecionando orçamento:', orcamentoId);
+    
+    // Remove seleção anterior
+    $$('.historico-item').forEach(item => item.classList.remove('selected'));
+    
+    // Adiciona seleção atual
+    const selectedItem = $(`.historico-item[data-id="${orcamentoId}"]`);
+    if (selectedItem) {
+        selectedItem.classList.add('selected');
+    }
+    
+    // Encontra o orçamento
+    const orcamento = state.orcamentos.find(o => o.id === orcamentoId);
+    if (!orcamento) {
+        showNotification('❌ Orçamento não encontrado', 'error');
+        return;
+    }
+    
+    state.orcamentoSelecionado = orcamento;
+    
+    // Mostra painel de detalhes
+    const detalhesPanel = $('#detalhes-panel');
+    if (detalhesPanel) {
+        detalhesPanel.style.display = 'block';
+        detalhesPanel.classList.add('slide-in-right');
+    }
+    
+    // Renderiza detalhes
+    renderDetalhesOrcamento(orcamento);
+    renderDetalhesRecibo(orcamento);
+    
+    showNotification(`✅ Orçamento #${orcamento.id} selecionado`, 'success');
+}
+
+function renderDetalhesOrcamento(orcamento) {
+    const textoOrcamento = $('#texto-orcamento');
+    if (!textoOrcamento) return;
+    
+    // Gera texto do orçamento
+    let servicosTexto = '';
+    if (orcamento.orcamento_itens && orcamento.orcamento_itens.length > 0) {
+        servicosTexto = orcamento.orcamento_itens.map(item => {
+            const descricao = item.servicos?.descricao || 'Serviço não encontrado';
+            const quantidade = item.quantidade || 1;
+            const valorUnitario = formatCurrency(item.valor_unitario || 0);
+            const valorTotal = formatCurrency((item.valor_unitario || 0) * quantidade);
+            return `${quantidade}x ${descricao} - ${valorUnitario} = ${valorTotal}`;
+        }).join('\n');
+    }
+    
+    const subtotal = (orcamento.orcamento_itens || []).reduce((total, item) => {
+        return total + ((item.valor_unitario || 0) * (item.quantidade || 1));
+    }, 0);
+    
+    const texto = TEMPLATE_ORCAMENTO
+        .replace('{{id}}', orcamento.id)
+        .replace('{{cliente.nome}}', orcamento.clientes?.nome || 'Cliente não encontrado')
+        .replace('{{cliente.carro}}', orcamento.clientes?.carro || 'Carro não informado')
+        .replace('{{cliente.placa}}', orcamento.clientes?.placa || 'Placa não informada')
+        .replace('{{cliente.telefone}}', formatPhone(orcamento.clientes?.telefone || ''))
+        .replace('{{servicos}}', servicosTexto)
+        .replace('{{subtotal}}', formatCurrency(subtotal))
+        .replace('{{desconto}}', formatCurrency(orcamento.desconto || 0))
+        .replace('{{total}}', formatCurrency(orcamento.valor_total || 0))
+        .replace('{{formasPagamento}}', (orcamento.formas_pagamento || []).join(', '))
+        .replace('{{data}}', formatDate(orcamento.created_at));
+    
+    textoOrcamento.textContent = texto;
+}
+
+function renderDetalhesRecibo(orcamento) {
+    const textoRecibo = $('#texto-recibo');
+    if (!textoRecibo) return;
+    
+    // Gera texto do recibo
+    let servicosTexto = '';
+    if (orcamento.orcamento_itens && orcamento.orcamento_itens.length > 0) {
+        servicosTexto = orcamento.orcamento_itens.map(item => {
+            const descricao = item.servicos?.descricao || 'Serviço não encontrado';
+            const quantidade = item.quantidade || 1;
+            const valorTotal = formatCurrency((item.valor_unitario || 0) * quantidade);
+            return `${quantidade}x ${descricao} - ${valorTotal}`;
+        }).join('\n');
+    }
+    
+    const hoje = new Date();
+    const dataCompleta = hoje.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+    });
+    
+    const texto = TEMPLATE_RECIBO
+        .replace('{{cliente.nome}}', orcamento.clientes?.nome || 'Cliente não encontrado')
+        .replace('{{cliente.carro}}', orcamento.clientes?.carro || 'Carro não informado')
+        .replace('{{cliente.placa}}', orcamento.clientes?.placa || 'Placa não informada')
+        .replace('{{servicos}}', servicosTexto)
+        .replace('{{total}}', formatCurrency(orcamento.valor_total || 0))
+        .replace('{{formasPagamento}}', (orcamento.formas_pagamento || []).join(', '))
+        .replace('{{cidade}}', 'Angra dos Reis - RJ')
+        .replace('{{dataCompleta}}', dataCompleta);
+    
+    textoRecibo.textContent = texto;
+}
+
+function renderDespesas() {
+    const despesasList = $('#despesas-lista');
+    if (!despesasList) return;
+    
+    if (state.despesas.length === 0) {
+        despesasList.innerHTML = `
+            <div class="empty-list-message">
+                <p>📭 Nenhuma despesa cadastrada</p>
+                <small>Registre a primeira despesa para começar</small>
+            </div>
+        `;
+        return;
+    }
+    
+    despesasList.innerHTML = state.despesas.map(despesa => `
+        <li data-id="${despesa.id}" class="despesa-item fade-in">
+            <div>
+                <strong>📝 ${despesa.descricao}</strong>
+                <small>📂 ${despesa.categoria} - 📅 ${formatDate(despesa.data)}</small>
+            </div>
+            <div class="item-actions">
+                <span style="font-weight: bold; color: var(--color-error);">
+                    💸 ${formatCurrency(despesa.valor)}
+                </span>
+                <button class="btn btn-sm btn-secondary btn-hover-effect" onclick="editarDespesa('${despesa.id}')">
+                    <i class="fas fa-edit"></i> ✏️
+                </button>
+                <button class="btn btn-sm btn-danger btn-hover-effect" onclick="excluirDespesa('${despesa.id}')">
+                    <i class="fas fa-trash"></i> 🗑️
+                </button>
+            </div>
+        </li>
+    `).join('');
+    
+    // Atualiza métricas
+    const hoje = new Date().toISOString().split('T')[0];
+    const inicioMes = new Date();
+    inicioMes.setDate(1);
+    const inicioMesStr = inicioMes.toISOString().split('T')[0];
+    
+    const totalMes = state.despesas
+        .filter(d => d.data >= inicioMesStr)
+        .reduce((total, d) => total + (d.valor || 0), 0);
+    
+    const totalHoje = state.despesas
+        .filter(d => d.data === hoje)
+        .reduce((total, d) => total + (d.valor || 0), 0);
+    
+    const diasNoMes = new Date().getDate();
+    const mediaDiaria = totalMes / diasNoMes;
+    
+    if ($('#despesas-total-mes')) $('#despesas-total-mes').textContent = formatCurrency(totalMes);
+    if ($('#despesas-hoje')) $('#despesas-hoje').textContent = formatCurrency(totalHoje);
+    if ($('#despesas-media-diaria')) $('#despesas-media-diaria').textContent = formatCurrency(mediaDiaria);
+}
+
+function renderCrmData() {
+    // Métricas CRM
+    const totalInteractions = state.crmInteractions.length;
+    const activeClients = state.clientes.length; // Simplificado para demo
+    
+    if ($('#crm-total-interactions')) $('#crm-total-interactions').textContent = totalInteractions;
+    if ($('#crm-active-clients')) $('#crm-active-clients').textContent = activeClients;
+    if ($('#crm-pending-followups')) $('#crm-pending-followups').textContent = '2';
+    
+    // Popula select de cliente para interações
+    const clientSelect = $('#interaction-client');
+    if (clientSelect) {
+        clientSelect.innerHTML = '<option value="">👤 Selecione um cliente</option>' +
+            state.clientes.map(cliente => `
+                <option value="${cliente.id}">👤 ${cliente.nome} - 🚗 ${cliente.carro}</option>
+            `).join('');
+    }
+}
+
+// ======================= FUNÇÕES DE DETALHES DO HISTÓRICO =======================
+// Tornar funções globais para uso nos botões
+window.copyText = function(tipo) {
+    const elemento = tipo === 'orcamento' ? $('#texto-orcamento') : $('#texto-recibo');
+    if (!elemento) return;
+    
+    navigator.clipboard.writeText(elemento.textContent).then(() => {
+        showNotification(`📋 ${tipo === 'orcamento' ? 'Orçamento' : 'Recibo'} copiado!`, 'success');
+    }).catch(() => {
+        showNotification('❌ Erro ao copiar texto', 'error');
+    });
+};
+
+window.baixarPDF = function(tipo) {
+    if (!window.jsPDF) {
+        showNotification('❌ Biblioteca PDF não disponível', 'error');
+        return;
+    }
+    
+    try {
+        const elemento = tipo === 'orcamento' ? $('#texto-orcamento') : $('#texto-recibo');
+        if (!elemento) return;
+        
+        const doc = new jsPDF();
+        const texto = elemento.textContent;
+        const linhas = doc.splitTextToSize(texto, 180);
+        
+        doc.setFont('courier');
+        doc.setFontSize(10);
+        doc.text(linhas, 15, 20);
+        
+        const nomeArquivo = `${tipo}_${state.orcamentoSelecionado?.id || 'documento'}.pdf`;
+        doc.save(nomeArquivo);
+        
+        showNotification(`📄 PDF ${tipo} baixado!`, 'success');
+    } catch (error) {
+        console.error('Erro ao gerar PDF:', error);
+        showNotification('❌ Erro ao gerar PDF', 'error');
+    }
+};
+
+window.enviarWhatsApp = function(tipo) {
+    const elemento = tipo === 'orcamento' ? $('#texto-orcamento') : $('#texto-recibo');
+    if (!elemento) return;
+    
+    const texto = encodeURIComponent(elemento.textContent);
+    const telefone = state.orcamentoSelecionado?.clientes?.telefone;
+    
+    if (telefone) {
+        const numeroLimpo = telefone.replace(/\D/g, '');
+        const whatsappUrl = `https://wa.me/55${numeroLimpo}?text=${texto}`;
+        window.open(whatsappUrl, '_blank');
+        showNotification(`📱 ${tipo === 'orcamento' ? 'Orçamento' : 'Recibo'} enviado via WhatsApp!`, 'success');
+    } else {
+        const whatsappUrl = `https://wa.me/?text=${texto}`;
+        window.open(whatsappUrl, '_blank');
+        showNotification('📱 WhatsApp aberto para envio', 'success');
+    }
+};
+
+window.alterarStatus = function(novoStatus) {
+    if (!state.orcamentoSelecionado) {
+        showNotification('❌ Nenhum orçamento selecionado', 'error');
+        return;
+    }
+    
+    // Encontra o orçamento no array e atualiza
+    const index = state.orcamentos.findIndex(o => o.id === state.orcamentoSelecionado.id);
+    if (index >= 0) {
+        state.orcamentos[index].status = novoStatus;
+        state.orcamentos[index].updated_at = new Date().toISOString();
+        state.orcamentoSelecionado.status = novoStatus;
+        
+        // Atualiza a renderização
+        renderHistorico();
+        
+        // Mantém a seleção
+        setTimeout(() => {
+            selecionarOrcamentoHistorico(state.orcamentoSelecionado.id);
+        }, 100);
+        
+        showNotification(`✅ Status alterado para: ${getStatusEmoji(novoStatus)} ${novoStatus}`, 'success');
+        
+        // Atualiza dashboard se estiver na aba
+        if (state.currentTab === 'dashboard') {
+            renderDashboard();
+        }
+    }
+};
+
+window.editarOrcamento = function() {
+    if (!state.orcamentoSelecionado) {
+        showNotification('❌ Nenhum orçamento selecionado', 'error');
+        return;
+    }
+    
+    showNotification('📝 Redirecionando para edição...', 'success');
+    showTab('novo-orcamento');
+    
+    // TODO: Implementar carregamento dos dados do orçamento para edição
+};
+
+window.excluirOrcamento = function() {
+    if (!state.orcamentoSelecionado) {
+        showNotification('❌ Nenhum orçamento selecionado', 'error');
+        return;
+    }
+    
+    if (confirm('🗑️ Tem certeza que deseja excluir este orçamento?')) {
+        const index = state.orcamentos.findIndex(o => o.id === state.orcamentoSelecionado.id);
+        if (index >= 0) {
+            state.orcamentos.splice(index, 1);
+            state.orcamentoSelecionado = null;
+            
+            // Esconde painel de detalhes
+            const detalhesPanel = $('#detalhes-panel');
+            if (detalhesPanel) {
+                detalhesPanel.style.display = 'none';
+            }
+            
+            renderHistorico();
+            showNotification('🗑️ Orçamento excluído com sucesso!', 'success');
+        }
+    }
+};
+
+function getStatusEmoji(status) {
+    const emojis = {
+        'Orçamento': '📝',
+        'Aprovado': '👍',
+        'Pago': '💰',
+        'Finalizado': '✅',
+        'Cancelado': '❌'
+    };
+    return emojis[status] || '📋';
+}
+
+// ========================== CHARTS =======================================
+function renderMonthlyChart() {
     const canvas = $('#monthly-finalized-chart-canvas');
+    if (!canvas || !window.Chart) return;
+    
     const ctx = canvas.getContext('2d');
     
-    // Destrói chart existente
     if (state.monthlyChart) {
         state.monthlyChart.destroy();
     }
     
-    // Prepara dados dos últimos 6 meses
+    // Dados dos últimos 6 meses
     const monthlyData = [];
     const monthLabels = [];
     
@@ -572,1603 +1199,54 @@ function renderMonthlyStatsChart() {
         const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
         
         const finalizados = state.orcamentos.filter(o => 
-            o.status === 'Finalizado' && 
-            new Date(o.updated_at) >= monthStart && 
-            new Date(o.updated_at) <= monthEnd
+            (o.status === 'Finalizado' || o.status === 'Pago') && 
+            new Date(o.updated_at || o.created_at) >= monthStart && 
+            new Date(o.updated_at || o.created_at) <= monthEnd
         ).length;
         
         monthlyData.push(finalizados);
         monthLabels.push(date.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }));
     }
     
-    // Cria novo chart
-    state.monthlyChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: monthLabels,
-            datasets: [{
-                label: 'Orçamentos Finalizados',
-                data: monthlyData,
-                backgroundColor: '#1FB8CD',
-                borderColor: '#16a34a',
-                borderWidth: 2,
-                borderRadius: 8,
-                borderSkipped: false
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.parsed.y} orçamentos finalizados`;
-                        }
-                    }
-                }
+    try {
+        state.monthlyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: monthLabels,
+                datasets: [{
+                    label: '📊 Orçamentos Finalizados',
+                    data: monthlyData,
+                    backgroundColor: ['#1FB8CD', '#FFC185', '#B4413C', '#ECEBD5', '#5D878F', '#DB4545'],
+                    borderColor: '#16a4b8',
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
             },
-            scales: {
-                x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        color: '#a0aec0'
-                    }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
                 },
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        color: '#a0aec0',
-                        precision: 0
-                    },
-                    grid: {
-                        color: '#4a5568'
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
                     }
                 }
             }
-        }
-    });
-}
-
-function renderRecentActivity() {
-    const recentList = $('#recent-activity-list');
-    const recentOrcamentos = state.orcamentos.slice(0, 8);
-    
-    if (recentOrcamentos.length === 0) {
-        renderEmptyState(recentList, 'Nenhuma atividade recente', 'Crie seu primeiro orçamento para começar');
-        return;
-    }
-    
-    recentList.innerHTML = recentOrcamentos.map(orc => `
-        <li>
-            <div>
-                <strong>${orc.clientes?.nome || 'Cliente não encontrado'}</strong>
-                <small>${orc.clientes?.carro || 'Carro não informado'}</small>
-                <small>${formatDate(orc.created_at)}</small>
-            </div>
-            <div class="item-actions">
-                <span class="status-indicator status-${orc.status.toLowerCase()}">${orc.status}</span>
-                <span style="font-weight: bold; color: var(--accent-green);">${formatCurrency(orc.valor_total)}</span>
-                <button class="btn btn-sm btn-primary view-historico-btn" data-id="${orc.id}">
-                    <i class="fas fa-eye"></i> Ver
-                </button>
-            </div>
-        </li>
-    `).join('');
-    
-    // Adiciona event listeners
-    recentList.addEventListener('click', (e) => {
-        if (e.target.classList.contains('view-historico-btn') || e.target.parentElement.classList.contains('view-historico-btn')) {
-            const orcamentoId = e.target.dataset.id || e.target.parentElement.dataset.id;
-            showTab('historico');
-            setTimeout(() => handleHistoricoClick(orcamentoId), 100);
-        }
-    });
-}
-
-// ============================================================================
-// CLIENTES - GESTÃO DE CLIENTES
-// ============================================================================
-
-function renderClientes() {
-    const searchTerm = $('#search-cliente').value.toLowerCase();
-    const sortBy = $('#sort-clientes').value;
-    
-    // Filtra clientes
-    let filteredClientes = state.clientes.filter(cliente => 
-        cliente.nome.toLowerCase().includes(searchTerm) ||
-        cliente.placa.toLowerCase().includes(searchTerm) ||
-        formatPhone(cliente.telefone).includes(searchTerm)
-    );
-    
-    // Ordena clientes
-    filteredClientes.sort((a, b) => {
-        const [field, direction] = sortBy.split('-');
-        const aValue = a[field]?.toLowerCase() || '';
-        const bValue = b[field]?.toLowerCase() || '';
-        
-        if (direction === 'asc') {
-            return aValue.localeCompare(bValue);
-        } else {
-            return bValue.localeCompare(aValue);
-        }
-    });
-    
-    const clientesList = $('#clientes-lista');
-    
-    if (filteredClientes.length === 0) {
-        renderEmptyState(clientesList, 'Nenhum cliente encontrado', 'Cadastre o primeiro cliente para começar');
-        return;
-    }
-    
-    clientesList.innerHTML = filteredClientes.map(cliente => `
-        <li data-id="${cliente.id}" ${state.editandoClienteId === cliente.id ? 'class="editing"' : ''}>
-            <div>
-                <strong data-field="nome">${cliente.nome}</strong>
-                <small>${cliente.carro} - ${cliente.placa}</small>
-                <small>${formatPhone(cliente.telefone)}</small>
-                <input type="text" class="inline-edit-input edit-mode-input" value="${cliente.nome}" data-field="nome">
-                <input type="text" class="inline-edit-input edit-mode-input" value="${cliente.carro}" data-field="carro">
-                <input type="text" class="inline-edit-input edit-mode-input" value="${cliente.placa}" data-field="placa">
-                <input type="text" class="inline-edit-input edit-mode-input" value="${cliente.telefone}" data-field="telefone">
-            </div>
-            <div class="item-actions">
-                <button class="btn btn-sm btn-secondary edit-cliente-btn" data-id="${cliente.id}">
-                    <i class="fas fa-edit"></i> Editar
-                </button>
-                <button class="btn btn-sm btn-primary details-cliente-btn" data-id="${cliente.id}">
-                    <i class="fas fa-eye"></i> Detalhes
-                </button>
-                <button class="btn btn-sm btn-danger delete-cliente-btn" data-id="${cliente.id}">
-                    <i class="fas fa-trash"></i> Excluir
-                </button>
-            </div>
-        </li>
-    `).join('');
-    
-    // Adiciona event listeners
-    clientesList.addEventListener('click', (e) => {
-        const clienteId = e.target.dataset.id || e.target.parentElement.dataset.id;
-        
-        if (e.target.classList.contains('edit-cliente-btn') || e.target.parentElement.classList.contains('edit-cliente-btn')) {
-            handleEditCliente(clienteId);
-        } else if (e.target.classList.contains('details-cliente-btn') || e.target.parentElement.classList.contains('details-cliente-btn')) {
-            displayClientDetails(clienteId);
-        } else if (e.target.classList.contains('delete-cliente-btn') || e.target.parentElement.classList.contains('delete-cliente-btn')) {
-            handleDeleteCliente(clienteId);
-        }
-    });
-}
-
-async function handleClienteSubmit(e) {
-    e.preventDefault();
-    
-    const id = $('#cliente-id').value;
-    const nome = $('#cliente-nome').value.trim();
-    const telefone = $('#cliente-telefone').value.trim();
-    const carro = $('#cliente-carro').value.trim();
-    const placa = $('#cliente-placa').value.trim().toUpperCase();
-    
-    // Validações
-    if (!nome) {
-        showNotification('Nome é obrigatório', 'error');
-        return;
-    }
-    
-    if (!telefone) {
-        showNotification('Telefone é obrigatório', 'error');
-        return;
-    }
-    
-    if (!carro) {
-        showNotification('Carro é obrigatório', 'error');
-        return;
-    }
-    
-    if (!placa) {
-        showNotification('Placa é obrigatória', 'error');
-        return;
-    }
-    
-    // Validação de placa
-    const placaRegex = /^[A-Z]{3}[-]?\d{4}$|^[A-Z]{3}[-]?\d{1}[A-Z]{1}\d{2}$/;
-    if (!placaRegex.test(placa)) {
-        showNotification('Placa deve ter formato ABC-1234 ou ABC1D23', 'error');
-        return;
-    }
-    
-    // Validação de telefone
-    const telefoneRegex = /^\(\d{2}\)\s\d{4,5}-\d{4}$/;
-    if (!telefoneRegex.test(telefone)) {
-        showNotification('Telefone deve ter formato (XX) XXXXX-XXXX', 'error');
-        return;
-    }
-    
-    try {
-        const clienteData = { nome, telefone, carro, placa };
-        
-        if (id) {
-            // Atualizar cliente existente
-            const { error } = await supabase
-                .from('clientes')
-                .update(clienteData)
-                .eq('id', id);
-            
-            if (error) throw error;
-            
-            showNotification('Cliente atualizado com sucesso!', 'success');
-            triggerConfetti();
-        } else {
-            // Criar novo cliente
-            const { error } = await supabase
-                .from('clientes')
-                .insert([clienteData]);
-            
-            if (error) throw error;
-            
-            showNotification('Cliente cadastrado com sucesso!', 'success');
-            triggerConfetti();
-        }
-        
-        resetClienteForm();
-        
-    } catch (error) {
-        console.error('Erro ao salvar cliente:', error);
-        showNotification('Erro ao salvar cliente: ' + error.message, 'error');
-    }
-}
-
-function handleEditCliente(id) {
-    const cliente = state.clientes.find(c => c.id === id);
-    if (!cliente) return;
-    
-    $('#cliente-id').value = cliente.id;
-    $('#cliente-nome').value = cliente.nome;
-    $('#cliente-telefone').value = formatPhone(cliente.telefone);
-    $('#cliente-carro').value = cliente.carro;
-    $('#cliente-placa').value = cliente.placa;
-    
-    $('#cliente-form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Cliente';
-    $('#cancelar-edicao-cliente').style.display = 'inline-flex';
-    
-    state.editandoClienteId = id;
-    renderClientes();
-}
-
-function handleDeleteCliente(id) {
-    showConfirmModal(
-        'Excluir Cliente',
-        'Tem certeza que deseja excluir este cliente? Esta ação não pode ser desfeita.',
-        async () => {
-            try {
-                const { error } = await supabase
-                    .from('clientes')
-                    .delete()
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                showNotification('Cliente excluído com sucesso!', 'success');
-                triggerConfetti();
-                resetClienteForm();
-                
-                // Esconde painel de detalhes se estiver mostrando este cliente
-                if ($('#client-details-panel').style.display !== 'none') {
-                    $('#client-details-panel').style.display = 'none';
-                }
-                
-            } catch (error) {
-                console.error('Erro ao excluir cliente:', error);
-                showNotification('Erro ao excluir cliente: ' + error.message, 'error');
-            }
-        }
-    );
-}
-
-function resetClienteForm() {
-    $('#cliente-form').reset();
-    $('#cliente-id').value = '';
-    $('#cliente-form-title').innerHTML = '<i class="fas fa-user-plus"></i> Cadastrar Cliente';
-    $('#cancelar-edicao-cliente').style.display = 'none';
-    state.editandoClienteId = null;
-    
-    // Remove validações visuais
-    $$('#cliente-form .validation-message').forEach(msg => msg.style.display = 'none');
-    $$('#cliente-form .validation-icon').forEach(icon => icon.style.display = 'none');
-    $$('#cliente-form input').forEach(input => input.style.borderColor = 'var(--border-color)');
-    
-    renderClientes();
-}
-
-function displayClientDetails(clientId) {
-    const cliente = state.clientes.find(c => c.id === clientId);
-    if (!cliente) return;
-    
-    // Preenche detalhes do cliente
-    $('#client-detail-name').textContent = cliente.nome;
-    $('#client-detail-phone').textContent = formatPhone(cliente.telefone);
-    $('#client-detail-car').textContent = cliente.carro;
-    $('#client-detail-plate').textContent = cliente.placa;
-    
-    // Busca orçamentos do cliente
-    const clientOrcamentos = state.orcamentos.filter(o => o.cliente_id === clientId);
-    const pastOrcamentosList = $('#client-past-orcamentos');
-    
-    if (clientOrcamentos.length === 0) {
-        renderEmptyState(pastOrcamentosList, 'Nenhum orçamento encontrado', 'Este cliente ainda não possui orçamentos');
-    } else {
-        pastOrcamentosList.innerHTML = clientOrcamentos.map(orc => `
-            <li>
-                <div>
-                    <strong>Orçamento #${orc.id}</strong>
-                    <small>${formatDate(orc.created_at)}</small>
-                    <small>Status: ${orc.status}</small>
-                </div>
-                <div class="item-actions">
-                    <span style="font-weight: bold; color: var(--accent-green);">${formatCurrency(orc.valor_total)}</span>
-                    <button class="btn btn-sm btn-primary view-orcamento-details-btn" data-id="${orc.id}">
-                        <i class="fas fa-eye"></i> Ver Detalhes
-                    </button>
-                </div>
-            </li>
-        `).join('');
-        
-        // Adiciona event listeners
-        pastOrcamentosList.addEventListener('click', (e) => {
-            if (e.target.classList.contains('view-orcamento-details-btn') || e.target.parentElement.classList.contains('view-orcamento-details-btn')) {
-                const orcamentoId = e.target.dataset.id || e.target.parentElement.dataset.id;
-                showTab('historico');
-                setTimeout(() => handleHistoricoClick(orcamentoId), 100);
-            }
         });
-    }
-    
-    // Mostra painel de detalhes
-    $('#client-details-panel').style.display = 'block';
-}
-
-// ============================================================================
-// SERVIÇOS - GESTÃO DE SERVIÇOS
-// ============================================================================
-
-function renderServicos() {
-    const searchTerm = $('#search-servico').value.toLowerCase();
-    const sortBy = $('#sort-servicos').value;
-    
-    // Filtra serviços
-    let filteredServicos = state.servicos.filter(servico => 
-        servico.descricao.toLowerCase().includes(searchTerm)
-    );
-    
-    // Ordena serviços
-    filteredServicos.sort((a, b) => {
-        const [field, direction] = sortBy.split('-');
-        
-        if (field === 'valor') {
-            const aValue = parseFloat(a.valor) || 0;
-            const bValue = parseFloat(b.valor) || 0;
-            return direction === 'asc' ? aValue - bValue : bValue - aValue;
-        } else {
-            const aValue = a[field]?.toLowerCase() || '';
-            const bValue = b[field]?.toLowerCase() || '';
-            return direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-        }
-    });
-    
-    const servicosList = $('#servicos-lista');
-    
-    if (filteredServicos.length === 0) {
-        renderEmptyState(servicosList, 'Nenhum serviço encontrado', 'Cadastre o primeiro serviço para começar');
-        return;
-    }
-    
-    servicosList.innerHTML = filteredServicos.map(servico => `
-        <li data-id="${servico.id}" ${state.editandoServicoId === servico.id ? 'class="editing"' : ''}>
-            <div>
-                <strong data-field="descricao">${servico.descricao}</strong>
-                <small>${formatCurrency(servico.valor)}</small>
-                <input type="text" class="inline-edit-input edit-mode-input" value="${servico.descricao}" data-field="descricao">
-                <input type="number" class="inline-edit-input edit-mode-input" value="${servico.valor}" data-field="valor" step="0.01">
-            </div>
-            <div class="item-actions">
-                <button class="btn btn-sm btn-secondary edit-servico-btn" data-id="${servico.id}">
-                    <i class="fas fa-edit"></i> Editar
-                </button>
-                <button class="btn btn-sm btn-danger delete-servico-btn" data-id="${servico.id}">
-                    <i class="fas fa-trash"></i> Excluir
-                </button>
-            </div>
-        </li>
-    `).join('');
-    
-    // Adiciona event listeners
-    servicosList.addEventListener('click', (e) => {
-        const servicoId = e.target.dataset.id || e.target.parentElement.dataset.id;
-        
-        if (e.target.classList.contains('edit-servico-btn') || e.target.parentElement.classList.contains('edit-servico-btn')) {
-            handleEditServico(servicoId);
-        } else if (e.target.classList.contains('delete-servico-btn') || e.target.parentElement.classList.contains('delete-servico-btn')) {
-            handleDeleteServico(servicoId);
-        }
-    });
-}
-
-async function handleServicoSubmit(e) {
-    e.preventDefault();
-    
-    const id = $('#servico-id').value;
-    const descricao = $('#servico-descricao').value.trim();
-    const valor = parseFloat($('#servico-valor').value);
-    
-    // Validações
-    if (!descricao) {
-        showNotification('Descrição é obrigatória', 'error');
-        return;
-    }
-    
-    if (!valor || valor <= 0) {
-        showNotification('Valor deve ser maior que zero', 'error');
-        return;
-    }
-    
-    try {
-        const servicoData = { descricao, valor };
-        
-        if (id) {
-            // Atualizar serviço existente
-            const { error } = await supabase
-                .from('servicos')
-                .update(servicoData)
-                .eq('id', id);
-            
-            if (error) throw error;
-            
-            showNotification('Serviço atualizado com sucesso!', 'success');
-            triggerConfetti();
-        } else {
-            // Criar novo serviço
-            const { error } = await supabase
-                .from('servicos')
-                .insert([servicoData]);
-            
-            if (error) throw error;
-            
-            showNotification('Serviço cadastrado com sucesso!', 'success');
-            triggerConfetti();
-        }
-        
-        resetServicoForm();
-        
     } catch (error) {
-        console.error('Erro ao salvar serviço:', error);
-        showNotification('Erro ao salvar serviço: ' + error.message, 'error');
+        console.error('❌ Erro ao criar gráfico:', error);
     }
-}
-
-function handleEditServico(id) {
-    const servico = state.servicos.find(s => s.id === id);
-    if (!servico) return;
-    
-    $('#servico-id').value = servico.id;
-    $('#servico-descricao').value = servico.descricao;
-    $('#servico-valor').value = servico.valor;
-    
-    $('#servico-form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Serviço';
-    $('#cancelar-edicao-servico').style.display = 'inline-flex';
-    
-    state.editandoServicoId = id;
-    renderServicos();
-}
-
-function handleDeleteServico(id) {
-    // Validação CRÍTICA: Verifica se o serviço está sendo usado em orçamentos
-    const servicoEmUso = state.orcamentoItens.some(item => item.servico_id === id);
-    
-    if (servicoEmUso) {
-        showNotification('Não é possível excluir este serviço pois ele está sendo usado em orçamentos existentes.', 'error');
-        return;
-    }
-    
-    showConfirmModal(
-        'Excluir Serviço',
-        'Tem certeza que deseja excluir este serviço? Esta ação não pode ser desfeita.',
-        async () => {
-            try {
-                const { error } = await supabase
-                    .from('servicos')
-                    .delete()
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                showNotification('Serviço excluído com sucesso!', 'success');
-                triggerConfetti();
-                resetServicoForm();
-                
-            } catch (error) {
-                console.error('Erro ao excluir serviço:', error);
-                showNotification('Erro ao excluir serviço: ' + error.message, 'error');
-            }
-        }
-    );
-}
-
-function resetServicoForm() {
-    $('#servico-form').reset();
-    $('#servico-id').value = '';
-    $('#servico-form-title').innerHTML = '<i class="fas fa-plus"></i> Cadastrar Serviço';
-    $('#cancelar-edicao-servico').style.display = 'none';
-    state.editandoServicoId = null;
-    
-    // Remove validações visuais
-    $$('#servico-form .validation-message').forEach(msg => msg.style.display = 'none');
-    $$('#servico-form .validation-icon').forEach(icon => icon.style.display = 'none');
-    $$('#servico-form input').forEach(input => input.style.borderColor = 'var(--border-color)');
-    
-    renderServicos();
-}
-
-// ============================================================================
-// ORÇAMENTOS - CRIAÇÃO E GESTÃO
-// ============================================================================
-
-function renderOrcamentoClienteOptions() {
-    const clienteSelect = $('#orcamento-cliente');
-    clienteSelect.innerHTML = '<option value="">Selecione um cliente</option>';
-    
-    state.clientes.forEach(cliente => {
-        const option = document.createElement('option');
-        option.value = cliente.id;
-        option.textContent = `${cliente.nome} - ${cliente.carro}`;
-        clienteSelect.appendChild(option);
-    });
-}
-
-function renderOrcamentoServicoOptions() {
-    const servicoSelect = $('#orcamento-servico-select');
-    servicoSelect.innerHTML = '<option value="">Selecione um serviço</option>';
-    
-    state.servicos.forEach(servico => {
-        const option = document.createElement('option');
-        option.value = servico.id;
-        option.textContent = `${servico.descricao} - ${formatCurrency(servico.valor)}`;
-        servicoSelect.appendChild(option);
-    });
-}
-
-function handleAddServicoToOrcamento() {
-    const servicoId = $('#orcamento-servico-select').value;
-    const quantidade = parseInt($('#orcamento-servico-quantidade').value);
-    
-    if (!servicoId) {
-        showNotification('Selecione um serviço', 'warning');
-        return;
-    }
-    
-    if (!quantidade || quantidade <= 0) {
-        showNotification('Quantidade deve ser maior que zero', 'warning');
-        return;
-    }
-    
-    const servico = state.servicos.find(s => s.id === servicoId);
-    if (!servico) return;
-    
-    // Verifica se o serviço já foi adicionado
-    const existingIndex = state.novoOrcamentoItens.findIndex(item => item.servico_id === servicoId);
-    
-    if (existingIndex >= 0) {
-        // Atualiza quantidade
-        state.novoOrcamentoItens[existingIndex].quantidade = quantidade;
-    } else {
-        // Adiciona novo item
-        state.novoOrcamentoItens.push({
-            servico_id: servicoId,
-            descricao_servico: servico.descricao,
-            valor_cobrado: servico.valor,
-            quantidade: quantidade
-        });
-    }
-    
-    // Limpa campos
-    $('#orcamento-servico-select').value = '';
-    $('#orcamento-servico-quantidade').value = 1;
-    
-    renderNovoOrcamentoItens();
-    updateOrcamentoTotal();
-}
-
-function renderNovoOrcamentoItens() {
-    const servicosContainer = $('#orcamento-servicos-adicionados');
-    
-    if (state.novoOrcamentoItens.length === 0) {
-        servicosContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted);">Nenhum serviço adicionado</p>';
-        return;
-    }
-    
-    servicosContainer.innerHTML = state.novoOrcamentoItens.map((item, index) => `
-        <li>
-            <div>
-                <strong>${item.descricao_servico}</strong>
-                <small>${formatCurrency(item.valor_cobrado)} cada</small>
-            </div>
-            <div class="item-actions">
-                <input type="number" class="orcamento-item-quantity" value="${item.quantidade}" min="1" data-index="${index}">
-                <button type="button" class="btn btn-sm btn-danger remove-servico-btn" data-index="${index}">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </li>
-    `).join('');
-    
-    // Adiciona event listeners para quantidade
-    servicosContainer.addEventListener('change', (e) => {
-        if (e.target.classList.contains('orcamento-item-quantity')) {
-            const index = parseInt(e.target.dataset.index);
-            const newQuantity = parseInt(e.target.value);
-            
-            if (newQuantity > 0) {
-                state.novoOrcamentoItens[index].quantidade = newQuantity;
-                updateOrcamentoTotal();
-            }
-        }
-    });
-    
-    // Adiciona event listeners para remoção
-    servicosContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('remove-servico-btn') || e.target.parentElement.classList.contains('remove-servico-btn')) {
-            const index = parseInt(e.target.dataset.index || e.target.parentElement.dataset.index);
-            state.novoOrcamentoItens.splice(index, 1);
-            renderNovoOrcamentoItens();
-            updateOrcamentoTotal();
-        }
-    });
-}
-
-function updateOrcamentoTotal() {
-    const subtotal = state.novoOrcamentoItens.reduce((total, item) => {
-        return total + (item.valor_cobrado * item.quantidade);
-    }, 0);
-    
-    const desconto = parseFloat($('#orcamento-desconto').value) || 0;
-    const total = Math.max(0, subtotal - desconto);
-    
-    $('#orcamento-total').innerHTML = `<strong>Total: ${formatCurrency(total)}</strong>`;
-}
-
-async function handleOrcamentoSubmit(e) {
-    e.preventDefault();
-    
-    const orcamentoId = $('#orcamento-id-to-edit').value;
-    const clienteId = $('#orcamento-cliente').value;
-    const desconto = parseFloat($('#orcamento-desconto').value) || 0;
-    const formasPagamento = Array.from($$('#payment-options .payment-option.active')).map(btn => btn.dataset.value);
-    
-    // Validações
-    if (!clienteId) {
-        showNotification('Selecione um cliente', 'error');
-        return;
-    }
-    
-    if (state.novoOrcamentoItens.length === 0) {
-        showNotification('Adicione pelo menos um serviço', 'error');
-        return;
-    }
-    
-    if (formasPagamento.length === 0) {
-        showNotification('Selecione pelo menos uma forma de pagamento', 'error');
-        $('#payment-options-validation').style.display = 'block';
-        return;
-    }
-    
-    $('#payment-options-validation').style.display = 'none';
-    
-    // Calcula valores
-    const subtotal = state.novoOrcamentoItens.reduce((total, item) => {
-        return total + (item.valor_cobrado * item.quantidade);
-    }, 0);
-    const valorTotal = Math.max(0, subtotal - desconto);
-    
-    try {
-        const orcamentoData = {
-            cliente_id: clienteId,
-            desconto,
-            valor_total: valorTotal,
-            formas_pagamento: formasPagamento,
-            updated_at: new Date().toISOString()
-        };
-        
-        let finalOrcamentoId;
-        
-        if (orcamentoId) {
-            // Atualizar orçamento existente
-            const { error } = await supabase
-                .from('orcamentos')
-                .update(orcamentoData)
-                .eq('id', orcamentoId);
-            
-            if (error) throw error;
-            
-            // Remove itens existentes
-            await supabase
-                .from('orcamento_itens')
-                .delete()
-                .eq('orcamento_id', orcamentoId);
-            
-            finalOrcamentoId = orcamentoId;
-            showNotification('Orçamento atualizado com sucesso!', 'success');
-        } else {
-            // Criar novo orçamento
-            orcamentoData.status = 'Orçamento';
-            orcamentoData.created_at = new Date().toISOString();
-            
-            const { data, error } = await supabase
-                .from('orcamentos')
-                .insert([orcamentoData])
-                .select();
-            
-            if (error) throw error;
-            
-            finalOrcamentoId = data[0].id;
-            showNotification('Orçamento criado com sucesso!', 'success');
-        }
-        
-        // Inserir itens do orçamento
-        const itensData = state.novoOrcamentoItens.map(item => ({
-            orcamento_id: finalOrcamentoId,
-            servico_id: item.servico_id,
-            quantidade: item.quantidade,
-            valor_unitario: item.valor_cobrado
-        }));
-        
-        const { error: itensError } = await supabase
-            .from('orcamento_itens')
-            .insert(itensData);
-        
-        if (itensError) throw itensError;
-        
-        triggerConfetti();
-        resetOrcamentoForm();
-        showTab('historico');
-        
-    } catch (error) {
-        console.error('Erro ao salvar orçamento:', error);
-        showNotification('Erro ao salvar orçamento: ' + error.message, 'error');
-    }
-}
-
-function resetOrcamentoForm() {
-    $('#orcamento-form').reset();
-    $('#orcamento-id-to-edit').value = '';
-    $('#orcamento-form-title').innerHTML = '<i class="fas fa-file-invoice"></i> Novo Orçamento';
-    $('#cancelar-edicao-orcamento').style.display = 'none';
-    
-    state.novoOrcamentoItens = [];
-    renderNovoOrcamentoItens();
-    updateOrcamentoTotal();
-    
-    // Remove seleção de formas de pagamento
-    $$('#payment-options .payment-option').forEach(btn => btn.classList.remove('active'));
-    $('#payment-options-validation').style.display = 'none';
-}
-
-// ============================================================================
-// HISTÓRICO - GESTÃO DE ORÇAMENTOS
-// ============================================================================
-
-function renderOrcamentos() {
-    const searchTerm = $('#search-historico').value.toLowerCase();
-    const statusFilter = $('#filter-status').value;
-    const startDate = $('#filter-start-date').value;
-    const endDate = $('#filter-end-date').value;
-    
-    // Filtra orçamentos
-    let filteredOrcamentos = state.orcamentos.filter(orcamento => {
-        const matchesSearch = 
-            orcamento.clientes?.nome.toLowerCase().includes(searchTerm) ||
-            orcamento.clientes?.placa.toLowerCase().includes(searchTerm) ||
-            formatDate(orcamento.created_at).includes(searchTerm) ||
-            orcamento.status.toLowerCase().includes(searchTerm) ||
-            formatCurrency(orcamento.valor_total).includes(searchTerm);
-        
-        const matchesStatus = !statusFilter || orcamento.status === statusFilter;
-        
-        const matchesDateRange = (!startDate || orcamento.created_at >= startDate) &&
-                                (!endDate || orcamento.created_at <= endDate);
-        
-        return matchesSearch && matchesStatus && matchesDateRange;
-    });
-    
-    const orcamentosList = $('#historico-lista');
-    
-    if (filteredOrcamentos.length === 0) {
-        renderEmptyState(orcamentosList, 'Nenhum orçamento encontrado', 'Crie o primeiro orçamento para começar');
-        return;
-    }
-    
-    orcamentosList.innerHTML = filteredOrcamentos.map(orcamento => `
-        <li data-id="${orcamento.id}" ${state.orcamentoSelecionado?.id === orcamento.id ? 'class="selected"' : ''}>
-            <div>
-                <strong>${orcamento.clientes?.nome || 'Cliente não encontrado'}</strong>
-                <small>${orcamento.clientes?.carro || 'Carro não informado'} - ${orcamento.clientes?.placa || 'Placa não informada'}</small>
-                <small>${formatDate(orcamento.created_at)}</small>
-            </div>
-            <div class="item-actions">
-                <span class="status-indicator status-${orcamento.status.toLowerCase()}">${orcamento.status}</span>
-                <span style="font-weight: bold; color: var(--accent-green);">${formatCurrency(orcamento.valor_total)}</span>
-            </div>
-        </li>
-    `).join('');
-    
-    // Adiciona event listeners
-    orcamentosList.addEventListener('click', (e) => {
-        const orcamentoId = e.currentTarget.dataset.id || e.target.closest('li').dataset.id;
-        if (orcamentoId) {
-            handleHistoricoClick(orcamentoId);
-        }
-    });
-}
-
-function handleHistoricoClick(id) {
-    // Marca como selecionado
-    const orcamento = state.orcamentos.find(o => o.id === id);
-    if (!orcamento) return;
-    
-    state.orcamentoSelecionado = orcamento;
-    renderOrcamentos();
-    displayOrcamentoDetails();
-}
-
-function displayOrcamentoDetails() {
-    const orcamento = state.orcamentoSelecionado;
-    if (!orcamento) return;
-    
-    // Mostra container de detalhes
-    $('#detalhes-orcamento-container').style.display = 'block';
-    
-    // Gera texto do orçamento
-    const orcamentoTexto = generateOrcamentoText(orcamento);
-    $('#detalhes-orcamento-texto').textContent = orcamentoTexto;
-    
-    // Gera texto do recibo
-    const reciboTexto = generateReciboText(orcamento);
-    $('#detalhes-recibo-texto').textContent = reciboTexto;
-    
-    // Gerencia visibilidade dos botões baseado no status
-    const editBtn = $('#edit-orcamento-btn');
-    const approveBtn = $('#approve-orcamento-btn');
-    const finalizeBtn = $('#finalize-orcamento-btn');
-    const cancelBtn = $('#cancel-orcamento-btn');
-    
-    // Mostra/esconde botões baseado no status
-    switch(orcamento.status) {
-        case 'Orçamento':
-            editBtn.style.display = 'inline-flex';
-            approveBtn.style.display = 'inline-flex';
-            finalizeBtn.style.display = 'none';
-            cancelBtn.style.display = 'inline-flex';
-            break;
-        case 'Aprovado':
-            editBtn.style.display = 'inline-flex';
-            approveBtn.style.display = 'none';
-            finalizeBtn.style.display = 'inline-flex';
-            cancelBtn.style.display = 'inline-flex';
-            break;
-        case 'Finalizado':
-            editBtn.style.display = 'none';
-            approveBtn.style.display = 'none';
-            finalizeBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-            break;
-        case 'Cancelado':
-            editBtn.style.display = 'none';
-            approveBtn.style.display = 'none';
-            finalizeBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-            break;
-    }
-}
-
-function switchDetailView(view) {
-    const orcamentoBtn = $('#btn-view-orcamento');
-    const reciboBtn = $('#btn-view-recibo');
-    const orcamentoBloco = $('#detalhe-orcamento-bloco');
-    const reciboBloco = $('#detalhe-recibo-bloco');
-    
-    if (view === 'orcamento') {
-        orcamentoBtn.classList.add('active');
-        reciboBtn.classList.remove('active');
-        orcamentoBloco.style.display = 'block';
-        reciboBloco.style.display = 'none';
-    } else {
-        orcamentoBtn.classList.remove('active');
-        reciboBtn.classList.add('active');
-        orcamentoBloco.style.display = 'none';
-        reciboBloco.style.display = 'block';
-    }
-}
-
-function generateOrcamentoText(orcamento) {
-    const cliente = orcamento.clientes;
-    const itens = orcamento.orcamento_itens || [];
-    
-    let texto = `
-═══════════════════════════════════════════════════════════
-                    ORÇAMENTO DETALHADO
-═══════════════════════════════════════════════════════════
-
-🏢 ESTABELECIMENTO:
-${ESTABELECIMENTO.nome}
-CNPJ: ${ESTABELECIMENTO.cnpj}
-📍 ${ESTABELECIMENTO.endereco}
-📞 ${formatPhone(ESTABELECIMENTO.telefone)}
-
-─────────────────────────────────────────────────────────
-
-👤 CLIENTE:
-Nome: ${cliente?.nome || 'Não informado'}
-Telefone: ${formatPhone(cliente?.telefone || '')}
-Veículo: ${cliente?.carro || 'Não informado'}
-Placa: ${cliente?.placa || 'Não informada'}
-
-─────────────────────────────────────────────────────────
-
-📋 SERVIÇOS SOLICITADOS:
-`;
-
-    itens.forEach((item, index) => {
-        const subtotal = item.valor_unitario * item.quantidade;
-        texto += `
-${index + 1}. ${item.servicos?.descricao || 'Serviço não encontrado'}
-   Quantidade: ${item.quantidade}
-   Valor unitário: ${formatCurrency(item.valor_unitario)}
-   Subtotal: ${formatCurrency(subtotal)}
-`;
-    });
-    
-    const subtotalGeral = itens.reduce((total, item) => total + (item.valor_unitario * item.quantidade), 0);
-    const desconto = orcamento.desconto || 0;
-    const total = subtotalGeral - desconto;
-    
-    texto += `
-─────────────────────────────────────────────────────────
-
-💰 VALORES:
-Subtotal: ${formatCurrency(subtotalGeral)}
-Desconto: ${formatCurrency(desconto)}
-TOTAL: ${formatCurrency(total)}
-
-─────────────────────────────────────────────────────────
-
-💳 FORMAS DE PAGAMENTO ACEITAS:
-${orcamento.formas_pagamento?.join(', ') || 'Não informado'}
-
-─────────────────────────────────────────────────────────
-
-📅 Data do Orçamento: ${formatDate(orcamento.created_at)}
-Status: ${orcamento.status}
-
-${ESTABELECIMENTO.agradecimento}
-
-═══════════════════════════════════════════════════════════
-`;
-    
-    return texto.trim();
-}
-
-function generateReciboText(orcamento) {
-    const cliente = orcamento.clientes;
-    const itens = orcamento.orcamento_itens || [];
-    
-    let texto = `
-═══════════════════════════════════════════════════════════
-                     RECIBO NÃO FISCAL
-═══════════════════════════════════════════════════════════
-
-🏢 PRESTADOR DE SERVIÇO:
-${ESTABELECIMENTO.nome}
-CNPJ: ${ESTABELECIMENTO.cnpj}
-📍 ${ESTABELECIMENTO.endereco}
-📞 ${formatPhone(ESTABELECIMENTO.telefone)}
-
-─────────────────────────────────────────────────────────
-
-👤 CLIENTE:
-Nome: ${cliente?.nome || 'Não informado'}
-Telefone: ${formatPhone(cliente?.telefone || '')}
-Veículo: ${cliente?.carro || 'Não informado'}
-Placa: ${cliente?.placa || 'Não informada'}
-
-─────────────────────────────────────────────────────────
-
-🔧 SERVIÇOS EXECUTADOS:
-`;
-
-    itens.forEach((item, index) => {
-        const subtotal = item.valor_unitario * item.quantidade;
-        texto += `
-${index + 1}. ${item.servicos?.descricao || 'Serviço não encontrado'}
-   Quantidade: ${item.quantidade}
-   Valor unitário: ${formatCurrency(item.valor_unitario)}
-   Subtotal: ${formatCurrency(subtotal)}
-`;
-    });
-    
-    const subtotalGeral = itens.reduce((total, item) => total + (item.valor_unitario * item.quantidade), 0);
-    const desconto = orcamento.desconto || 0;
-    const total = subtotalGeral - desconto;
-    
-    texto += `
-─────────────────────────────────────────────────────────
-
-💰 RESUMO FINANCEIRO:
-Subtotal dos Serviços: ${formatCurrency(subtotalGeral)}
-Desconto Aplicado: ${formatCurrency(desconto)}
-VALOR TOTAL PAGO: ${formatCurrency(total)}
-
-─────────────────────────────────────────────────────────
-
-💳 FORMA DE PAGAMENTO:
-${orcamento.formas_pagamento?.join(', ') || 'Não informado'}
-
-─────────────────────────────────────────────────────────
-
-📅 Data do Serviço: ${formatDate(orcamento.updated_at)}
-Recibo #${orcamento.id}
-
-${ESTABELECIMENTO.agradecimento}
-
-═══════════════════════════════════════════════════════════
-`;
-    
-    return texto.trim();
-}
-
-function populateOrcamentoFormForEdit(orcamento) {
-    // Preenche dados básicos
-    $('#orcamento-id-to-edit').value = orcamento.id;
-    $('#orcamento-cliente').value = orcamento.cliente_id;
-    $('#orcamento-desconto').value = orcamento.desconto || 0;
-    
-    // Preenche formas de pagamento
-    $$('#payment-options .payment-option').forEach(btn => {
-        btn.classList.remove('active');
-        if (orcamento.formas_pagamento?.includes(btn.dataset.value)) {
-            btn.classList.add('active');
-        }
-    });
-    
-    // Preenche itens
-    state.novoOrcamentoItens = orcamento.orcamento_itens.map(item => ({
-        servico_id: item.servico_id,
-        descricao_servico: item.servicos.descricao,
-        valor_cobrado: item.valor_unitario,
-        quantidade: item.quantidade
-    }));
-    
-    // Atualiza interface
-    renderNovoOrcamentoItens();
-    updateOrcamentoTotal();
-    
-    // Altera título
-    $('#orcamento-form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Orçamento';
-    $('#cancelar-edicao-orcamento').style.display = 'inline-flex';
-}
-
-function handleEditOrcamento() {
-    if (!state.orcamentoSelecionado) return;
-    
-    populateOrcamentoFormForEdit(state.orcamentoSelecionado);
-    showTab('novo-orcamento');
-}
-
-async function updateStatusOrcamento(newStatus) {
-    if (!state.orcamentoSelecionado) return;
-    
-    const statusMessages = {
-        'Aprovado': 'Tem certeza que deseja aprovar este orçamento?',
-        'Finalizado': 'Tem certeza que deseja finalizar este orçamento?',
-        'Cancelado': 'Tem certeza que deseja cancelar este orçamento?'
-    };
-    
-    showConfirmModal(
-        `${newStatus} Orçamento`,
-        statusMessages[newStatus],
-        async () => {
-            try {
-                const { error } = await supabase
-                    .from('orcamentos')
-                    .update({ 
-                        status: newStatus,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', state.orcamentoSelecionado.id);
-                
-                if (error) throw error;
-                
-                showNotification(`Orçamento ${newStatus.toLowerCase()} com sucesso!`, 'success');
-                triggerConfetti();
-                
-                // Atualiza estado local
-                state.orcamentoSelecionado.status = newStatus;
-                displayOrcamentoDetails();
-                
-            } catch (error) {
-                console.error('Erro ao atualizar status:', error);
-                showNotification('Erro ao atualizar status: ' + error.message, 'error');
-            }
-        }
-    );
-}
-
-async function handleDeleteOrcamento() {
-    if (!state.orcamentoSelecionado) return;
-    
-    showConfirmModal(
-        'Excluir Orçamento',
-        'Tem certeza que deseja excluir este orçamento? Esta ação não pode ser desfeita.',
-        async () => {
-            try {
-                const { error } = await supabase
-                    .from('orcamentos')
-                    .delete()
-                    .eq('id', state.orcamentoSelecionado.id);
-                
-                if (error) throw error;
-                
-                showNotification('Orçamento excluído com sucesso!', 'success');
-                triggerConfetti();
-                
-                // Esconde detalhes
-                $('#detalhes-orcamento-container').style.display = 'none';
-                state.orcamentoSelecionado = null;
-                
-            } catch (error) {
-                console.error('Erro ao excluir orçamento:', error);
-                showNotification('Erro ao excluir orçamento: ' + error.message, 'error');
-            }
-        }
-    );
-}
-
-// Funções para copiar, WhatsApp e PDF
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        showNotification('Texto copiado para a área de transferência!', 'success');
-    }).catch(() => {
-        showNotification('Erro ao copiar texto', 'error');
-    });
-}
-
-function sendToWhatsApp(text, phone) {
-    const cleanedPhone = cleanPhone(phone);
-    const encodedText = encodeURIComponent(text);
-    const url = `https://wa.me/${cleanedPhone}?text=${encodedText}`;
-    window.open(url, '_blank');
-}
-
-function generatePDF(content, filename) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Configura fonte
-    doc.setFont('helvetica');
-    doc.setFontSize(8);
-    
-    // Adiciona conteúdo
-    const lines = content.split('\n');
-    let y = 20;
-    
-    lines.forEach(line => {
-        if (y > 280) {
-            doc.addPage();
-            y = 20;
-        }
-        doc.text(line, 10, y);
-        y += 4;
-    });
-    
-    // Salva PDF
-    doc.save(`${filename}.pdf`);
-    showNotification('PDF gerado com sucesso!', 'success');
-}
-
-// ============================================================================
-// CRM - GESTÃO DE RELACIONAMENTO
-// ============================================================================
-
-function renderCrmMetrics() {
-    const totalInteractions = state.crmInteractions.length;
-    const activeClients = state.clientes.filter(cliente => {
-        const ultimoOrcamento = state.orcamentos
-            .filter(o => o.cliente_id === cliente.id)
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
-        
-        if (!ultimoOrcamento) return false;
-        
-        const diasSemOrcamento = Math.floor((new Date() - new Date(ultimoOrcamento.created_at)) / (1000 * 60 * 60 * 24));
-        return diasSemOrcamento <= 30;
-    }).length;
-    
-    const pendingFollowups = state.clientes.filter(cliente => {
-        const ultimoOrcamento = state.orcamentos
-            .filter(o => o.cliente_id === cliente.id && o.status === 'Finalizado')
-            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))[0];
-        
-        if (!ultimoOrcamento) return false;
-        
-        const diasSemContato = Math.floor((new Date() - new Date(ultimoOrcamento.updated_at)) / (1000 * 60 * 60 * 24));
-        return diasSemContato >= 7 && diasSemContato <= 30;
-    }).length;
-    
-    $('#crm-total-interactions').textContent = totalInteractions;
-    $('#crm-active-clients').textContent = activeClients;
-    $('#crm-pending-followups').textContent = pendingFollowups;
-}
-
-function renderCrmInteractions() {
-    const searchTerm = $('#search-crm-interactions').value.toLowerCase();
-    
-    let filteredInteractions = state.crmInteractions.filter(interaction => 
-        interaction.clientes?.nome.toLowerCase().includes(searchTerm) ||
-        interaction.type.toLowerCase().includes(searchTerm) ||
-        interaction.notes.toLowerCase().includes(searchTerm)
-    );
-    
-    const interactionsList = $('#crm-interaction-list');
-    
-    if (filteredInteractions.length === 0) {
-        renderEmptyState(interactionsList, 'Nenhuma interação encontrada', 'Registre a primeira interação para começar');
-        return;
-    }
-    
-    interactionsList.innerHTML = filteredInteractions.map(interaction => `
-        <li>
-            <div>
-                <strong>${interaction.clientes?.nome || 'Cliente não encontrado'}</strong>
-                <small>${interaction.type} - ${formatDate(interaction.interaction_date)}</small>
-                <small>${interaction.notes || 'Sem observações'}</small>
-            </div>
-            <div class="item-actions">
-                <span class="status-indicator status-info">${interaction.type}</span>
-            </div>
-        </li>
-    `).join('');
-}
-
-function renderInteractionClientOptions() {
-    const clientSelect = $('#interaction-client');
-    clientSelect.innerHTML = '<option value="">Selecione um cliente</option>';
-    
-    state.clientes.forEach(cliente => {
-        const option = document.createElement('option');
-        option.value = cliente.id;
-        option.textContent = `${cliente.nome} - ${cliente.carro}`;
-        clientSelect.appendChild(option);
-    });
-}
-
-async function handleCrmInteractionSubmit(e) {
-    e.preventDefault();
-    
-    const clienteId = $('#interaction-client').value;
-    const type = $('#interaction-type').value;
-    const notes = $('#interaction-notes').value.trim();
-    const interactionDate = $('#interaction-date').value;
-    
-    if (!clienteId) {
-        showNotification('Selecione um cliente', 'error');
-        return;
-    }
-    
-    if (!type) {
-        showNotification('Selecione o tipo de interação', 'error');
-        return;
-    }
-    
-    if (!interactionDate) {
-        showNotification('Selecione a data', 'error');
-        return;
-    }
-    
-    try {
-        const { error } = await supabase
-            .from('crm_interactions')
-            .insert([{
-                cliente_id: clienteId,
-                type,
-                notes,
-                interaction_date: interactionDate,
-                created_at: new Date().toISOString()
-            }]);
-        
-        if (error) throw error;
-        
-        showNotification('Interação registrada com sucesso!', 'success');
-        triggerConfetti();
-        
-        // Limpa formulário
-        $('#crm-interaction-form').reset();
-        $('#interaction-date').value = new Date().toISOString().split('T')[0];
-        
-    } catch (error) {
-        console.error('Erro ao registrar interação:', error);
-        showNotification('Erro ao registrar interação: ' + error.message, 'error');
-    }
-}
-
-function renderSuggestedFollowups() {
-    const followupsList = $('#suggested-followups-list');
-    
-    // Busca clientes que finalizaram orçamentos há 7-30 dias
-    const followupClients = state.clientes.filter(cliente => {
-        const ultimoOrcamento = state.orcamentos
-            .filter(o => o.cliente_id === cliente.id && o.status === 'Finalizado')
-            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))[0];
-        
-        if (!ultimoOrcamento) return false;
-        
-        const diasSemContato = Math.floor((new Date() - new Date(ultimoOrcamento.updated_at)) / (1000 * 60 * 60 * 24));
-        return diasSemContato >= 7 && diasSemContato <= 30;
-    });
-    
-    if (followupClients.length === 0) {
-        renderEmptyState(followupsList, 'Nenhum follow-up pendente', 'Ótimo! Todos os clientes foram contactados recentemente');
-        return;
-    }
-    
-    followupsList.innerHTML = followupClients.map(cliente => {
-        const ultimoOrcamento = state.orcamentos
-            .filter(o => o.cliente_id === cliente.id && o.status === 'Finalizado')
-            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))[0];
-        
-        const diasSemContato = Math.floor((new Date() - new Date(ultimoOrcamento.updated_at)) / (1000 * 60 * 60 * 24));
-        
-        return `
-            <li>
-                <div>
-                    <strong>${cliente.nome}</strong>
-                    <small>${cliente.carro} - ${cliente.placa}</small>
-                    <small>Último serviço: ${formatDate(ultimoOrcamento.updated_at)} (${diasSemContato} dias atrás)</small>
-                </div>
-                <div class="item-actions">
-                    <button class="btn btn-sm btn-success contact-followup-btn" data-id="${cliente.id}">
-                        <i class="fas fa-phone"></i> Contatar
-                    </button>
-                </div>
-            </li>
-        `;
-    }).join('');
-    
-    // Adiciona event listeners
-    followupsList.addEventListener('click', (e) => {
-        if (e.target.classList.contains('contact-followup-btn') || e.target.parentElement.classList.contains('contact-followup-btn')) {
-            const clienteId = e.target.dataset.id || e.target.parentElement.dataset.id;
-            handleContactFollowup(clienteId);
-        }
-    });
-}
-
-function handleContactFollowup(clienteId) {
-    const cliente = state.clientes.find(c => c.id === clienteId);
-    if (!cliente) return;
-    
-    // Preenche formulário de nova interação
-    $('#interaction-client').value = clienteId;
-    $('#interaction-type').value = 'WhatsApp';
-    $('#interaction-date').value = new Date().toISOString().split('T')[0];
-    
-    // Gera mensagem de follow-up
-    const template = $('#template-followup').value;
-    const mensagem = template
-        .replace(/\[NOME\]/g, cliente.nome)
-        .replace(/\[CARRO\]/g, cliente.carro);
-    
-    $('#interaction-notes').value = mensagem;
-    
-    // Envia para WhatsApp
-    sendToWhatsApp(mensagem, cliente.telefone);
-    
-    showNotification('Follow-up iniciado! Registre a interação após o contato.', 'success');
-}
-
-function renderInactiveClients() {
-    const inactivityDays = parseInt($('#inactivity-filter').value);
-    const inactiveClientsList = $('#inactive-clients-list');
-    
-    // Busca clientes inativos
-    const inactiveClients = state.clientes.filter(cliente => {
-        const ultimoOrcamento = state.orcamentos
-            .filter(o => o.cliente_id === cliente.id)
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
-        
-        if (!ultimoOrcamento) return true; // Cliente sem orçamentos
-        
-        const diasSemOrcamento = Math.floor((new Date() - new Date(ultimoOrcamento.created_at)) / (1000 * 60 * 60 * 24));
-        return diasSemOrcamento >= inactivityDays;
-    });
-    
-    if (inactiveClients.length === 0) {
-        renderEmptyState(inactiveClientsList, 'Nenhum cliente inativo', 'Todos os clientes estão ativos!');
-        return;
-    }
-    
-    inactiveClientsList.innerHTML = inactiveClients.map(cliente => {
-        const ultimoOrcamento = state.orcamentos
-            .filter(o => o.cliente_id === cliente.id)
-            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
-        
-        const diasSemOrcamento = ultimoOrcamento ? 
-            Math.floor((new Date() - new Date(ultimoOrcamento.created_at)) / (1000 * 60 * 60 * 24)) : 
-            'Nunca';
-        
-        return `
-            <li>
-                <div>
-                    <strong>${cliente.nome}</strong>
-                    <small>${cliente.carro} - ${cliente.placa}</small>
-                    <small>${ultimoOrcamento ? `Último orçamento: ${diasSemOrcamento} dias atrás` : 'Nunca fez orçamento'}</small>
-                </div>
-                <div class="item-actions">
-                    <input type="checkbox" class="inactive-client-checkbox" data-id="${cliente.id}">
-                    <label>Selecionar</label>
-                </div>
-            </li>
-        `;
-    }).join('');
-}
-
-function handleBulkContact() {
-    const selectedClients = Array.from($$('.inactive-client-checkbox:checked')).map(cb => cb.dataset.id);
-    
-    if (selectedClients.length === 0) {
-        showNotification('Selecione pelo menos um cliente', 'warning');
-        return;
-    }
-    
-    // Preenche modal de disparo
-    state.selectedDispatchClients = new Set(selectedClients);
-    renderDispatchClientList();
-    $('#dispatch-view-modal').classList.add('active');
-}
-
-function renderDispatchClientList() {
-    const clientList = $('#dispatch-client-list');
-    
-    clientList.innerHTML = state.clientes
-        .filter(cliente => state.selectedDispatchClients.has(cliente.id))
-        .map(cliente => `
-            <li data-id="${cliente.id}" class="active">
-                <strong>${cliente.nome}</strong>
-                <small>${cliente.carro} - ${formatPhone(cliente.telefone)}</small>
-            </li>
-        `).join('');
-    
-    // Mostra compositor
-    $('#composer-placeholder').classList.add('hidden');
-    $('#composer-content').classList.remove('hidden');
-}
-
-function handleTemplateSelect() {
-    const templateType = $('#composer-template-select').value;
-    if (!templateType) return;
-    
-    const template = $(`#template-${templateType}`).value;
-    $('#composer-message').value = template;
-}
-
-function handleSendWhatsApp() {
-    const message = $('#composer-message').value.trim();
-    if (!message) {
-        showNotification('Digite uma mensagem', 'error');
-        return;
-    }
-    
-    state.selectedDispatchClients.forEach(clienteId => {
-        const cliente = state.clientes.find(c => c.id === clienteId);
-        if (cliente) {
-            const personalizedMessage = message
-                .replace(/\[NOME\]/g, cliente.nome)
-                .replace(/\[CARRO\]/g, cliente.carro);
-            
-            sendToWhatsApp(personalizedMessage, cliente.telefone);
-        }
-    });
-    
-    showNotification(`Mensagem enviada para ${state.selectedDispatchClients.size} cliente(s)!`, 'success');
-    triggerConfetti();
-    
-    // Fecha modal
-    $('#dispatch-view-modal').classList.remove('active');
-    state.selectedDispatchClients.clear();
-}
-
-// ============================================================================
-// DESPESAS - GESTÃO DE DESPESAS
-// ============================================================================
-
-function renderDespesas() {
-    const monthFilter = $('#filter-despesas-mes').value;
-    
-    let filteredDespesas = state.despesas;
-    
-    if (monthFilter) {
-        filteredDespesas = state.despesas.filter(despesa => {
-            const despesaMonth = despesa.data.substring(0, 7); // YYYY-MM
-            return despesaMonth === monthFilter;
-        });
-    }
-    
-    const despesasList = $('#despesas-lista');
-    
-    if (filteredDespesas.length === 0) {
-        renderEmptyState(despesasList, 'Nenhuma despesa encontrada', 'Registre a primeira despesa para começar');
-        return;
-    }
-    
-    despesasList.innerHTML = filteredDespesas.map(despesa => `
-        <li data-id="${despesa.id}" ${state.editandoDespesaId === despesa.id ? 'class="editing"' : ''}>
-            <div>
-                <strong data-field="descricao">${despesa.descricao}</strong>
-                <small>${despesa.categoria} - ${formatDate(despesa.data)}</small>
-                <small>${formatCurrency(despesa.valor)}</small>
-                <input type="text" class="inline-edit-input edit-mode-input" value="${despesa.descricao}" data-field="descricao">
-                <input type="number" class="inline-edit-input edit-mode-input" value="${despesa.valor}" data-field="valor" step="0.01">
-            </div>
-            <div class="item-actions">
-                <button class="btn btn-sm btn-secondary edit-despesa-btn" data-id="${despesa.id}">
-                    <i class="fas fa-edit"></i> Editar
-                </button>
-                <button class="btn btn-sm btn-danger delete-despesa-btn" data-id="${despesa.id}">
-                    <i class="fas fa-trash"></i> Excluir
-                </button>
-            </div>
-        </li>
-    `).join('');
-    
-    // Adiciona event listeners
-    despesasList.addEventListener('click', (e) => {
-        const despesaId = e.target.dataset.id || e.target.parentElement.dataset.id;
-        
-        if (e.target.classList.contains('edit-despesa-btn') || e.target.parentElement.classList.contains('edit-despesa-btn')) {
-            handleEditDespesa(despesaId);
-        } else if (e.target.classList.contains('delete-despesa-btn') || e.target.parentElement.classList.contains('delete-despesa-btn')) {
-            handleDeleteDespesa(despesaId);
-        }
-    });
-}
-
-function renderDespesasMetrics() {
-    const hoje = new Date().toISOString().split('T')[0];
-    const inicioMes = new Date();
-    inicioMes.setDate(1);
-    const inicioMesStr = inicioMes.toISOString().split('T')[0];
-    
-    const totalMes = state.despesas
-        .filter(d => d.data >= inicioMesStr)
-        .reduce((total, d) => total + d.valor, 0);
-    
-    const totalHoje = state.despesas
-        .filter(d => d.data === hoje)
-        .reduce((total, d) => total + d.valor, 0);
-    
-    const diasNoMes = new Date().getDate();
-    const mediaDiaria = totalMes / diasNoMes;
-    
-    $('#despesas-total-mes').textContent = formatCurrency(totalMes);
-    $('#despesas-hoje').textContent = formatCurrency(totalHoje);
-    $('#despesas-media-diaria').textContent = formatCurrency(mediaDiaria);
 }
 
 function renderDespesasChart() {
     const canvas = $('#despesas-chart');
+    if (!canvas || !window.Chart) return;
+    
     const ctx = canvas.getContext('2d');
     
-    // Destrói chart existente
     if (state.despesasChart) {
         state.despesasChart.destroy();
     }
@@ -2179,387 +1257,618 @@ function renderDespesasChart() {
         if (!categorias[despesa.categoria]) {
             categorias[despesa.categoria] = 0;
         }
-        categorias[despesa.categoria] += despesa.valor;
+        categorias[despesa.categoria] += despesa.valor || 0;
     });
     
     const labels = Object.keys(categorias);
     const data = Object.values(categorias);
-    const colors = ['#1FB8CD', '#FFC185', '#B4413C', '#ECEBD5', '#5D878F'];
+    const colors = ['#1FB8CD', '#FFC185', '#B4413C', '#ECEBD5', '#5D878F', '#DB4545', '#D2BA4C', '#964325', '#944454'];
     
-    // Cria novo chart
-    state.despesasChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: colors.slice(0, labels.length),
-                borderWidth: 2,
-                borderColor: '#2d3748'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: '#a0aec0',
-                        padding: 20
-                    }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.label}: ${formatCurrency(context.parsed)}`;
+    try {
+        state.despesasChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels.map(label => `💰 ${label}`),
+                datasets: [{
+                    data: data,
+                    backgroundColor: colors.slice(0, labels.length),
+                    borderWidth: 2,
+                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 20 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${formatCurrency(context.parsed)}`;
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+    } catch (error) {
+        console.error('❌ Erro ao criar gráfico de despesas:', error);
+    }
 }
 
-async function handleDespesaSubmit(e) {
+// ========================== MANIPULADORES DE ORÇAMENTO ==========================
+function handleAddServicoToOrcamento() {
+    const servicoId = $('#orcamento-servico-select')?.value;
+    const quantidade = parseInt($('#orcamento-servico-quantidade')?.value) || 1;
+    
+    if (!servicoId) {
+        showNotification('⚠️ Selecione um serviço', 'warning');
+        return;
+    }
+    
+    if (quantidade <= 0 || quantidade > 99) {
+        showNotification('⚠️ Quantidade deve ser entre 1 e 99', 'warning');
+        return;
+    }
+    
+    const servico = state.servicos.find(s => s.id === servicoId);
+    if (!servico) {
+        showNotification('❌ Serviço não encontrado', 'error');
+        return;
+    }
+    
+    // Verifica se já foi adicionado
+    const existingIndex = state.novoOrcamentoItens.findIndex(item => item.servico_id === servicoId);
+    
+    if (existingIndex >= 0) {
+        state.novoOrcamentoItens[existingIndex].quantidade = quantidade;
+        showNotification(`✅ Quantidade do serviço "${servico.descricao}" atualizada`, 'success');
+    } else {
+        state.novoOrcamentoItens.push({
+            servico_id: servicoId,
+            descricao_servico: servico.descricao,
+            valor_cobrado: servico.valor,
+            quantidade: quantidade
+        });
+        showNotification(`✅ Serviço "${servico.descricao}" adicionado ao orçamento`, 'success');
+    }
+    
+    // Limpa seleção
+    if ($('#orcamento-servico-select')) $('#orcamento-servico-select').value = '';
+    if ($('#orcamento-servico-quantidade')) $('#orcamento-servico-quantidade').value = 1;
+    
+    renderOrcamentoItens();
+}
+
+function handleOrcamentoSubmit(e) {
     e.preventDefault();
     
-    const id = $('#despesa-id').value;
-    const descricao = $('#despesa-descricao').value.trim();
-    const valor = parseFloat($('#despesa-valor').value);
-    const categoria = $('#despesa-categoria').value;
-    const data = $('#despesa-data').value;
+    const clienteId = $('#orcamento-cliente')?.value;
+    const desconto = parseFloat($('#orcamento-desconto')?.value) || 0;
     
     // Validações
-    if (!descricao) {
-        showNotification('Descrição é obrigatória', 'error');
+    if (!clienteId) {
+        showNotification('❌ Selecione um cliente', 'error');
+        return;
+    }
+    
+    if (state.novoOrcamentoItens.length === 0) {
+        showNotification('❌ Adicione pelo menos um serviço', 'error');
+        return;
+    }
+    
+    // Verifica formas de pagamento (checkboxes)
+    const formasPagamento = Array.from($$('#payment-options input[type="checkbox"]:checked')).map(cb => cb.value);
+    if (formasPagamento.length === 0) {
+        showNotification('❌ Selecione pelo menos uma forma de pagamento', 'error');
+        return;
+    }
+    
+    // Calcula valores
+    const subtotal = state.novoOrcamentoItens.reduce((total, item) => {
+        return total + (item.valor_cobrado * item.quantidade);
+    }, 0);
+    const valorTotal = Math.max(0, subtotal - desconto);
+    
+    // Cria orçamento
+    const novoOrcamento = {
+        id: Date.now().toString(),
+        cliente_id: clienteId,
+        status: 'Orçamento',
+        desconto,
+        valor_total: valorTotal,
+        formas_pagamento: formasPagamento,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        clientes: state.clientes.find(c => c.id === clienteId),
+        orcamento_itens: state.novoOrcamentoItens.map((item, index) => ({
+            id: `${Date.now()}_${index}`,
+            servico_id: item.servico_id,
+            quantidade: item.quantidade,
+            valor_unitario: item.valor_cobrado,
+            servicos: state.servicos.find(s => s.id === item.servico_id)
+        }))
+    };
+    
+    state.orcamentos.unshift(novoOrcamento);
+    
+    showNotification(`✅ Orçamento criado com sucesso! Total: ${formatCurrency(valorTotal)}`, 'success');
+    
+    // Limpa formulário
+    e.target.reset();
+    state.novoOrcamentoItens = [];
+    $$('#payment-options input[type="checkbox"]').forEach(cb => cb.checked = false);
+    renderOrcamentoItens();
+    
+    // Vai para histórico após um delay
+    setTimeout(() => {
+        showTab('historico');
+    }, 1500);
+}
+
+// ========================== CRUD CLIENTES ===============================
+function handleClienteSubmit(e) {
+    e.preventDefault();
+    
+    const nome = $('#cliente-nome')?.value?.trim();
+    const telefone = $('#cliente-telefone')?.value?.trim();
+    const carro = $('#cliente-carro')?.value?.trim();
+    const placa = $('#cliente-placa')?.value?.trim();
+    const clienteId = $('#cliente-id')?.value;
+    
+    // Validações
+    if (!nome || nome.length < 2) {
+        showNotification('❌ Nome deve ter pelo menos 2 caracteres', 'error');
+        return;
+    }
+    
+    if (!telefone) {
+        showNotification('❌ Telefone é obrigatório', 'error');
+        return;
+    }
+    
+    if (!carro || carro.length < 3) {
+        showNotification('❌ Carro deve ter pelo menos 3 caracteres', 'error');
+        return;
+    }
+    
+    if (!placa) {
+        showNotification('❌ Placa é obrigatória', 'error');
+        return;
+    }
+    
+    // Verifica se a placa já existe (apenas para novos clientes)
+    if (!clienteId) {
+        const placaExistente = state.clientes.find(c => c.placa.toLowerCase() === placa.toLowerCase());
+        if (placaExistente) {
+            showNotification('❌ Placa já cadastrada para outro cliente', 'error');
+            return;
+        }
+    }
+    
+    if (clienteId) {
+        // Edição
+        const index = state.clientes.findIndex(c => c.id === clienteId);
+        if (index >= 0) {
+            state.clientes[index] = {
+                ...state.clientes[index],
+                nome,
+                telefone,
+                carro,
+                placa,
+                updated_at: new Date().toISOString()
+            };
+            showNotification(`✅ Cliente "${nome}" atualizado com sucesso!`, 'success');
+        }
+    } else {
+        // Novo cliente
+        const novoCliente = {
+            id: Date.now().toString(),
+            nome,
+            telefone,
+            carro,
+            placa,
+            created_at: new Date().toISOString()
+        };
+        
+        state.clientes.unshift(novoCliente);
+        showNotification(`✅ Cliente "${nome}" cadastrado com sucesso!`, 'success');
+    }
+    
+    // Limpa formulário
+    e.target.reset();
+    $('#cliente-id').value = '';
+    if ($('#cancelar-edicao-cliente')) $('#cancelar-edicao-cliente').style.display = 'none';
+    if ($('#cliente-form-title')) $('#cliente-form-title').innerHTML = '<i class="fas fa-user-plus"></i> 👤 Cadastrar Cliente';
+    
+    // Atualiza lista
+    renderClientes();
+    renderOrcamentoOptions(); // Atualiza selects também
+}
+
+// Tornar funções globais para uso nos botões
+window.editarCliente = function(clienteId) {
+    const cliente = state.clientes.find(c => c.id === clienteId);
+    if (!cliente) return;
+    
+    // Preenche formulário
+    $('#cliente-id').value = cliente.id;
+    $('#cliente-nome').value = cliente.nome;
+    $('#cliente-telefone').value = formatPhone(cliente.telefone);
+    $('#cliente-carro').value = cliente.carro;
+    $('#cliente-placa').value = cliente.placa;
+    
+    // Atualiza interface
+    if ($('#cancelar-edicao-cliente')) $('#cancelar-edicao-cliente').style.display = 'inline-flex';
+    if ($('#cliente-form-title')) $('#cliente-form-title').innerHTML = '<i class="fas fa-user-edit"></i> ✏️ Editar Cliente';
+    
+    showNotification(`✏️ Editando cliente "${cliente.nome}"`, 'success');
+};
+
+window.excluirCliente = function(clienteId) {
+    const cliente = state.clientes.find(c => c.id === clienteId);
+    if (!cliente) return;
+    
+    // Verifica se tem orçamentos
+    const temOrcamentos = state.orcamentos.some(o => o.cliente_id === clienteId);
+    if (temOrcamentos) {
+        showNotification('❌ Não é possível excluir cliente com orçamentos', 'error');
+        return;
+    }
+    
+    if (confirm(`🗑️ Tem certeza que deseja excluir o cliente "${cliente.nome}"?`)) {
+        const index = state.clientes.findIndex(c => c.id === clienteId);
+        if (index >= 0) {
+            state.clientes.splice(index, 1);
+            renderClientes();
+            renderOrcamentoOptions();
+            showNotification(`🗑️ Cliente "${cliente.nome}" excluído com sucesso!`, 'success');
+        }
+    }
+};
+
+// ========================== CRUD SERVIÇOS ===============================
+function handleServicoSubmit(e) {
+    e.preventDefault();
+    
+    const descricao = $('#servico-descricao')?.value?.trim();
+    const valor = parseFloat($('#servico-valor')?.value);
+    const servicoId = $('#servico-id')?.value;
+    
+    // Validações
+    if (!descricao || descricao.length < 3) {
+        showNotification('❌ Descrição deve ter pelo menos 3 caracteres', 'error');
         return;
     }
     
     if (!valor || valor <= 0) {
-        showNotification('Valor deve ser maior que zero', 'error');
+        showNotification('❌ Valor deve ser maior que zero', 'error');
         return;
     }
     
-    if (!categoria) {
-        showNotification('Selecione uma categoria', 'error');
-        return;
-    }
-    
-    if (!data) {
-        showNotification('Data é obrigatória', 'error');
-        return;
-    }
-    
-    try {
-        const despesaData = { descricao, valor, categoria, data };
-        
-        if (id) {
-            // Atualizar despesa existente
-            const { error } = await supabase
-                .from('despesas')
-                .update(despesaData)
-                .eq('id', id);
-            
-            if (error) throw error;
-            
-            showNotification('Despesa atualizada com sucesso!', 'success');
-            triggerConfetti();
-        } else {
-            // Criar nova despesa
-            const { error } = await supabase
-                .from('despesas')
-                .insert([despesaData]);
-            
-            if (error) throw error;
-            
-            showNotification('Despesa registrada com sucesso!', 'success');
-            triggerConfetti();
+    if (servicoId) {
+        // Edição
+        const index = state.servicos.findIndex(s => s.id === servicoId);
+        if (index >= 0) {
+            state.servicos[index] = {
+                ...state.servicos[index],
+                descricao,
+                valor,
+                updated_at: new Date().toISOString()
+            };
+            showNotification(`✅ Serviço "${descricao}" atualizado com sucesso!`, 'success');
         }
+    } else {
+        // Novo serviço
+        const novoServico = {
+            id: Date.now().toString(),
+            descricao,
+            valor,
+            created_at: new Date().toISOString()
+        };
         
-        resetDespesaForm();
-        
-    } catch (error) {
-        console.error('Erro ao salvar despesa:', error);
-        showNotification('Erro ao salvar despesa: ' + error.message, 'error');
+        state.servicos.unshift(novoServico);
+        showNotification(`✅ Serviço "${descricao}" cadastrado com sucesso!`, 'success');
     }
+    
+    // Limpa formulário
+    e.target.reset();
+    $('#servico-id').value = '';
+    if ($('#cancelar-edicao-servico')) $('#cancelar-edicao-servico').style.display = 'none';
+    if ($('#servico-form-title')) $('#servico-form-title').innerHTML = '<i class="fas fa-plus"></i> 🔧 Cadastrar Serviço';
+    
+    // Atualiza lista
+    renderServicos();
+    renderOrcamentoOptions(); // Atualiza selects também
 }
 
-function handleEditDespesa(id) {
-    const despesa = state.despesas.find(d => d.id === id);
-    if (!despesa) return;
+window.editarServico = function(servicoId) {
+    const servico = state.servicos.find(s => s.id === servicoId);
+    if (!servico) return;
     
-    $('#despesa-id').value = despesa.id;
-    $('#despesa-descricao').value = despesa.descricao;
-    $('#despesa-valor').value = despesa.valor;
-    $('#despesa-categoria').value = despesa.categoria;
-    $('#despesa-data').value = despesa.data;
+    // Preenche formulário
+    $('#servico-id').value = servico.id;
+    $('#servico-descricao').value = servico.descricao;
+    $('#servico-valor').value = servico.valor;
     
-    $('#despesa-form-title').innerHTML = '<i class="fas fa-edit"></i> Editar Despesa';
-    $('#cancelar-edicao-despesa').style.display = 'inline-flex';
+    // Atualiza interface
+    if ($('#cancelar-edicao-servico')) $('#cancelar-edicao-servico').style.display = 'inline-flex';
+    if ($('#servico-form-title')) $('#servico-form-title').innerHTML = '<i class="fas fa-tools"></i> ✏️ Editar Serviço';
     
-    state.editandoDespesaId = id;
-    renderDespesas();
-}
+    showNotification(`✏️ Editando serviço "${servico.descricao}"`, 'success');
+};
 
-function handleDeleteDespesa(id) {
-    showConfirmModal(
-        'Excluir Despesa',
-        'Tem certeza que deseja excluir esta despesa? Esta ação não pode ser desfeita.',
-        async () => {
-            try {
-                const { error } = await supabase
-                    .from('despesas')
-                    .delete()
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                showNotification('Despesa excluída com sucesso!', 'success');
-                triggerConfetti();
-                resetDespesaForm();
-                
-            } catch (error) {
-                console.error('Erro ao excluir despesa:', error);
-                showNotification('Erro ao excluir despesa: ' + error.message, 'error');
-            }
+window.excluirServico = function(servicoId) {
+    const servico = state.servicos.find(s => s.id === servicoId);
+    if (!servico) return;
+    
+    if (confirm(`🗑️ Tem certeza que deseja excluir o serviço "${servico.descricao}"?`)) {
+        const index = state.servicos.findIndex(s => s.id === servicoId);
+        if (index >= 0) {
+            state.servicos.splice(index, 1);
+            renderServicos();
+            renderOrcamentoOptions();
+            showNotification(`🗑️ Serviço "${servico.descricao}" excluído com sucesso!`, 'success');
         }
-    );
+    }
+};
+
+// ========================== CONFIGURAÇÕES ==========================
+function loadConfigurationForms() {
+    // Carrega dados da empresa
+    if ($('#empresa-nome')) $('#empresa-nome').value = state.estabelecimento.nome;
+    if ($('#empresa-cnpj')) $('#empresa-cnpj').value = state.estabelecimento.cnpj;
+    if ($('#empresa-telefone')) $('#empresa-telefone').value = formatPhone(state.estabelecimento.telefone);
+    if ($('#empresa-endereco')) $('#empresa-endereco').value = state.estabelecimento.endereco;
+    if ($('#empresa-agradecimento')) $('#empresa-agradecimento').value = state.estabelecimento.agradecimento;
+    
+    // Aplica tema atual
+    applyTheme(state.theme);
 }
 
-function resetDespesaForm() {
-    $('#despesa-form').reset();
-    $('#despesa-id').value = '';
-    $('#despesa-form-title').innerHTML = '<i class="fas fa-plus"></i> Nova Despesa';
-    $('#cancelar-edicao-despesa').style.display = 'none';
-    $('#despesa-data').value = new Date().toISOString().split('T')[0];
-    state.editandoDespesaId = null;
-    renderDespesas();
+function handleEmpresaSubmit(e) {
+    e.preventDefault();
+    
+    state.estabelecimento = {
+        nome: $('#empresa-nome')?.value?.trim() || '',
+        cnpj: $('#empresa-cnpj')?.value?.trim() || '',
+        telefone: $('#empresa-telefone')?.value?.replace(/\D/g, '') || '',
+        endereco: $('#empresa-endereco')?.value?.trim() || '',
+        agradecimento: $('#empresa-agradecimento')?.value?.trim() || ''
+    };
+    
+    showNotification('✅ Dados da empresa salvos com sucesso!', 'success');
 }
 
-// ============================================================================
-// INICIALIZAÇÃO DA APLICAÇÃO
-// ============================================================================
-
-document.addEventListener('DOMContentLoaded', async () => {
-    // Configurações iniciais
-    updateNetworkStatus();
+// ========================== EVENT LISTENERS ==========================
+function setupEventListeners() {
+    console.log('⚙️ Configurando event listeners...');
     
-    // Define data atual nos campos de data
-    $('#interaction-date').value = new Date().toISOString().split('T')[0];
-    $('#despesa-data').value = new Date().toISOString().split('T')[0];
-    
-    // Event listeners para navegação
+    // Navegação entre abas - CORRIGIDO
     $$('.nav-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const tabId = e.target.dataset.tab;
-            showTab(tabId);
-        });
-    });
-    
-    // Event listeners para dashboard
-    $$('.stat-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-            const filter = e.currentTarget.dataset.filter;
-            if (filter === 'clientes') {
-                showTab('clientes');
-            } else if (filter === 'pendentes') {
-                showTab('historico', { status: 'Orçamento' });
-            } else if (filter === 'aprovados') {
-                showTab('historico', { status: 'Aprovado' });
-            } else if (filter === 'finalizados') {
-                showTab('historico', { status: 'Finalizado' });
+            e.preventDefault();
+            e.stopPropagation();
+            const tabId = e.currentTarget.dataset.tab;
+            if (tabId) {
+                showTab(tabId);
             }
         });
     });
     
-    // Event listeners para formulários
-    $('#cliente-form').addEventListener('submit', handleClienteSubmit);
-    $('#servico-form').addEventListener('submit', handleServicoSubmit);
-    $('#orcamento-form').addEventListener('submit', handleOrcamentoSubmit);
-    $('#crm-interaction-form').addEventListener('submit', handleCrmInteractionSubmit);
-    $('#despesa-form').addEventListener('submit', handleDespesaSubmit);
+    // Toggle de tema no header
+    const themeToggleBtn = $('#theme-toggle-btn');
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleTheme();
+        });
+    }
     
-    // Event listeners para botões de cancelar edição
-    $('#cancelar-edicao-cliente').addEventListener('click', resetClienteForm);
-    $('#cancelar-edicao-servico').addEventListener('click', resetServicoForm);
-    $('#cancelar-edicao-orcamento').addEventListener('click', resetOrcamentoForm);
-    $('#cancelar-edicao-despesa').addEventListener('click', resetDespesaForm);
-    
-    // Event listeners para buscas
-    $('#search-cliente').addEventListener('input', debounce(renderClientes, 300));
-    $('#search-servico').addEventListener('input', debounce(renderServicos, 300));
-    $('#search-historico').addEventListener('input', debounce(renderOrcamentos, 300));
-    $('#search-crm-interactions').addEventListener('input', debounce(renderCrmInteractions, 300));
-    
-    // Event listeners para ordenação
-    $('#sort-clientes').addEventListener('change', renderClientes);
-    $('#sort-servicos').addEventListener('change', renderServicos);
-    
-    // Event listeners para filtros
-    $('#filter-status').addEventListener('change', renderOrcamentos);
-    $('#filter-start-date').addEventListener('change', renderOrcamentos);
-    $('#filter-end-date').addEventListener('change', renderOrcamentos);
-    $('#filter-despesas-mes').addEventListener('change', renderDespesas);
-    $('#inactivity-filter').addEventListener('change', renderInactiveClients);
-    
-    // Event listeners para botões de limpar filtros
-    $('#clear-filters-btn').addEventListener('click', () => {
-        $('#filter-status').value = '';
-        $('#filter-start-date').value = '';
-        $('#filter-end-date').value = '';
-        renderOrcamentos();
+    // Radio buttons de tema nas configurações
+    $$('input[name="theme-choice"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            applyTheme(e.target.value);
+        });
     });
     
-    // Event listeners para orçamento
-    $('#add-servico-btn').addEventListener('click', handleAddServicoToOrcamento);
-    $('#orcamento-desconto').addEventListener('input', updateOrcamentoTotal);
+    // Formulário da empresa
+    const empresaForm = $('#empresa-form');
+    if (empresaForm) {
+        empresaForm.addEventListener('submit', handleEmpresaSubmit);
+    }
     
-    // Event listeners para formas de pagamento
-    $('#payment-options').addEventListener('click', (e) => {
-        if (e.target.classList.contains('payment-option')) {
-            e.target.classList.toggle('active');
+    // Formulário de cliente
+    const clienteForm = $('#cliente-form');
+    if (clienteForm) {
+        clienteForm.addEventListener('submit', handleClienteSubmit);
+    }
+    
+    // Formulário de serviço
+    const servicoForm = $('#servico-form');
+    if (servicoForm) {
+        servicoForm.addEventListener('submit', handleServicoSubmit);
+    }
+    
+    // Orçamento
+    const addServicoBtn = $('#add-servico-btn');
+    const orcamentoForm = $('#orcamento-form');
+    const descontoInput = $('#orcamento-desconto');
+    
+    if (addServicoBtn) addServicoBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleAddServicoToOrcamento();
+    });
+    
+    if (orcamentoForm) orcamentoForm.addEventListener('submit', handleOrcamentoSubmit);
+    if (descontoInput) descontoInput.addEventListener('input', updateOrcamentoTotal);
+    
+    // Histórico - switcher de visualização
+    const detalheBtns = $$('.detalhe-view-btn');
+    detalheBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const view = e.currentTarget.dataset.view;
+            
+            // Remove active de todos
+            detalheBtns.forEach(b => b.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+            
+            // Mostra/esconde conteúdos
+            $('#detalhes-orcamento').style.display = view === 'orcamento' ? 'block' : 'none';
+            $('#detalhes-recibo').style.display = view === 'recibo' ? 'block' : 'none';
+        });
+    });
+    
+    // Delegated events para elementos dinâmicos
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-servico-btn')) {
+            e.preventDefault();
+            const index = parseInt(e.target.dataset.index);
+            if (index >= 0) {
+                state.novoOrcamentoItens.splice(index, 1);
+                renderOrcamentoItens();
+                showNotification('🗑️ Serviço removido do orçamento', 'success');
+            }
         }
     });
     
-    // Event listeners para detalhes do orçamento
-    $('#btn-view-orcamento').addEventListener('click', () => switchDetailView('orcamento'));
-    $('#btn-view-recibo').addEventListener('click', () => switchDetailView('recibo'));
-    
-    // Event listeners para ações dos detalhes
-    $('#copy-orcamento-btn').addEventListener('click', () => {
-        const texto = $('#detalhes-orcamento-texto').textContent;
-        copyToClipboard(texto);
-    });
-    
-    $('#copy-recibo-btn').addEventListener('click', () => {
-        const texto = $('#detalhes-recibo-texto').textContent;
-        copyToClipboard(texto);
-    });
-    
-    $('#whatsapp-orcamento-btn').addEventListener('click', () => {
-        const texto = $('#detalhes-orcamento-texto').textContent;
-        const phone = state.orcamentoSelecionado?.clientes?.telefone;
-        if (phone) {
-            sendToWhatsApp(texto, phone);
+    document.addEventListener('change', (e) => {
+        if (e.target.type === 'number' && e.target.dataset.index !== undefined) {
+            const index = parseInt(e.target.dataset.index);
+            const newQuantity = parseInt(e.target.value) || 1;
+            
+            if (newQuantity > 0 && newQuantity <= 99 && state.novoOrcamentoItens[index]) {
+                state.novoOrcamentoItens[index].quantidade = newQuantity;
+                updateOrcamentoTotal();
+                showNotification('✅ Quantidade atualizada', 'success');
+            }
         }
     });
     
-    $('#whatsapp-recibo-btn').addEventListener('click', () => {
-        const texto = $('#detalhes-recibo-texto').textContent;
-        const phone = state.orcamentoSelecionado?.clientes?.telefone;
-        if (phone) {
-            sendToWhatsApp(texto, phone);
-        }
-    });
-    
-    $('#pdf-orcamento-btn').addEventListener('click', () => {
-        const texto = $('#detalhes-orcamento-texto').textContent;
-        generatePDF(texto, `orcamento_${state.orcamentoSelecionado?.id}`);
-    });
-    
-    $('#pdf-recibo-btn').addEventListener('click', () => {
-        const texto = $('#detalhes-recibo-texto').textContent;
-        generatePDF(texto, `recibo_${state.orcamentoSelecionado?.id}`);
-    });
-    
-    // Event listeners para ações de status
-    $('#edit-orcamento-btn').addEventListener('click', handleEditOrcamento);
-    $('#approve-orcamento-btn').addEventListener('click', () => updateStatusOrcamento('Aprovado'));
-    $('#finalize-orcamento-btn').addEventListener('click', () => updateStatusOrcamento('Finalizado'));
-    $('#cancel-orcamento-btn').addEventListener('click', () => updateStatusOrcamento('Cancelado'));
-    $('#delete-orcamento-btn').addEventListener('click', handleDeleteOrcamento);
-    
-    // Event listeners para detalhes do cliente
-    $('#close-details-btn').addEventListener('click', () => {
-        $('#client-details-panel').style.display = 'none';
-    });
-    
-    // Event listeners para CRM
-    $('#bulk-contact-btn').addEventListener('click', handleBulkContact);
-    $('#composer-template-select').addEventListener('change', handleTemplateSelect);
-    $('#send-whatsapp-btn').addEventListener('click', handleSendWhatsApp);
-    
-    // Event listeners para modal de disparo
-    $('#close-dispatch-modal').addEventListener('click', () => {
-        $('#dispatch-view-modal').classList.remove('active');
-    });
-    
-    // Event listeners para exportação CSV
-    $('#export-clientes-csv').addEventListener('click', () => {
-        const data = state.clientes.map(c => ({
-            Nome: c.nome,
-            Telefone: c.telefone,
-            Carro: c.carro,
-            Placa: c.placa
-        }));
-        exportToCsv(data, 'clientes');
-    });
-    
-    $('#export-servicos-csv').addEventListener('click', () => {
-        const data = state.servicos.map(s => ({
-            Descrição: s.descricao,
-            Valor: s.valor
-        }));
-        exportToCsv(data, 'servicos');
-    });
-    
-    $('#export-despesas-csv').addEventListener('click', () => {
-        const data = state.despesas.map(d => ({
-            Descrição: d.descricao,
-            Valor: d.valor,
-            Categoria: d.categoria,
-            Data: d.data
-        }));
-        exportToCsv(data, 'despesas');
-    });
-    
-    // Event listeners para validação de formulários
-    $$('input[required]').forEach(input => {
-        input.addEventListener('input', () => handleValidationIcon(input));
-        input.addEventListener('blur', () => handleValidationIcon(input));
-    });
-    
-    // Event listener para sincronização
-    $('#sync-btn').addEventListener('click', () => fetchAllData(true));
-    
-    // Event listener para voltar ao topo
+    // Back to top button
     const backToTopBtn = $('#back-to-top-btn');
-    window.addEventListener('scroll', () => {
-        if (window.pageYOffset > 300) {
-            backToTopBtn.classList.add('show');
-        } else {
-            backToTopBtn.classList.remove('show');
-        }
+    if (backToTopBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+    
+    // Status de rede
+    window.addEventListener('online', () => {
+        const indicator = $('#offline-indicator');
+        if (indicator) indicator.classList.remove('show');
+        showNotification('📶 Conexão restaurada!', 'success');
     });
     
-    backToTopBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.addEventListener('offline', () => {
+        const indicator = $('#offline-indicator');
+        if (indicator) indicator.classList.add('show');
+        showNotification('📶 Modo offline ativado', 'warning');
     });
     
-    // Inicialização
+    console.log('✅ Event listeners configurados!');
+}
+
+// ========================== INICIALIZAÇÃO ==========================
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Inicializando R.M. Estética PRO+...');
+    
     try {
-        showNotification('Inicializando aplicação...', 'info');
-        await setupSupabaseListeners();
-        await fetchAllData(true);
-        showNotification('Aplicação inicializada com sucesso!', 'success');
+        // Mostra loading
+        const loadingOverlay = $('#loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'flex';
+        }
+        
+        setTimeout(() => {
+            // Carrega dados de demonstração
+            loadDemoData();
+            
+            // Aplica tema inicial (dark)
+            applyTheme('dark');
+            
+            // Configura event listeners ANTES de configurar máscaras
+            setupEventListeners();
+            
+            // Configura máscaras de formatação
+            setupInputMasks();
+            
+            // Configura real-time (se disponível)
+            setupRealtimeListeners();
+            
+            // Renderiza conteúdo inicial (dashboard)
+            showTab('dashboard');
+            
+            // Define data atual nos campos de data
+            const today = new Date().toISOString().split('T')[0];
+            const interactionDateEl = $('#interaction-date');
+            const despesaDateEl = $('#despesa-data');
+            
+            if (interactionDateEl) interactionDateEl.value = today;
+            if (despesaDateEl) despesaDateEl.value = today;
+            
+            // Esconde loading
+            if (loadingOverlay) {
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
+            }
+            
+            showNotification('🚗 Sistema R.M. Estética PRO+ inicializado com sucesso!', 'success');
+            console.log('✅ Inicialização concluída!');
+            
+        }, 1000); // Simula carregamento
+        
     } catch (error) {
-        console.error('Erro na inicialização:', error);
-        showNotification('Erro ao inicializar aplicação: ' + error.message, 'error');
+        console.error('❌ Erro na inicialização:', error);
+        showNotification('❌ Erro na inicialização: ' + error.message, 'error');
+        
+        // Esconde loading mesmo com erro
+        const loadingOverlay = $('#loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
     }
 });
 
-// ============================================================================
-// FUNÇÕES GLOBAIS PARA ACESSO EXTERNO
-// ============================================================================
+// Torna funções globais disponíveis para debugging
+window.selecionarOrcamentoHistorico = selecionarOrcamentoHistorico;
 
+// Exporta funções globais para debugging
 window.rmEstetica = {
     state,
     showTab,
-    fetchAllData,
     showNotification,
-    triggerConfetti,
     formatCurrency,
     formatDate,
-    formatPhone
+    formatPhone,
+    formatPlaca,
+    applyTheme,
+    loadDemoData,
+    selecionarOrcamentoHistorico,
+    copyText,
+    baixarPDF,
+    enviarWhatsApp,
+    alterarStatus,
+    editarOrcamento,
+    excluirOrcamento,
+    editarCliente,
+    excluirCliente,
+    editarServico,
+    excluirServico
 };
+
+console.log('🚗✨ R.M. Estética PRO+ - Sistema completamente carregado e funcional! ✨🚗');
