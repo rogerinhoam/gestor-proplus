@@ -18,7 +18,7 @@
 
     <style>
         /* R.M. Estética Automotiva PRO+ */
-        /* Versão: 4.5 (Correção de ReferenceError) */
+        /* Versão: 4.8 (Sino de Notificações e Otimizações) */
         /* Autor: Gemini */
 
         /* 1. VARIÁVEIS CSS (TOKENS) */
@@ -78,7 +78,7 @@
             --border-radius-md: 12px;
             --transition-fast: 0.2s ease;
             --transition-medium: 0.3s ease;
-         }
+       }
 
         /* Tema Claro - Ativado com a classe .light-mode no body */
         body.light-mode {
@@ -272,7 +272,7 @@
         .header-actions {
             display: flex;
             align-items: center;
-            gap: var(--space-md);
+            gap: var(--space-sm); /* Reduzido para acomodar o sino */
         }
 
         #hamburger-menu {
@@ -297,7 +297,7 @@
 
         #main-nav {
             position: fixed;
-            top: 90px; /* Ajustado */
+            top: 90px;
             right: 20px;
             background-color: var(--bg-tertiary);
             border-radius: var(--border-radius-md);
@@ -309,7 +309,7 @@
         }
 
         #main-nav.open {
-            max-height: 500px; /* Adjust as needed */
+            max-height: 500px;
         }
 
         #main-nav ul {
@@ -905,7 +905,7 @@
             }
         }
 
-        /* Notification */
+        /* Notification System */
         #notification-container {
             position: fixed;
             top: 20px;
@@ -929,6 +929,71 @@
         .notification.error { background-color: var(--primary-red); }
         .notification.info { background-color: var(--accent-blue); }
 
+        .notification-bell-container {
+            position: relative;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -8px;
+            background-color: var(--primary-red);
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-secondary);
+        }
+
+        .notification-panel {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background-color: var(--bg-tertiary);
+            border-radius: var(--border-radius-md);
+            box-shadow: 0 4px 15px var(--shadow-color);
+            z-index: 1000;
+            width: 350px;
+            max-width: 90vw;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height var(--transition-medium), opacity var(--transition-medium);
+            opacity: 0;
+        }
+
+        .notification-panel.open {
+            max-height: 400px;
+            opacity: 1;
+        }
+
+        .notification-panel-header {
+            padding: var(--space-sm) var(--space-md);
+            font-family: var(--font-title);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #notification-list {
+            padding: var(--space-sm);
+            max-height: 340px;
+        }
+        #notification-list li {
+            padding: var(--space-sm) var(--space-md);
+        }
+        #notification-list .list-item-main {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        #notification-list .list-item-main i {
+            font-size: 1.2rem;
+            color: var(--primary-red);
+        }
 
         /* Sync Overlay */
         .sync-overlay {
@@ -996,7 +1061,7 @@
         }
         .kanban-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: 1fr;
             gap: var(--space-lg);
         }
         .kanban-board {
@@ -1010,6 +1075,7 @@
             background-color: var(--bg-primary);
             border-radius: var(--border-radius-md);
             padding: var(--space-sm);
+            flex: 1;
         }
         .kanban-column-header {
             padding: var(--space-sm) var(--space-md);
@@ -1103,6 +1169,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: var(--space-lg);
+            flex-wrap: wrap;
+            gap: var(--space-md);
         }
         .agenda-nav {
             display: flex;
@@ -1116,50 +1184,58 @@
             color: var(--text-light);
             border-radius: var(--border-radius-sm);
         }
-        .agenda-grid {
+        .agenda-cards-container {
             display: grid;
-            grid-template-columns: 100px 1fr;
-            gap: 1px;
-            background-color: var(--border-color);
-            border: 1px solid var(--border-color);
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-lg);
         }
-        .agenda-time-slot, .agenda-events-slot {
-            background-color: var(--bg-secondary);
-            padding: var(--space-sm);
-            min-height: 60px;
-        }
-        .agenda-time-slot {
-            text-align: center;
-            font-weight: 500;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .agenda-events-slot {
-            position: relative;
-        }
-        .agenda-item {
-            background-color: var(--primary-red);
-            color: white;
-            padding: var(--space-sm);
+        .agenda-card {
+            background-color: var(--bg-tertiary);
             border-radius: var(--border-radius-sm);
-            margin-bottom: var(--space-xs);
-            font-size: 0.9rem;
+            padding: var(--space-md);
+            border-left: 5px solid var(--primary-red);
             cursor: pointer;
-            border-left: 4px solid var(--primary-red-dark);
+            transition: box-shadow var(--transition-fast), transform var(--transition-fast);
         }
-        .agenda-item.status-confirmado {
-            background-color: var(--accent-blue);
-             border-left-color: #2563EB;
+        .agenda-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px var(--shadow-color-light);
         }
-         .agenda-item.status-finalizado {
-            background-color: var(--accent-green);
-            border-left-color: #059669;
+        .agenda-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: var(--space-sm);
         }
-        .agenda-item strong {
-            display: block;
+        .agenda-card-time {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: var(--font-title);
+            color: var(--text-dark);
+        }
+        .agenda-card-body p {
+            margin: 0 0 var(--space-xs) 0;
+        }
+        .agenda-card-body .client-name {
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+        .agenda-card-body .services {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .agenda-card.status-agendado { border-left-color: var(--primary-red); }
+        .agenda-card.status-confirmado { border-left-color: var(--accent-blue); }
+        .agenda-card.status-finalizado { border-left-color: var(--accent-green); }
+        
+        .no-agenda-message {
+            text-align: center;
+            padding: var(--space-xl);
+            color: var(--text-muted);
+            grid-column: 1 / -1; /* Ocupa toda a largura do grid */
         }
 
 
@@ -1329,6 +1405,17 @@
                     <i class="fas fa-sync-alt"></i>
                     <span class="sync-text">Sincronizar</span>
                 </button>
+                <div id="notification-bell-container" class="notification-bell-container">
+                    <button id="notification-bell-btn" class="btn btn-icon" aria-label="Abrir notificações">
+                        <i class="fas fa-bell"></i>
+                        <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
+                    </button>
+                    <div id="notification-panel" class="notification-panel">
+                        <div class="notification-panel-header">Notificações do Dia</div>
+                        <ul id="notification-list" class="data-list">
+                            </ul>
+                    </div>
+                </div>
                 <button id="hamburger-menu" aria-label="Abrir menu" aria-expanded="false">
                     <i class="fas fa-bars"></i>
                 </button>
@@ -1400,7 +1487,7 @@
                         </div>
                         <button id="add-agendamento-btn" class="btn btn-primary"><i class="fas fa-plus"></i> Novo Agendamento</button>
                     </div>
-                    <div id="agenda-grid-container">
+                    <div id="agenda-grid-container" class="agenda-cards-container">
                         </div>
                 </div>
             </section>
@@ -1599,21 +1686,13 @@
                         </div>
                     </div>
                     <div class="crm-actions">
-                        <button id="add-lead-btn" class="btn btn-secondary"><i class="fas fa-user-plus"></i> Adicionar Lead</button>
-                        <button id="create-task-btn" class="btn btn-primary"><i class="fas fa-plus"></i> Criar Nova Tarefa</button>
-                    </div>
+                        </div>
                 </div>
                 <div class="kanban-container">
                     <div class="card">
-                        <h3>Pipeline de Vendas</h3>
-                        <div class="kanban-board" id="pipeline-board">
-                           <p class="text-muted" style="padding: var(--space-md);">Em desenvolvimento.</p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <h3>Kanban de Tarefas</h3>
+                        <h3>Quadro de Follow-ups (Tarefas)</h3>
                         <div class="kanban-board" id="tasks-board">
-                             </div>
+                        </div>
                     </div>
                 </div>
                  <div class="card" style="margin-top: var(--space-lg);">
@@ -1825,78 +1904,6 @@
         </div>
     </div>
 
-    <div id="add-lead-modal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close-btn">&times;</button>
-            <h3><i class="fas fa-user-plus"></i> Adicionar Novo Lead</h3>
-            <form id="add-lead-form" novalidate>
-                <div class="form-group">
-                    <label for="lead-nome">Nome*</label>
-                    <input type="text" id="lead-nome" required>
-                </div>
-                <div class="form-group">
-                    <label for="lead-telefone">Telefone</label>
-                    <input type="tel" id="lead-telefone" placeholder="(XX) XXXXX-XXXX">
-                </div>
-                <div class="form-group">
-                    <label for="lead-origem">Origem do Lead</label>
-                    <select id="lead-origem">
-                        <option value="Indicação">Indicação</option>
-                        <option value="Instagram">Instagram</option>
-                        <option value="Facebook">Facebook</option>
-                        <option value="Google">Google</option>
-                        <option value="Visita">Visita na Loja</option>
-                        <option value="Outro">Outro</option>
-                    </select>
-                </div>
-                 <div class="form-group">
-                    <label for="lead-observacoes">Observações</label>
-                    <textarea id="lead-observacoes" rows="3"></textarea>
-                </div>
-                <div class="modal-actions">
-                    <button type="submit" class="btn btn-primary">Salvar Lead</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="create-task-modal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close-btn">&times;</button>
-            <h3 id="create-task-form-title">Criar Nova Tarefa</h3>
-            <form id="create-task-form" novalidate>
-                <input type="hidden" id="task-id">
-                <div class="form-group">
-                    <label for="task-titulo">Título*</label>
-                    <input type="text" id="task-titulo" required>
-                </div>
-                <div class="form-group">
-                    <label for="task-cliente">Associar ao Cliente (Opcional)</label>
-                    <select id="task-cliente"></select>
-                </div>
-                 <div class="form-group">
-                    <label for="task-data-vencimento">Data de Vencimento</label>
-                    <input type="date" id="task-data-vencimento">
-                </div>
-                <div class="form-group">
-                    <label for="task-prioridade">Prioridade</label>
-                    <select id="task-prioridade">
-                        <option value="Baixa">Baixa</option>
-                        <option value="Média" selected>Média</option>
-                        <option value="Alta">Alta</option>
-                    </select>
-                </div>
-                 <div class="form-group">
-                    <label for="task-descricao">Descrição</label>
-                    <textarea id="task-descricao" rows="3"></textarea>
-                </div>
-                <div class="modal-actions">
-                    <button type="submit" class="btn btn-primary">Salvar Tarefa</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <div id="orcamento-details-modal" class="modal large">
         <div class="modal-content">
             <button class="modal-close-btn">&times;</button>
@@ -2027,7 +2034,7 @@
 
     <script type="module">
         // R.M. Estética Automotiva PRO+
-        // Versão: 4.5 (Correção de ReferenceError)
+        // Versão: 4.8 (Sino de Notificações e Otimizações)
         // Autor: Gemini
 
         // --- SUPABASE CLIENT SETUP ---
@@ -2083,7 +2090,6 @@
             orcamentoItens: [],
             crmInteractions: [],
             despesas: [],
-            leads: [],
             crmTasks: [],
             agendamentos: [],
             crmFilteredClients: [],
@@ -2147,6 +2153,11 @@
             backToTopBtn: document.getElementById('back-to-top-btn'),
             syncButton: document.getElementById('sync-button'),
             
+            notificationBellBtn: document.getElementById('notification-bell-btn'),
+            notificationBadge: document.getElementById('notification-badge'),
+            notificationPanel: document.getElementById('notification-panel'),
+            notificationList: document.getElementById('notification-list'),
+
             syncOverlay: document.getElementById('sync-overlay'),
             modalOverlay: document.getElementById('modal-overlay'),
             confirmationModal: {
@@ -2155,18 +2166,6 @@
                 message: document.getElementById('confirmation-message'),
                 confirmBtn: document.getElementById('confirm-btn'),
                 cancelBtn: document.getElementById('cancel-btn'),
-            },
-            addLeadModal: {
-                modal: document.getElementById('add-lead-modal'),
-                form: document.getElementById('add-lead-form'),
-                closeBtn: document.querySelector('#add-lead-modal .modal-close-btn'),
-            },
-            createTaskModal: {
-                modal: document.getElementById('create-task-modal'),
-                form: document.getElementById('create-task-form'),
-                formTitle: document.getElementById('create-task-form-title'),
-                clientSelect: document.getElementById('task-cliente'),
-                closeBtn: document.querySelector('#create-task-modal .modal-close-btn'),
             },
             orcamentoDetailsModal: {
                 modal: document.getElementById('orcamento-details-modal'),
@@ -2251,7 +2250,6 @@
                 metricOportunidades: document.getElementById('crm-metric-oportunidades'),
                 metricConversao: document.getElementById('crm-metric-conversao'),
                 metricTarefas: document.getElementById('crm-metric-tarefas'),
-                pipelineBoard: document.getElementById('pipeline-board'),
                 tasksBoard: document.getElementById('tasks-board'),
                 form: document.getElementById('crm-form'),
                 clientSelect: document.getElementById('crm-cliente-select'),
@@ -2259,8 +2257,6 @@
                 segmentButtons: document.getElementById('crm-segment-buttons'),
                 inactiveClientsList: document.getElementById('crm-inactive-clients-list'),
                 bulkMessageBtn: document.getElementById('crm-bulk-message-btn'),
-                addLeadBtn: document.getElementById('add-lead-btn'),
-                createTaskBtn: document.getElementById('create-task-btn'),
             },
             crmBulkModal: {
                 modal: document.getElementById('crm-bulk-modal'),
@@ -2450,7 +2446,7 @@
                     { data: clientes, error: e1 }, { data: servicos, error: e2 },
                     { data: orcamentos, error: e3 }, { data: orcamentoItens, error: e4 },
                     { data: despesas, error: e5 }, { data: crmInteractions, error: e6 },
-                    { data: leads, error: e7 }, { data: crmTasks, error: e8 },
+                    { data: crmTasks, error: e8 },
                     { data: agendamentos, error: e9 },
                 ] = await Promise.all([
                     supabase.from('clientes').select('*').order('created_at', { ascending: false }),
@@ -2459,13 +2455,12 @@
                     supabase.from('orcamento_itens').select('*'),
                     supabase.from('despesas').select('*').order('data_despesa', { ascending: false }),
                     supabase.from('crm_interactions').select('*, clientes(nome)').order('created_at', { ascending: false }),
-                    supabase.from('leads').select('*').order('created_at', { ascending: false }),
-                    supabase.from('crm_tasks').select('*, clientes(nome)').order('created_at', { ascending: false }),
+                    supabase.from('crm_tasks').select('*').order('created_at', { ascending: false }),
                     supabase.from('agendamentos').select('*, clientes(nome)').order('data_agendamento, hora_agendamento'),
                 ]);
 
                 if (e1) throw e1; if (e2) throw e2; if (e3) throw e3; if (e4) throw e4; if (e5) throw e5; if (e6) throw e6;
-                if (e7) throw e7; if (e8) throw e8; if (e9) throw e9;
+                if (e8) throw e8; if (e9) throw e9;
 
                 state.clientes = clientes || [];
                 state.servicos = servicos || [];
@@ -2473,11 +2468,11 @@
                 state.orcamentoItens = orcamentoItens || [];
                 state.despesas = despesas || [];
                 state.crmInteractions = crmInteractions || [];
-                state.leads = leads || [];
                 state.crmTasks = crmTasks || [];
                 state.agendamentos = agendamentos || [];
 
                 renderAllContent();
+                updateNotifications();
                 if (showOverlay) showNotification('✅ Dados sincronizados com sucesso!', 'success');
             } catch (error) {
                 console.error('Erro ao buscar dados:', error);
@@ -2488,7 +2483,7 @@
         };
 
         const setupSupabaseListeners = () => {
-            const tables = ['clientes', 'servicos', 'orcamentos', 'orcamento_itens', 'despesas', 'crm_interactions', 'leads', 'crm_tasks', 'agendamentos'];
+            const tables = ['clientes', 'servicos', 'orcamentos', 'orcamento_itens', 'despesas', 'crm_interactions', 'crm_tasks', 'agendamentos'];
             
             state.supabaseListeners.forEach(listener => supabase.removeChannel(listener));
             state.supabaseListeners = [];
@@ -2509,7 +2504,7 @@
         const renderAllContent = () => {
             const activeTab = document.querySelector('.tab-content.active');
             if (activeTab) {
-                showTab(activeTab.id, false); // Don't reset scroll on initial load
+                showTab(activeTab.id, false);
             } else {
                 showTab('dashboard-tab', false);
             }
@@ -3147,69 +3142,6 @@
             DOMElements.orcamentoDetailsModal.reciboText.textContent = reciboText;
         };
         
-        const handleAddLeadSubmit = async (e) => {
-            e.preventDefault();
-            const form = DOMElements.addLeadModal.form;
-            const nomeInput = form.querySelector('#lead-nome');
-            
-            if (!nomeInput.value.trim()) {
-                showNotification('O nome do lead é obrigatório.', 'error');
-                return;
-            }
-
-            const leadData = {
-                nome: nomeInput.value.trim(),
-                telefone: form.querySelector('#lead-telefone').value.trim(),
-                origem: form.querySelector('#lead-origem').value,
-                observacoes: form.querySelector('#lead-observacoes').value.trim(),
-            };
-
-            setSyncing(true);
-            try {
-                const { error } = await supabase.from('leads').insert(leadData);
-                if (error) throw error;
-                showNotification('Lead adicionado com sucesso! 👤', 'success');
-                form.reset();
-                closeModal(DOMElements.addLeadModal.modal);
-                await fetchAllData(false);
-            } catch (error) {
-                console.error('Erro ao salvar lead:', error);
-                showNotification(`❌ Erro ao salvar lead: ${error.message}`, 'error');
-            } finally {
-                setSyncing(false);
-            }
-        };
-
-        const handleCreateTaskSubmit = async (e) => {
-            e.preventDefault();
-            const form = DOMElements.createTaskModal.form;
-            if (!validateForm(form)) return;
-
-            const taskData = {
-                titulo: form.querySelector('#task-titulo').value.trim(),
-                cliente_id: form.querySelector('#task-cliente').value || null,
-                data_vencimento: form.querySelector('#task-data-vencimento').value || null,
-                descricao: form.querySelector('#task-descricao').value.trim(),
-                prioridade: form.querySelector('#task-prioridade').value,
-                status: 'A Fazer', // Default status for new tasks
-            };
-
-            setSyncing(true);
-            try {
-                const { error } = await supabase.from('crm_tasks').insert(taskData);
-                if (error) throw error;
-                showNotification('Tarefa criada com sucesso! ✅', 'success');
-                form.reset();
-                closeModal(DOMElements.createTaskModal.modal);
-                await fetchAllData(false);
-            } catch (error) {
-                console.error('Erro ao criar tarefa:', error);
-                showNotification(`❌ Erro ao criar tarefa: ${error.message}`, 'error');
-            } finally {
-                setSyncing(false);
-            }
-        };
-
 
         // --- FORM VALIDATION ---
         const validateForm = (form) => {
@@ -3287,6 +3219,9 @@
             const board = DOMElements.crm.tasksBoard;
             board.innerHTML = '';
             const columns = ['A Fazer', 'Em Andamento', 'Concluído'];
+            
+            // Otimização: Crie um mapa de clientes para evitar buscas repetidas no loop
+            const clientMap = new Map(state.clientes.map(c => [c.id, c.nome]));
 
             columns.forEach(status => {
                 const columnEl = document.createElement('div');
@@ -3306,9 +3241,12 @@
                     const priorityClass = `task-priority-${(task.prioridade || 'baixa').toLowerCase()}`;
                     cardEl.className = `kanban-card ${priorityClass}`;
                     cardEl.dataset.id = task.id;
+                    
+                    const clienteNome = clientMap.get(task.cliente_id) || 'Sem cliente associado';
+
                     cardEl.innerHTML = `
                         <p class="card-title">${task.titulo}</p>
-                        <p class="card-subtitle">${task.clientes?.nome || 'Sem cliente associado'}</p>
+                        <p class="card-subtitle">${clienteNome}</p>
                         ${task.data_vencimento ? `<p class="card-subtitle">Vence em: ${new Date(task.data_vencimento + 'T00:00:00').toLocaleDateString()}</p>` : ''}
                     `;
                     cardsEl.appendChild(cardEl);
@@ -3394,14 +3332,14 @@
                         : 'Nenhum serviço finalizado.';
 
                     return `
-                    <li>
-                        <div class="list-item-main">
-                            <p class="item-title">${c.nome}</p>
-                            <p class="item-subtitle">${lastServiceInfo}</p>
-                        </div>
-                        <button class="btn btn-sm btn-success whatsapp-link-btn" data-phone="${c.telefone.replace(/\D/g, '')}" title="Enviar WhatsApp"><i class="fab fa-whatsapp"></i></button>
-                    </li>
-                `;
+                        <li>
+                            <div class="list-item-main">
+                                <p class="item-title">${c.nome}</p>
+                                <p class="item-subtitle">${lastServiceInfo}</p>
+                            </div>
+                            <button class="btn btn-sm btn-success whatsapp-link-btn" data-phone="${c.telefone}" title="Enviar WhatsApp"><i class="fab fa-whatsapp"></i></button>
+                        </li>
+                    `;
                 }).join('')
                 : `<li>Nenhum cliente encontrado para este filtro.</li>`;
         };
@@ -3757,13 +3695,12 @@
                 showNotification(`Status atualizado para ${newStatus}!`, 'success');
                 await fetchAllData(false);
                 
-                // Refresh modal content if it's still open
                  const updatedOrcamento = state.orcamentos.find(o => o.id === state.orcamentoSelecionado.id);
                  if (updatedOrcamento) {
-                     state.orcamentoSelecionado = updatedOrcamento;
-                     renderStatusActions();
+                      state.orcamentoSelecionado = updatedOrcamento;
+                      renderStatusActions();
                  } else {
-                      closeModal(DOMElements.orcamentoDetailsModal.modal);
+                       closeModal(DOMElements.orcamentoDetailsModal.modal);
                  }
 
             } catch (error) {
@@ -3779,38 +3716,35 @@
             const { agenda } = DOMElements;
             const todayStr = state.agendaDataAtual.toISOString().split('T')[0];
             agenda.datePicker.value = todayStr;
-
-            agenda.gridContainer.innerHTML = ''; // Clear previous grid
-
-            const grid = document.createElement('div');
-            grid.className = 'agenda-grid';
-
-            for (let hour = 7; hour <= 20; hour++) {
-                const timeSlot = document.createElement('div');
-                timeSlot.className = 'agenda-time-slot';
-                timeSlot.textContent = `${String(hour).padStart(2, '0')}:00`;
-
-                const eventsSlot = document.createElement('div');
-                eventsSlot.className = 'agenda-events-slot';
-                eventsSlot.dataset.time = `${String(hour).padStart(2, '0')}:00`;
-
-                grid.appendChild(timeSlot);
-                grid.appendChild(eventsSlot);
+        
+            const container = agenda.gridContainer;
+            container.innerHTML = ''; 
+        
+            const agendamentosDoDia = state.agendamentos
+                .filter(a => a.data_agendamento === todayStr)
+                .sort((a, b) => a.hora_agendamento.localeCompare(b.hora_agendamento));
+        
+            if (agendamentosDoDia.length === 0) {
+                container.innerHTML = `<div class="no-agenda-message"><i class="fas fa-calendar-times fa-2x"></i><p>Nenhum agendamento para este dia.</p></div>`;
+                return;
             }
-            agenda.gridContainer.appendChild(grid);
-
-            const agendamentosDoDia = state.agendamentos.filter(a => a.data_agendamento === todayStr);
-
+        
             agendamentosDoDia.forEach(agendamento => {
-                const hour = new Date(`1970-01-01T${agendamento.hora_agendamento}`).getHours();
-                const slot = grid.querySelector(`.agenda-events-slot[data-time="${String(hour).padStart(2, '0')}:00"]`);
-                if(slot) {
-                    const item = document.createElement('div');
-                    item.className = `agenda-item status-${agendamento.status.toLowerCase()}`;
-                    item.dataset.id = agendamento.id;
-                    item.innerHTML = `<strong>${agendamento.clientes.nome}</strong>${agendamento.servicos}`;
-                    slot.appendChild(item);
-                }
+                const card = document.createElement('div');
+                card.className = `agenda-card status-${agendamento.status.toLowerCase()}`;
+                card.dataset.id = agendamento.id;
+        
+                card.innerHTML = `
+                    <div class="agenda-card-header">
+                        <span class="agenda-card-time">${agendamento.hora_agendamento.substring(0, 5)}</span>
+                        <span class="status-badge ${agendamento.status.toLowerCase()}">${agendamento.status}</span>
+                    </div>
+                    <div class="agenda-card-body">
+                        <p class="client-name">${agendamento.clientes?.nome || 'Cliente não encontrado'}</p>
+                        <p class="services">${agendamento.servicos}</p>
+                    </div>
+                `;
+                container.appendChild(card);
             });
         };
 
@@ -3897,9 +3831,57 @@
                 }
             }
         };
+        
+        // --- NOTIFICATION SYSTEM ---
+        const updateNotifications = () => {
+            const { notificationBadge, notificationList } = DOMElements;
+            const notifications = [];
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+
+            // 1. Agendamentos para hoje
+            const agendamentosHoje = state.agendamentos.filter(a => a.data_agendamento === todayStr);
+            agendamentosHoje.forEach(a => {
+                notifications.push({
+                    icon: 'fa-calendar-day',
+                    text: `${a.hora_agendamento.substring(0,5)} - ${a.clientes?.nome || 'Cliente'}`,
+                    subtitle: a.servicos
+                });
+            });
+
+            // 2. Follow-ups (Tarefas) Vencidos ou Vencendo Hoje
+            const tarefasPendentes = state.crmTasks.filter(t => t.status !== 'Concluído' && t.data_vencimento && new Date(t.data_vencimento + 'T23:59:59') <= today);
+            tarefasPendentes.forEach(t => {
+                const cliente = state.clientes.find(c => c.id === t.cliente_id);
+                notifications.push({
+                    icon: 'fa-clipboard-list',
+                    text: `Follow-up: ${t.titulo}`,
+                    subtitle: `Cliente: ${cliente?.nome || 'N/A'}`
+                });
+            });
+            
+            // Renderiza as notificações
+            if (notifications.length > 0) {
+                notificationBadge.textContent = notifications.length;
+                notificationBadge.style.display = 'flex';
+                notificationList.innerHTML = notifications.map(n => `
+                    <li>
+                        <div class="list-item-main">
+                            <i class="fas ${n.icon}"></i>
+                            <div>
+                                <p class="item-title">${n.text}</p>
+                                <p class="item-subtitle">${n.subtitle}</p>
+                            </div>
+                        </div>
+                    </li>
+                `).join('');
+            } else {
+                notificationBadge.style.display = 'none';
+                notificationList.innerHTML = `<li><p class="text-muted" style="text-align:center; padding: var(--space-md) 0;">Nenhuma notificação para hoje.</p></li>`;
+            }
+        };
 
         // --- EVENT LISTENERS ---
-        // Helper function to update total - MOVED HERE TO FIX ReferenceError
         const updateOrcamentoTotal = () => {
             const subtotal = state.novoOrcamentoItens.reduce((sum, item) => sum + (item.quantidade * item.valor_unitario), 0);
             const percentual = parseFloat(DOMElements.orcamentoDescontoInput.value) || 0;
@@ -3917,6 +3899,10 @@
 
                 if (DOMElements.mainNav.classList.contains('open') && !DOMElements.mainNav.contains(e.target) && !DOMElements.hamburgerMenu.contains(e.target)) {
                     DOMElements.mainNav.classList.remove('open');
+                }
+                
+                if (DOMElements.notificationPanel.classList.contains('open') && !DOMElements.notificationPanel.contains(e.target) && !DOMElements.notificationBellBtn.contains(e.target)) {
+                    DOMElements.notificationPanel.classList.remove('open');
                 }
 
                 const actionTarget = e.target.closest('[data-action]');
@@ -3946,7 +3932,7 @@
                     }
                 }
                 
-                const agendaItem = e.target.closest('.agenda-item');
+                const agendaItem = e.target.closest('.agenda-card');
                 if (agendaItem) {
                     openAgendamentoModal(agendaItem.dataset.id);
                 }
@@ -3954,13 +3940,16 @@
                 const whatsappBtn = e.target.closest('.whatsapp-link-btn');
                 if (whatsappBtn) {
                     const phone = whatsappBtn.dataset.phone;
-                    if (phone) {
-                        window.open(`https://wa.me/55${phone}`, '_blank');
+                    if (phone) { // Verificação adicionada
+                        window.open(`https://wa.me/55${phone.replace(/\D/g, '')}`, '_blank');
+                    } else {
+                        showNotification('Este cliente não possui um número de telefone válido.', 'error');
                     }
                 }
             });
 
             DOMElements.hamburgerMenu.addEventListener('click', () => DOMElements.mainNav.classList.toggle('open'));
+            DOMElements.notificationBellBtn.addEventListener('click', () => DOMElements.notificationPanel.classList.toggle('open'));
 
             DOMElements.navLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
@@ -3992,7 +3981,6 @@
             };
 
             DOMElements.clienteTelefoneInput.addEventListener('input', applyPhoneMask);
-            DOMElements.addLeadModal.form.querySelector('#lead-telefone').addEventListener('input', applyPhoneMask);
             
             DOMElements.clientePlacaInput.addEventListener('input', (e) => {
                 e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
@@ -4036,7 +4024,10 @@
             DOMElements.orcamentoDetailsModal.copyBtn.addEventListener('click', handleCopyToClipboard);
             DOMElements.orcamentoDetailsModal.pdfBtn.addEventListener('click', handleGeneratePdf);
             DOMElements.orcamentoDetailsModal.whatsappBtn.addEventListener('click', () => {
-                if (!state.orcamentoSelecionado || !state.orcamentoSelecionado.clientes) return;
+                if (!state.orcamentoSelecionado || !state.orcamentoSelecionado.clientes || !state.orcamentoSelecionado.clientes.telefone) {
+                    showNotification('Cliente não possui um telefone válido.', 'error');
+                    return;
+                }
                 const phone = `55${state.orcamentoSelecionado.clientes.telefone.replace(/\D/g, '')}`;
                 const text = DOMElements.orcamentoDetailsModal.orcamentoText.textContent;
                 window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
@@ -4065,16 +4056,6 @@
                     closeModal(DOMElements.clientDetailsPanel.panel);
                 }
             });
-            
-            DOMElements.crm.addLeadBtn.addEventListener('click', () => openModal(DOMElements.addLeadModal.modal));
-            DOMElements.crm.createTaskBtn.addEventListener('click', () => {
-                DOMElements.createTaskModal.clientSelect.innerHTML = '<option value="">Nenhum cliente</option>' + 
-                    state.clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
-                openModal(DOMElements.createTaskModal.modal);
-            });
-            
-            DOMElements.addLeadModal.form.addEventListener('submit', handleAddLeadSubmit);
-            DOMElements.createTaskModal.form.addEventListener('submit', handleCreateTaskSubmit);
             
             document.querySelectorAll('form[novalidate]').forEach(form => {
                 form.addEventListener('input', e => validateField(e.target));
@@ -4117,14 +4098,12 @@
                 if (header && content) {
                     header.addEventListener('click', () => {
                         const isActive = item.classList.contains('active');
-                        // Close all others
                         DOMElements.accordionItems.forEach(otherItem => {
                            if (otherItem !== item) {
                                 otherItem.classList.remove('active');
                                 otherItem.querySelector('.accordion-content').style.maxHeight = null;
                            }
                         });
-                        // Toggle current
                         if (!isActive) {
                             item.classList.add('active');
                             content.style.maxHeight = content.scrollHeight + "px";
