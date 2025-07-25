@@ -18,7 +18,7 @@
 
     <style>
         /* R.M. Estética Automotiva PRO+ */
-        /* Versão: 5.0 (Implementação de Tarefas e D&D) */
+        /* Versão: 5.3 (Correção Final do Módulo de Tarefas e Schema) */
         /* Autor: Gemini */
 
         /* 1. VARIÁVEIS CSS (TOKENS) */
@@ -78,7 +78,7 @@
             --border-radius-md: 12px;
             --transition-fast: 0.2s ease;
             --transition-medium: 0.3s ease;
-        }
+       }
 
         /* Tema Claro - Ativado com a classe .light-mode no body */
         body.light-mode {
@@ -1346,6 +1346,31 @@
             color: var(--text-muted);
         }
 
+        /* Fluxo de Caixa Styles */
+        .fluxo-caixa-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+        .fluxo-caixa-stat-card {
+            background: var(--bg-tertiary);
+            padding: var(--space-md);
+            border-radius: var(--border-radius-md);
+        }
+        .fluxo-caixa-stat-card h4 {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: var(--space-sm);
+        }
+        .fluxo-caixa-stat-card p {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .fluxo-caixa-stat-card .receitas { color: var(--accent-green); }
+        .fluxo-caixa-stat-card .despesas { color: var(--primary-red); }
+        .fluxo-caixa-stat-card .lucro { color: var(--accent-blue); }
+
         /* 11. RESPONSIVIDADE */
         @media (max-width: 768px) {
             body {
@@ -1434,7 +1459,7 @@
                 <li><a href="#" class="nav-link" data-tab="orcamento-tab"><i class="fas fa-file-invoice-dollar"></i><span>Novo Orçamento</span></a></li>
                 <li><a href="#" class="nav-link" data-tab="historico-tab"><i class="fas fa-history"></i><span>Histórico</span></a></li>
                 <li><a href="#" class="nav-link" data-tab="crm-tab"><i class="fas fa-headset"></i><span>CRM</span></a></li>
-                <li><a href="#" class="nav-link" data-tab="despesas-tab"><i class="fas fa-wallet"></i><span>Despesas</span></a></li>
+                <li><a href="#" class="nav-link" data-tab="fluxo-caixa-tab"><i class="fas fa-wallet"></i><span>Fluxo de Caixa</span></a></li>
                 <li><a href="#" class="nav-link" data-tab="configuracoes-tab"><i class="fas fa-cogs"></i><span>Configurações</span></a></li>
             </ul>
         </nav>
@@ -1458,7 +1483,7 @@
                         <div class="stat-card" id="stat-faturamento-card"><i class="fas fa-dollar-sign"></i><div><h3>Faturamento (Período)</h3><p id="stat-faturamento">R$ 0,00</p></div></div>
                     </div>
                     <div class="card chart-container">
-                        <h3>📊 Faturamento Mensal (Período)</h3>
+                        <h3>📊 Receitas vs. Despesas (Mensal)</h3>
                         <canvas id="monthlyStatsChart"></canvas>
                     </div>
                     <div class="card recent-activity-container">
@@ -1703,7 +1728,7 @@
                     <h3><i class="fas fa-bullhorn"></i> Ferramentas de Relacionamento</h3>
                     <div class="grid-layout two-cols" style="margin-top: var(--space-md);">
                         <form id="crm-form" novalidate>
-                             <h4>📞 Registrar Interação</h4>
+                              <h4>📞 Registrar Interação</h4>
                             <div class="form-group">
                                 <label for="crm-cliente-select">Cliente*</label>
                                 <select id="crm-cliente-select" required></select>
@@ -1749,8 +1774,48 @@
                 </div>
             </section>
 
-            <section id="despesas-tab" class="tab-content">
-                <div class="card"><h2>🧾 Despesas (Em Desenvolvimento)</h2></div>
+            <section id="fluxo-caixa-tab" class="tab-content">
+                <div class="card">
+                    <h2>💰 Relatório de Fluxo de Caixa</h2>
+                    <div class="filters-bar" style="display: flex; flex-wrap: wrap; gap: 16px; padding-bottom: 24px;">
+                        <div class="form-group" style="flex-grow: 1;"><label for="fluxo-caixa-data-inicio">Data de Início</label><input type="date" id="fluxo-caixa-data-inicio"></div>
+                        <div class="form-group" style="flex-grow: 1;"><label for="fluxo-caixa-data-fim">Data de Fim</label><input type="date" id="fluxo-caixa-data-fim"></div>
+                    </div>
+                    <div class="fluxo-caixa-stats">
+                        <div class="fluxo-caixa-stat-card"><h4 class="receitas"><i class="fas fa-arrow-up"></i> Receitas</h4><p id="fluxo-caixa-receitas" class="receitas">R$ 0,00</p></div>
+                        <div class="fluxo-caixa-stat-card"><h4 class="despesas"><i class="fas fa-arrow-down"></i> Despesas</h4><p id="fluxo-caixa-despesas" class="despesas">R$ 0,00</p></div>
+                        <div class="fluxo-caixa-stat-card"><h4 class="lucro"><i class="fas fa-equals"></i> Lucro Líquido</h4><p id="fluxo-caixa-lucro" class="lucro">R$ 0,00</p></div>
+                    </div>
+                </div>
+                <div class="grid-layout two-cols" style="margin-top: var(--space-lg);">
+                    <div class="card">
+                        <h3><i class="fas fa-plus-circle"></i> Adicionar Nova Despesa</h3>
+                        <form id="despesa-form" novalidate>
+                            <input type="hidden" id="despesa-id">
+                            <div class="form-group">
+                                <label for="despesa-descricao">Descrição*</label>
+                                <input type="text" id="despesa-descricao" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="despesa-valor">Valor (R$)*</label>
+                                <input type="number" id="despesa-valor" step="0.01" min="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="despesa-data">Data da Despesa*</label>
+                                <input type="date" id="despesa-data" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Despesa</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h3><i class="fas fa-receipt"></i> Despesas Recentes (Período)</h3>
+                        <ul id="despesas-lista" class="data-list">
+                            <li class="skeleton-item" style="height: 50px;"></li>
+                        </ul>
+                    </div>
+                </div>
             </section>
 
             <section id="configuracoes-tab" class="tab-content">
@@ -2076,7 +2141,7 @@
 
     <script type="module">
         // R.M. Estética Automotiva PRO+
-        // Versão: 5.0 (Implementação de Tarefas e D&D)
+        // Versão: 5.3.1 (Correção de Bugs: Agendamento e Notificações)
         // Autor: Gemini
 
         // --- SUPABASE CLIENT SETUP ---
@@ -2121,7 +2186,7 @@
             ],
             "Avisos Gerais": [
                 { title: "Lembrete de Agendamento", text: "Olá {{CLIENTE_NOME}}, passando para lembrar do seu agendamento conosco amanhã, às [HORA]. Estamos ansiosos para recebê-lo!" },
-                { title: "Feliz Aniversário!", text: "Parabéns, {{CLIENTE_NOME}}! 🎉 A equipe R.M. Estética deseja a você um feliz aniversário, com muita saúde e sucesso! Como presente, seu próximo serviço tem um desconto especial." },
+                { title: "Feliz Aniversário!", text: "Parabéns, {{CLIENTE_NOME}}! 🎉 A equipe R.M. Estética deseja a você um feliz aniversário, com muita saúde e sucesso! Como presente, seu próximo serviço tem um desconto especial." }
             ]
         };
 
@@ -2151,6 +2216,7 @@
             novoOrcamentoItens: [],
 
             configuracoes: {
+                id: 1, // Static ID for the single settings row
                 empresa: {
                     nome: "R.M. Estética Automotiva",
                     cnpj: "00.000.000/0001-00",
@@ -2346,6 +2412,16 @@
                 observacoesInput: document.getElementById('agendamento-observacoes'),
             },
 
+            fluxoCaixa: {
+                dataInicioInput: document.getElementById('fluxo-caixa-data-inicio'),
+                dataFimInput: document.getElementById('fluxo-caixa-data-fim'),
+                receitas: document.getElementById('fluxo-caixa-receitas'),
+                despesas: document.getElementById('fluxo-caixa-despesas'),
+                lucro: document.getElementById('fluxo-caixa-lucro'),
+                despesaForm: document.getElementById('despesa-form'),
+                despesasLista: document.getElementById('despesas-lista'),
+            },
+
             config: {
                 nome: document.getElementById('config-nome'),
                 cnpj: document.getElementById('config-cnpj'),
@@ -2523,6 +2599,7 @@
                 state.crmTasks = crmTasks || [];
                 state.agendamentos = agendamentos || [];
 
+                await loadConfig(); // Carrega as configurações da nuvem
                 renderAllContent();
                 updateNotifications();
                 if (showOverlay) showNotification('✅ Dados sincronizados com sucesso!', 'success');
@@ -2535,7 +2612,7 @@
         };
 
         const setupSupabaseListeners = () => {
-            const tables = ['clientes', 'servicos', 'orcamentos', 'orcamento_itens', 'despesas', 'crm_interactions', 'crm_tasks', 'agendamentos'];
+            const tables = ['clientes', 'servicos', 'orcamentos', 'orcamento_itens', 'despesas', 'crm_interactions', 'crm_tasks', 'agendamentos', 'configuracoes'];
             
             state.supabaseListeners.forEach(listener => supabase.removeChannel(listener));
             state.supabaseListeners = [];
@@ -2580,6 +2657,7 @@
                 case 'orcamento-tab': renderOrcamentoForm(); break;
                 case 'historico-tab': renderHistorico(); break;
                 case 'crm-tab': renderCRM(); break;
+                case 'fluxo-caixa-tab': renderFluxoDeCaixa(); break;
                 case 'configuracoes-tab': populateConfigForm(); break;
             }
             if (resetScroll) {
@@ -2593,21 +2671,21 @@
             const startDate = dashboard.dataInicioInput.value;
             const endDate = dashboard.dataFimInput.value;
 
-            const filteredClients = state.clientes.filter(c => {
-                if (!startDate && !endDate) return true;
-                const clientDate = new Date(c.created_at);
-                const start = startDate ? new Date(startDate) : null;
-                const end = endDate ? new Date(endDate + 'T23:59:59') : null;
-                return (!start || clientDate >= start) && (!end || clientDate <= end);
-            });
+            const filterByDate = (items, dateField = 'created_at') => {
+                return items.filter(item => {
+                    if (!startDate && !endDate) return true;
+                    const itemDate = new Date(item[dateField]);
+                    const start = startDate ? new Date(startDate) : null;
+                    const end = endDate ? new Date(endDate + 'T23:59:59') : null;
+                    // Ajuste para datas que não têm hora (como data_despesa)
+                    const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+                    return (!start || itemDateOnly >= start) && (!end || itemDateOnly <= end);
+                });
+            };
 
-            const filteredOrcamentos = state.orcamentos.filter(o => {
-                if (!startDate && !endDate) return true;
-                const orcamentoDate = new Date(o.created_at);
-                const start = startDate ? new Date(startDate) : null;
-                const end = endDate ? new Date(endDate + 'T23:59:59') : null;
-                return (!start || orcamentoDate >= start) && (!end || orcamentoDate <= end);
-            });
+            const filteredClients = filterByDate(state.clientes);
+            const filteredOrcamentos = filterByDate(state.orcamentos);
+            const filteredDespesas = filterByDate(state.despesas, 'data_despesa');
             
             const finalizados = filteredOrcamentos.filter(o => ['Finalizado', 'Pago'].includes(o.status));
             
@@ -2664,31 +2742,89 @@
                 </li>
             `).join('') : '<li>Nenhum serviço finalizado no período.</li>';
 
-            const monthlyData = {};
+            // --- Lógica do Gráfico Aprimorada ---
+            const monthlyData = { revenue: {}, expenses: {}, serviceDetails: {} };
+
             finalizados.forEach(o => {
                 const d = new Date(o.created_at);
                 const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                if (!monthlyData[monthKey]) monthlyData[monthKey] = 0;
-                monthlyData[monthKey] += o.valor_total;
+                if (!monthlyData.revenue[monthKey]) monthlyData.revenue[monthKey] = 0;
+                monthlyData.revenue[monthKey] += o.valor_total;
+
+                // Coleta de detalhes dos serviços para o tooltip
+                if(!monthlyData.serviceDetails[monthKey]) monthlyData.serviceDetails[monthKey] = {};
+                const items = state.orcamentoItens.filter(i => i.orcamento_id === o.id);
+                items.forEach(item => {
+                    if (!monthlyData.serviceDetails[monthKey][item.descricao_servico]) {
+                        monthlyData.serviceDetails[monthKey][item.descricao_servico] = { count: 0, revenue: 0 };
+                    }
+                    monthlyData.serviceDetails[monthKey][item.descricao_servico].count += item.quantidade;
+                    monthlyData.serviceDetails[monthKey][item.descricao_servico].revenue += item.quantidade * item.valor_unitario;
+                });
             });
+            
+            filteredDespesas.forEach(d => {
+                const date = new Date(d.data_despesa + 'T00:00:00'); // Garante que a data seja lida corretamente
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                if (!monthlyData.expenses[monthKey]) monthlyData.expenses[monthKey] = 0;
+                monthlyData.expenses[monthKey] += d.valor;
+            });
+
+            const allMonths = [...new Set([...Object.keys(monthlyData.revenue), ...Object.keys(monthlyData.expenses)])].sort();
 
             if (monthlyChartInstance) monthlyChartInstance.destroy();
             monthlyChartInstance = new Chart(dashboard.monthlyStatsChart, {
                 type: 'bar',
                 data: {
-                    labels: Object.keys(monthlyData).sort(),
-                    datasets: [{
-                        label: 'Faturamento',
-                        data: Object.values(monthlyData),
-                        backgroundColor: state.configuracoes.visual.colors.primaryRed + 'B3',
-                        borderColor: state.configuracoes.visual.colors.primaryRed,
-                        borderWidth: 1,
-                        borderRadius: 5,
-                    }]
+                    labels: allMonths,
+                    datasets: [
+                        {
+                            label: 'Receitas',
+                            data: allMonths.map(month => monthlyData.revenue[month] || 0),
+                            backgroundColor: state.configuracoes.visual.colors.accentGreen + 'B3',
+                            borderColor: state.configuracoes.visual.colors.accentGreen,
+                            borderWidth: 1,
+                            borderRadius: 5,
+                        },
+                        {
+                            label: 'Despesas',
+                            data: allMonths.map(month => monthlyData.expenses[month] || 0),
+                            backgroundColor: state.configuracoes.visual.colors.primaryRed + 'B3',
+                            borderColor: state.configuracoes.visual.colors.primaryRed,
+                            borderWidth: 1,
+                            borderRadius: 5,
+                        }
+                    ]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { display: true, position: 'top', labels: { color: '#9AA0A6' } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${formatCurrency(context.raw)}`;
+                                },
+                                // NOVO: Tooltip com detalhamento dos serviços
+                                footer: function(tooltipItems) {
+                                    const monthKey = tooltipItems[0].label;
+                                    const details = monthlyData.serviceDetails[monthKey];
+                                    if (!details || tooltipItems[0].dataset.label !== 'Receitas') {
+                                        return '';
+                                    }
+                                    
+                                    const footerLines = ['--- Serviços ---'];
+                                    Object.entries(details)
+                                        .sort((a,b) => b[1].revenue - a[1].revenue) // Ordena por mais rentável
+                                        .forEach(([service, data]) => {
+                                            footerLines.push(`${service}: ${data.count}x (${formatCurrency(data.revenue)})`);
+                                        });
+
+                                    return footerLines;
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         y: { beginAtZero: true, grid: { color: 'rgba(232, 234, 237, 0.1)' }, ticks: { color: '#9AA0A6' } },
                         x: { grid: { display: false }, ticks: { color: '#9AA0A6' } }
@@ -2820,6 +2956,49 @@
                     </div>
                 </li>
             `).join('') : '<li>Nenhum orçamento encontrado com os filtros aplicados.</li>';
+        };
+
+        const renderFluxoDeCaixa = () => {
+            const { fluxoCaixa } = DOMElements;
+            const startDate = fluxoCaixa.dataInicioInput.value;
+            const endDate = fluxoCaixa.dataFimInput.value;
+
+            const filterByDate = (items, dateField) => {
+                return items.filter(item => {
+                    if (!startDate && !endDate) return true;
+                    const itemDate = new Date(item[dateField]);
+                    const start = startDate ? new Date(startDate) : null;
+                    const end = endDate ? new Date(endDate + 'T23:59:59') : null;
+                    const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+                    return (!start || itemDateOnly >= start) && (!end || itemDateOnly <= end);
+                });
+            };
+
+            const orcamentosPagos = filterByDate(state.orcamentos.filter(o => o.status === 'Pago'));
+            const despesasPeriodo = filterByDate(state.despesas, 'data_despesa');
+            
+            const totalReceitas = orcamentosPagos.reduce((sum, o) => sum + o.valor_total, 0);
+            const totalDespesas = despesasPeriodo.reduce((sum, d) => sum + d.valor, 0);
+            const lucroLiquido = totalReceitas - totalDespesas;
+
+            fluxoCaixa.receitas.textContent = formatCurrency(totalReceitas);
+            fluxoCaixa.despesas.textContent = formatCurrency(totalDespesas);
+            fluxoCaixa.lucro.textContent = formatCurrency(lucroLiquido);
+            
+            fluxoCaixa.despesasLista.innerHTML = despesasPeriodo.length > 0
+                ? despesasPeriodo.map(d => `
+                    <li>
+                        <div class="list-item-main">
+                            <p class="item-title">${d.descricao}</p>
+                            <p class="item-subtitle">${new Date(d.data_despesa + 'T00:00:00').toLocaleDateString()}</p>
+                        </div>
+                        <div class="list-item-actions" style="align-items: center; gap: 16px;">
+                            <strong style="color: var(--primary-red);">${formatCurrency(d.valor)}</strong>
+                            <button class="btn btn-danger btn-sm btn-icon" data-action="delete-despesa" data-id="${d.id}" title="Excluir Despesa"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>
+                `).join('')
+                : `<li>Nenhuma despesa no período selecionado.</li>`;
         };
 
         // --- FORM HANDLERS & CRUD ---
@@ -3105,93 +3284,6 @@
             }
         };
 
-        const handleTaskSubmit = async (e) => {
-            e.preventDefault();
-            const { modal, form } = DOMElements.createTaskModal;
-            if (!validateForm(form)) return;
-
-            const taskData = {
-                titulo: form.querySelector('#task-titulo').value.trim(),
-                cliente_id: form.querySelector('#task-cliente').value || null,
-                data_vencimento: form.querySelector('#task-data-vencimento').value || null,
-                prioridade: form.querySelector('#task-prioridade').value,
-                descricao: form.querySelector('#task-descricao').value.trim(),
-                status: state.editandoTaskId ? state.crmTasks.find(t => t.id === state.editandoTaskId).status : 'A Fazer'
-            };
-
-            setSyncing(true);
-            try {
-                const { error } = state.editandoTaskId
-                    ? await supabase.from('crm_tasks').update(taskData).eq('id', state.editandoTaskId)
-                    : await supabase.from('crm_tasks').insert(taskData);
-
-                if (error) throw error;
-
-                showNotification(`Tarefa ${state.editandoTaskId ? 'atualizada' : 'criada'} com sucesso! ✅`, 'success');
-                closeModal(modal);
-                await fetchAllData(false);
-            } catch (error) {
-                console.error('Erro ao salvar tarefa:', error);
-                showNotification(`❌ Erro ao salvar tarefa: ${error.message}`, 'error');
-            } finally {
-                setSyncing(false);
-            }
-        };
-        
-        const openTaskModal = (id = null) => {
-            const { modal, form, formTitle, clientSelect, deleteBtn } = DOMElements.createTaskModal;
-            form.reset();
-            clearFormValidation(form);
-            state.editandoTaskId = null;
-
-            clientSelect.innerHTML = '<option value="">Nenhum cliente</option>' + 
-                state.clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
-
-            if (id) {
-                const task = state.crmTasks.find(t => t.id === id);
-                if (task) {
-                    state.editandoTaskId = id;
-                    formTitle.textContent = "Editar Tarefa";
-                    form.querySelector('#task-id').value = task.id;
-                    form.querySelector('#task-titulo').value = task.titulo;
-                    form.querySelector('#task-cliente').value = task.cliente_id;
-                    form.querySelector('#task-data-vencimento').value = task.data_vencimento;
-                    form.querySelector('#task-prioridade').value = task.prioridade || 'Média';
-                    form.querySelector('#task-descricao').value = task.descricao;
-                    deleteBtn.style.display = 'inline-flex';
-                }
-            } else {
-                formTitle.textContent = "Criar Nova Tarefa";
-                deleteBtn.style.display = 'none';
-            }
-            openModal(modal);
-        };
-        
-        const handleEditTask = (id) => {
-            openTaskModal(id);
-        };
-
-        const handleDeleteTask = async () => {
-            const id = state.editandoTaskId;
-            if (!id) return;
-            const confirmed = await showConfirmation({ title: 'Excluir Tarefa', message: 'Tem certeza que deseja excluir esta tarefa?' });
-            if (confirmed) {
-                setSyncing(true);
-                try {
-                    const { error } = await supabase.from('crm_tasks').delete().eq('id', id);
-                    if (error) throw error;
-                    showNotification('Tarefa excluída com sucesso. 🗑️', 'success');
-                    closeModal(DOMElements.createTaskModal.modal);
-                    await fetchAllData(false);
-                } catch(error) {
-                    console.error('Erro ao excluir tarefa:', error);
-                    showNotification(`❌ Erro ao excluir: ${error.message}`, 'error');
-                } finally {
-                    setSyncing(false);
-                }
-            }
-        };
-
         const handleViewOrcamento = (id) => {
             const orcamento = state.orcamentos.find(o => o.id === id);
             if (!orcamento) return;
@@ -3366,18 +3458,20 @@
                 
                 const headerEl = document.createElement('div');
                 headerEl.className = 'kanban-column-header';
-                headerEl.textContent = status;
                 
                 const cardsEl = document.createElement('div');
                 cardsEl.className = 'kanban-cards';
 
                 const tasksInColumn = state.crmTasks.filter(task => (task.status || 'A Fazer') === status);
+                
+                headerEl.textContent = `${status} (${tasksInColumn.length})`;
 
                 tasksInColumn.forEach(task => {
                     const cardEl = document.createElement('div');
                     const priorityClass = `task-priority-${(task.prioridade || 'baixa').toLowerCase()}`;
                     cardEl.className = `kanban-card ${priorityClass}`;
                     cardEl.dataset.id = task.id;
+                    cardEl.dataset.action = 'edit-task';
                     cardEl.draggable = true;
                     
                     const clienteNome = clientMap.get(task.cliente_id) || 'Sem cliente associado';
@@ -3587,30 +3681,136 @@
             }
         };
 
+        const openTaskModal = (id = null) => {
+            const { createTaskModal } = DOMElements;
+            createTaskModal.form.reset();
+            clearFormValidation(createTaskModal.form);
+            state.editandoTaskId = null;
 
-        // --- CONFIGURAÇÕES ---
-        const saveConfig = () => {
-            localStorage.setItem('rm-estetica-config-v8', JSON.stringify(state.configuracoes));
-            showNotification('⚙️ Configurações salvas!', 'info', 1500);
+            createTaskModal.clientSelect.innerHTML = '<option value="">Nenhum cliente</option>' +
+                state.clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+
+            if (id) {
+                const task = state.crmTasks.find(t => t.id === id);
+                if (task) {
+                    state.editandoTaskId = id;
+                    createTaskModal.formTitle.textContent = "Editar Tarefa";
+                    createTaskModal.form.querySelector('#task-id').value = task.id;
+                    createTaskModal.form.querySelector('#task-titulo').value = task.titulo;
+                    createTaskModal.form.querySelector('#task-cliente').value = task.cliente_id || "";
+                    createTaskModal.form.querySelector('#task-data-vencimento').value = task.data_vencimento;
+                    createTaskModal.form.querySelector('#task-prioridade').value = task.prioridade;
+                    createTaskModal.form.querySelector('#task-descricao').value = task.descricao;
+                    createTaskModal.deleteBtn.style.display = 'inline-flex';
+                }
+            } else {
+                createTaskModal.formTitle.textContent = "Criar Nova Tarefa";
+                createTaskModal.deleteBtn.style.display = 'none';
+            }
+            openModal(createTaskModal.modal);
         };
 
-        const loadConfig = () => {
-            const savedConfig = localStorage.getItem('rm-estetica-config-v8');
-            if (savedConfig) {
-                const parsedConfig = JSON.parse(savedConfig);
-                state.configuracoes.empresa = {...state.configuracoes.empresa, ...parsedConfig.empresa};
-                state.configuracoes.templates = {...state.configuracoes.templates, ...parsedConfig.templates};
-                state.configuracoes.crmTemplates = {
-                    ...JSON.parse(JSON.stringify(defaultCrmTemplates)), 
-                    ...(parsedConfig.crmTemplates || {})
-                };
-                state.configuracoes.visual = {
-                    ...state.configuracoes.visual, 
-                    ...parsedConfig.visual,
-                    colors: { ...defaultColors, ...(parsedConfig.visual.colors || {}) }
-                };
+        const handleEditTask = (id) => {
+            openTaskModal(id);
+        };
+
+        const handleTaskSubmit = async (e) => {
+            e.preventDefault();
+            const form = DOMElements.createTaskModal.form;
+            if (!validateForm(form)) return;
+
+            const taskData = {
+                titulo: form.querySelector('#task-titulo').value.trim(),
+                cliente_id: form.querySelector('#task-cliente').value || null,
+                data_vencimento: form.querySelector('#task-data-vencimento').value || null,
+                prioridade: form.querySelector('#task-prioridade').value,
+                descricao: form.querySelector('#task-descricao').value.trim(),
+                status: state.editandoTaskId ? state.crmTasks.find(t => t.id === state.editandoTaskId).status : 'A Fazer'
+            };
+
+            setSyncing(true);
+            try {
+                const { error } = state.editandoTaskId
+                    ? await supabase.from('crm_tasks').update(taskData).eq('id', state.editandoTaskId)
+                    : await supabase.from('crm_tasks').insert(taskData);
+
+                if (error) throw error;
+                showNotification(`Tarefa ${state.editandoTaskId ? 'atualizada' : 'criada'} com sucesso!`, 'success');
+                closeModal(DOMElements.createTaskModal.modal);
+                await fetchAllData(false);
+            } catch (error) {
+                console.error('Erro ao salvar tarefa:', error);
+                showNotification(`❌ Erro ao salvar tarefa: ${error.message}`, 'error');
+            } finally {
+                setSyncing(false);
             }
-            applyConfig();
+        };
+
+        const handleDeleteTask = async (id) => {
+            if (!id) return;
+            const confirmed = await showConfirmation({ title: 'Excluir Tarefa', message: 'Tem certeza que deseja excluir esta tarefa?' });
+            if (confirmed) {
+                setSyncing(true);
+                try {
+                    const { error } = await supabase.from('crm_tasks').delete().eq('id', id);
+                    if (error) throw error;
+                    showNotification('Tarefa excluída com sucesso.', 'success');
+                    closeModal(DOMElements.createTaskModal.modal);
+                    await fetchAllData(false);
+                } catch(error) {
+                    console.error('Erro ao excluir tarefa:', error);
+                    showNotification(`❌ Erro ao excluir: ${error.message}`, 'error');
+                } finally {
+                    setSyncing(false);
+                }
+            }
+        };
+
+        // --- CONFIGURAÇÕES ---
+        const saveConfig = async () => {
+            try {
+                // Remove a propriedade 'id' do objeto principal para evitar conflito na atualização do JSONB
+                const configToSave = { ...state.configuracoes };
+                delete configToSave.id;
+
+                const { error } = await supabase
+                    .from('configuracoes')
+                    .update(configToSave)
+                    .eq('id', state.configuracoes.id);
+                if (error) throw error;
+                showNotification('⚙️ Configurações salvas na nuvem!', 'info', 1500);
+            } catch (error) {
+                console.error("Erro ao salvar configurações:", error);
+                showNotification(`❌ Erro ao salvar configurações: ${error.message}`, 'error');
+            }
+        };
+
+        const loadConfig = async () => {
+            try {
+                const { data, error } = await supabase.from('configuracoes').select('*').eq('id', 1).single();
+                if (data) {
+                    const parsedConfig = data;
+                    state.configuracoes.empresa = {...state.configuracoes.empresa, ...parsedConfig.empresa};
+                    state.configuracoes.templates = {...state.configuracoes.templates, ...parsedConfig.templates};
+                    state.configuracoes.crmTemplates = {
+                        ...JSON.parse(JSON.stringify(defaultCrmTemplates)), 
+                        ...(parsedConfig.crmTemplates || {})
+                    };
+                    state.configuracoes.visual = {
+                        ...state.configuracoes.visual, 
+                        ...parsedConfig.visual,
+                        colors: { ...defaultColors, ...(parsedConfig.visual.colors || {}) }
+                    };
+                } else {
+                   if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows found
+                   console.log("Nenhuma configuração encontrada na nuvem, usando e salvando padrão.");
+                   await saveConfig(); // Salva a configuração padrão se nenhuma existir
+                }
+            } catch (error) {
+                 console.error("Erro ao carregar configurações:", error);
+            } finally {
+                applyConfig();
+            }
         };
         
         const applyConfig = () => {
@@ -3848,6 +4048,27 @@
                 if (error) throw error;
                 
                 showNotification(`Status atualizado para ${newStatus}!`, 'success');
+
+                // Automação de Follow-up
+                if (newStatus === 'Pago') {
+                    const cliente = state.orcamentos.find(o => o.id === state.orcamentoSelecionado.id)?.clientes;
+                    if (cliente) {
+                        const dueDate = new Date();
+                        dueDate.setDate(dueDate.getDate() + 3);
+                        const taskData = {
+                            cliente_id: cliente.id,
+                            titulo: `Pedir feedback para ${cliente.nome.split(' ')[0]}`,
+                            descricao: `Entrar em contato para pedir feedback sobre o serviço do orçamento #${state.orcamentoSelecionado.id.substring(0, 8)}.`,
+                            data_vencimento: dueDate.toISOString().split('T')[0],
+                            status: 'A Fazer',
+                            prioridade: 'Baixa'
+                        };
+                        const { error: taskError } = await supabase.from('crm_tasks').insert(taskData);
+                        if (taskError) throw taskError;
+                        showNotification('Tarefa de feedback criada no CRM!', 'success');
+                    }
+                }
+
                 await fetchAllData(false);
                 
                  const updatedOrcamento = state.orcamentos.find(o => o.id === state.orcamentoSelecionado.id);
@@ -3855,7 +4076,7 @@
                        state.orcamentoSelecionado = updatedOrcamento;
                        renderStatusActions();
                  } else {
-                       closeModal(DOMElements.orcamentoDetailsModal.modal);
+                        closeModal(DOMElements.orcamentoDetailsModal.modal);
                  }
 
             } catch (error) {
@@ -3896,7 +4117,7 @@
                     </div>
                     <div class="agenda-card-body">
                         <p class="client-name">${agendamento.clientes?.nome || 'Cliente não encontrado'}</p>
-                        <p class="services">${agendamento.servicos}</p>
+                        <p class="services">${agendamento.descricao}</p>
                     </div>
                 `;
                 container.appendChild(card);
@@ -3919,7 +4140,7 @@
                     agenda.formTitle.textContent = "Editar Agendamento";
                     agenda.idInput.value = agendamento.id;
                     agenda.clienteSelect.value = agendamento.cliente_id;
-                    agenda.servicosInput.value = agendamento.servicos;
+                    agenda.servicosInput.value = agendamento.descricao;
                     agenda.dataInput.value = agendamento.data_agendamento;
                     agenda.horaInput.value = agendamento.hora_agendamento;
                     agenda.statusSelect.value = agendamento.status;
@@ -3941,7 +4162,7 @@
             const { agenda } = DOMElements;
             const agendamentoData = {
                 cliente_id: agenda.clienteSelect.value,
-                servicos: agenda.servicosInput.value.trim(),
+                descricao: agenda.servicosInput.value.trim(),
                 data_agendamento: agenda.dataInput.value,
                 hora_agendamento: agenda.horaInput.value,
                 status: agenda.statusSelect.value,
@@ -3987,12 +4208,64 @@
             }
         };
         
+        // --- FLUXO DE CAIXA HANDLERS ---
+        const handleDespesaSubmit = async (e) => {
+            e.preventDefault();
+            const form = DOMElements.fluxoCaixa.despesaForm;
+            if (!validateForm(form)) return;
+
+            const despesaData = {
+                descricao: form.querySelector('#despesa-descricao').value,
+                valor: parseFloat(form.querySelector('#despesa-valor').value),
+                data_despesa: form.querySelector('#despesa-data').value,
+            };
+
+            setSyncing(true);
+            try {
+                const { error } = await supabase.from('despesas').insert(despesaData);
+                if (error) throw error;
+
+                showNotification('Despesa adicionada com sucesso!', 'success');
+                form.reset();
+                clearFormValidation(form);
+                await fetchAllData(false); // Refetch to update list and totals
+            } catch (error) {
+                console.error('Erro ao salvar despesa:', error);
+                showNotification(`❌ Erro ao salvar despesa: ${error.message}`, 'error');
+            } finally {
+                setSyncing(false);
+            }
+        };
+
+        const handleDeleteDespesa = async (id) => {
+            const confirmed = await showConfirmation({ title: 'Excluir Despesa', message: 'Tem certeza?' });
+            if (confirmed) {
+                setSyncing(true);
+                try {
+                    const { error } = await supabase.from('despesas').delete().eq('id', id);
+                    if (error) throw error;
+                    showNotification('Despesa excluída com sucesso.', 'success');
+                    await fetchAllData(false);
+                } catch(error) {
+                    console.error('Erro ao excluir despesa:', error);
+                    showNotification(`❌ Erro ao excluir despesa: ${error.message}`, 'error');
+                } finally {
+                    setSyncing(false);
+                }
+            }
+        };
+
         // --- NOTIFICATION SYSTEM ---
         const updateNotifications = () => {
             const { notificationBadge, notificationList } = DOMElements;
             const notifications = [];
             const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
+            today.setHours(0, 0, 0, 0); // Define 'hoje' como a meia-noite local para comparações seguras.
+
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
 
             // 1. Agendamentos para hoje
             const agendamentosHoje = state.agendamentos.filter(a => a.data_agendamento === todayStr);
@@ -4000,12 +4273,18 @@
                 notifications.push({
                     icon: 'fa-calendar-day',
                     text: `${a.hora_agendamento.substring(0,5)} - ${a.clientes?.nome || 'Cliente'}`,
-                    subtitle: a.servicos
+                    subtitle: a.descricao
                 });
             });
 
             // 2. Follow-ups (Tarefas) Vencidos ou Vencendo Hoje
-            const tarefasPendentes = state.crmTasks.filter(t => t.status !== 'Concluído' && t.data_vencimento && new Date(t.data_vencimento + 'T23:59:59') <= today);
+            const tarefasPendentes = state.crmTasks.filter(t => {
+                if (t.status === 'Concluído' || !t.data_vencimento) return false;
+                // Converte a data da tarefa (que é uma string 'YYYY-MM-DD') para um objeto Date na meia-noite local
+                const taskDate = new Date(t.data_vencimento + 'T00:00:00');
+                return taskDate <= today;
+            });
+
             tarefasPendentes.forEach(t => {
                 const cliente = state.clientes.find(c => c.id === t.cliente_id);
                 notifications.push({
@@ -4015,6 +4294,7 @@
                 });
             });
             
+            // Renderiza as notificações
             if (notifications.length > 0) {
                 notificationBadge.textContent = notifications.length;
                 notificationBadge.style.display = 'flex';
@@ -4061,35 +4341,40 @@
 
                 const actionTarget = e.target.closest('[data-action]');
                 if (actionTarget) {
-                        // Previne o clique em outros data-actions de propagar, se necessário
-                        e.preventDefault();
-                        const { action, id, tab, category, index } = actionTarget.dataset;
-                        switch (action) {
-                            case 'navigate': showTab(tab); break;
-                            case 'edit-cliente': handleEditCliente(id); break;
-                            case 'delete-cliente': handleDeleteCliente(id); break;
-                            case 'details-cliente': handleViewClientDetails(id); break;
-                            case 'edit-servico': handleEditServico(id); break;
-                            case 'delete-servico': handleDeleteServico(id); break;
-                            case 'remove-orc-item': handleRemoveOrcamentoItem(parseInt(actionTarget.closest('tr').dataset.index)); break;
-                            case 'view-orcamento': handleViewOrcamento(id); break;
-                            case 'delete-orcamento': handleDeleteOrcamento(id); break;
-                            case 'add-crm-template':
-                                state.configuracoes.crmTemplates[category].push({ title: 'Novo Template', text: 'Nova mensagem...' });
-                                saveConfig();
-                                populateCrmTemplatesConfig();
-                                break;
-                            case 'delete-crm-template':
-                                state.configuracoes.crmTemplates[category].splice(index, 1);
-                                saveConfig();
-                                populateCrmTemplatesConfig();
-                                break;
-                        }
+                    e.preventDefault();
+                    const { action, id, tab, category, index } = actionTarget.dataset;
+                    switch (action) {
+                        case 'navigate': showTab(tab); break;
+                        case 'edit-cliente': handleEditCliente(id); break;
+                        case 'delete-cliente': handleDeleteCliente(id); break;
+                        case 'details-cliente': handleViewClientDetails(id); break;
+                        case 'edit-servico': handleEditServico(id); break;
+                        case 'delete-servico': handleDeleteServico(id); break;
+                        case 'remove-orc-item': handleRemoveOrcamentoItem(parseInt(actionTarget.closest('tr').dataset.index)); break;
+                        case 'view-orcamento': handleViewOrcamento(id); break;
+                        case 'delete-orcamento': handleDeleteOrcamento(id); break;
+                        case 'delete-despesa': handleDeleteDespesa(id); break;
+                        case 'add-crm-template':
+                            state.configuracoes.crmTemplates[category].push({ title: 'Novo Template', text: 'Nova mensagem...' });
+                            saveConfig();
+                            populateCrmTemplatesConfig();
+                            break;
+                        case 'delete-crm-template':
+                            state.configuracoes.crmTemplates[category].splice(index, 1);
+                            saveConfig();
+                            populateCrmTemplatesConfig();
+                            break;
+                    }
                 }
                 
                 const agendaItem = e.target.closest('.agenda-card');
                 if (agendaItem) {
                     openAgendamentoModal(agendaItem.dataset.id);
+                }
+                
+                const kanbanCard = e.target.closest('.kanban-card');
+                if(kanbanCard) {
+                    handleEditTask(kanbanCard.dataset.id);
                 }
 
                 const whatsappBtn = e.target.closest('.whatsapp-link-btn');
@@ -4127,6 +4412,7 @@
             DOMElements.orcamentoForm.addEventListener('submit', handleOrcamentoSubmit);
             DOMElements.crm.form.addEventListener('submit', handleCrmInteractionSubmit);
             DOMElements.agenda.form.addEventListener('submit', handleAgendamentoSubmit);
+            DOMElements.fluxoCaixa.despesaForm.addEventListener('submit', handleDespesaSubmit);
             
             const applyPhoneMask = (e) => {
                 let v = e.target.value.replace(/\D/g, '');
@@ -4184,7 +4470,10 @@
                     return;
                 }
                 const phone = `55${state.orcamentoSelecionado.clientes.telefone.replace(/\D/g, '')}`;
-                const text = DOMElements.orcamentoDetailsModal.orcamentoText.textContent;
+                const activeView = DOMElements.orcamentoDetailsModal.orcamentoView.style.display !== 'none' ? 'orcamento' : 'recibo';
+                const text = activeView === 'orcamento'
+                    ? DOMElements.orcamentoDetailsModal.orcamentoText.textContent
+                    : DOMElements.orcamentoDetailsModal.reciboText.textContent;
                 window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
             });
             
@@ -4219,14 +4508,7 @@
             
             DOMElements.crm.createTaskBtn.addEventListener('click', () => openTaskModal());
             DOMElements.createTaskModal.form.addEventListener('submit', handleTaskSubmit);
-            DOMElements.createTaskModal.deleteBtn.addEventListener('click', handleDeleteTask);
-            DOMElements.crm.tasksBoard.addEventListener('click', (e) => {
-                const card = e.target.closest('.kanban-card');
-                if (card) {
-                    handleEditTask(card.dataset.id);
-                }
-            });
-
+            DOMElements.createTaskModal.deleteBtn.addEventListener('click', () => handleDeleteTask(state.editandoTaskId));
 
             // Config Listeners
             DOMElements.config.logoUpload.addEventListener('change', (e) => handleImageUpload(e, 'logo'));
@@ -4355,12 +4637,74 @@
                 renderAgenda();
             });
             DOMElements.agenda.deleteBtn.addEventListener('click', () => handleDeleteAgendamento(state.editandoAgendamentoId));
+
+            // --- KANBAN DRAG AND DROP LOGIC ---
+            const kanbanBoard = DOMElements.crm.tasksBoard;
+            let draggedItem = null;
+
+            kanbanBoard.addEventListener('dragstart', (e) => {
+                if (e.target.classList.contains('kanban-card')) {
+                    draggedItem = e.target;
+                    setTimeout(() => e.target.classList.add('dragging'), 0);
+                }
+            });
+
+            kanbanBoard.addEventListener('dragend', () => {
+                if (draggedItem) {
+                    draggedItem.classList.remove('dragging');
+                    draggedItem = null;
+                }
+            });
+
+            kanbanBoard.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const column = e.target.closest('.kanban-column');
+                if (column) {
+                    // Futuro: Adicionar classe de highlight na coluna
+                }
+            });
+
+            kanbanBoard.addEventListener('drop', async (e) => {
+                e.preventDefault();
+                const column = e.target.closest('.kanban-column');
+
+                if (column && draggedItem) {
+                    const taskId = draggedItem.dataset.id;
+                    const newStatus = column.dataset.status;
+                    
+                    column.querySelector('.kanban-cards').appendChild(draggedItem);
+                    
+                    try {
+                        setSyncing(true);
+                        const { error } = await supabase
+                            .from('crm_tasks')
+                            .update({ status: newStatus })
+                            .eq('id', taskId);
+
+                        if (error) throw error;
+                        
+                        const taskInState = state.crmTasks.find(t => t.id === taskId);
+                        if (taskInState) taskInState.status = newStatus;
+                        
+                        showNotification('Tarefa movida com sucesso!', 'success');
+                        renderCrmKanban(); // Re-renderiza para atualizar contadores
+                    } catch (error) {
+                        showNotification(`Erro ao atualizar tarefa: ${error.message}`, 'error');
+                        renderCrmKanban(); 
+                    } finally {
+                        setSyncing(false);
+                    }
+                }
+            });
+            
+            // Fluxo de Caixa Listeners
+            DOMElements.fluxoCaixa.dataInicioInput.addEventListener('input', debounce(renderFluxoDeCaixa, 300));
+            DOMElements.fluxoCaixa.dataFimInput.addEventListener('input', debounce(renderFluxoDeCaixa, 300));
         };
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('R.M. Estética Automotiva PRO+ inicializado.');
-            loadConfig();
+            console.log('R.M. Estética Automotiva PRO+ 5.3.1 inicializado.');
             setupEventListeners();
             setupSupabaseListeners();
             fetchAllData(true);
