@@ -18,7 +18,7 @@
 
     <style>
         /* R.M. Estética Automotiva PRO+ */
-        /* Versão: 4.8 (Sino de Notificações e Otimizações) */
+        /* Versão: 5.0 (Implementação de Tarefas e D&D) */
         /* Autor: Gemini */
 
         /* 1. VARIÁVEIS CSS (TOKENS) */
@@ -78,7 +78,7 @@
             --border-radius-md: 12px;
             --transition-fast: 0.2s ease;
             --transition-medium: 0.3s ease;
-       }
+        }
 
         /* Tema Claro - Ativado com a classe .light-mode no body */
         body.light-mode {
@@ -272,7 +272,7 @@
         .header-actions {
             display: flex;
             align-items: center;
-            gap: var(--space-sm); /* Reduzido para acomodar o sino */
+            gap: var(--space-sm);
         }
 
         #hamburger-menu {
@@ -1058,6 +1058,7 @@
         .crm-actions {
             display: flex;
             gap: var(--space-md);
+            align-self: center;
         }
         .kanban-container {
             display: grid;
@@ -1093,7 +1094,7 @@
             background-color: var(--bg-secondary);
             padding: var(--space-md);
             border-radius: var(--border-radius-sm);
-            cursor: grab;
+            cursor: pointer;
             border-left: 3px solid var(--accent-blue);
         }
         .kanban-card.task-priority-alta { border-left-color: var(--danger-red); }
@@ -1101,6 +1102,8 @@
         .kanban-card.task-priority-baixa { border-left-color: var(--accent-blue); }
         .kanban-card.dragging {
             opacity: 0.5;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px var(--shadow-color);
         }
         .kanban-card p {
             margin: 0;
@@ -1686,7 +1689,8 @@
                         </div>
                     </div>
                     <div class="crm-actions">
-                        </div>
+                         <button id="create-task-btn" class="btn btn-primary"><i class="fas fa-plus"></i> Criar Nova Tarefa</button>
+                    </div>
                 </div>
                 <div class="kanban-container">
                     <div class="card">
@@ -1903,6 +1907,44 @@
             </div>
         </div>
     </div>
+    
+    <div id="create-task-modal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <h3 id="create-task-form-title">Criar Nova Tarefa</h3>
+            <form id="create-task-form" novalidate>
+                <input type="hidden" id="task-id">
+                <div class="form-group">
+                    <label for="task-titulo">Título*</label>
+                    <input type="text" id="task-titulo" required>
+                </div>
+                <div class="form-group">
+                    <label for="task-cliente">Associar ao Cliente (Opcional)</label>
+                    <select id="task-cliente"></select>
+                </div>
+                 <div class="form-group">
+                    <label for="task-data-vencimento">Data de Vencimento</label>
+                    <input type="date" id="task-data-vencimento">
+                </div>
+                <div class="form-group">
+                    <label for="task-prioridade">Prioridade</label>
+                    <select id="task-prioridade">
+                        <option value="Baixa">Baixa</option>
+                        <option value="Média" selected>Média</option>
+                        <option value="Alta">Alta</option>
+                    </select>
+                </div>
+                 <div class="form-group">
+                    <label for="task-descricao">Descrição</label>
+                    <textarea id="task-descricao" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="delete-task-btn" class="btn btn-danger" style="display: none; margin-right: auto;">Excluir</button>
+                    <button type="submit" class="btn btn-primary">Salvar Tarefa</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div id="orcamento-details-modal" class="modal large">
         <div class="modal-content">
@@ -1926,7 +1968,7 @@
                 <button id="pdf-orcamento-btn" class="btn btn-primary"><i class="fas fa-file-pdf"></i> Gerar PDF</button>
             </div>
              <div id="orcamento-status-actions" class="status-actions" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px; display: flex; flex-wrap: wrap; gap: 8px;">
-                 </div>
+                </div>
         </div>
     </div>
     
@@ -2034,7 +2076,7 @@
 
     <script type="module">
         // R.M. Estética Automotiva PRO+
-        // Versão: 4.8 (Sino de Notificações e Otimizações)
+        // Versão: 5.0 (Implementação de Tarefas e D&D)
         // Autor: Gemini
 
         // --- SUPABASE CLIENT SETUP ---
@@ -2098,6 +2140,7 @@
             editandoServicoId: null,
             editandoDespesaId: null,
             editandoAgendamentoId: null,
+            editandoTaskId: null,
 
             orcamentoSelecionado: null,
             agendaDataAtual: new Date(),
@@ -2166,6 +2209,14 @@
                 message: document.getElementById('confirmation-message'),
                 confirmBtn: document.getElementById('confirm-btn'),
                 cancelBtn: document.getElementById('cancel-btn'),
+            },
+            createTaskModal: {
+                modal: document.getElementById('create-task-modal'),
+                form: document.getElementById('create-task-form'),
+                formTitle: document.getElementById('create-task-form-title'),
+                clientSelect: document.getElementById('task-cliente'),
+                deleteBtn: document.getElementById('delete-task-btn'),
+                closeBtn: document.querySelector('#create-task-modal .modal-close-btn'),
             },
             orcamentoDetailsModal: {
                 modal: document.getElementById('orcamento-details-modal'),
@@ -2257,6 +2308,7 @@
                 segmentButtons: document.getElementById('crm-segment-buttons'),
                 inactiveClientsList: document.getElementById('crm-inactive-clients-list'),
                 bulkMessageBtn: document.getElementById('crm-bulk-message-btn'),
+                createTaskBtn: document.getElementById('create-task-btn'),
             },
             crmBulkModal: {
                 modal: document.getElementById('crm-bulk-modal'),
@@ -2970,7 +3022,6 @@
 
                 const { error: itensError } = await supabase.from('orcamento_itens').insert(itensData);
                 if (itensError) {
-                    // Tenta reverter a criação do orçamento se os itens falharem
                     await supabase.from('orcamentos').delete().eq('id', newOrcamento.id);
                     throw itensError;
                 }
@@ -3011,7 +3062,6 @@
             state.novoOrcamentoItens.push(novoItem);
             renderOrcamentoItens();
 
-            // Reset inputs
             DOMElements.orcamentoServicoSelect.value = "";
             DOMElements.orcamentoServicoQtdInput.value = 1;
         };
@@ -3049,6 +3099,93 @@
                 } catch (error) {
                     console.error('Erro ao excluir orçamento:', error);
                     showNotification(`❌ Erro ao excluir orçamento: ${error.message}`, 'error');
+                } finally {
+                    setSyncing(false);
+                }
+            }
+        };
+
+        const handleTaskSubmit = async (e) => {
+            e.preventDefault();
+            const { modal, form } = DOMElements.createTaskModal;
+            if (!validateForm(form)) return;
+
+            const taskData = {
+                titulo: form.querySelector('#task-titulo').value.trim(),
+                cliente_id: form.querySelector('#task-cliente').value || null,
+                data_vencimento: form.querySelector('#task-data-vencimento').value || null,
+                prioridade: form.querySelector('#task-prioridade').value,
+                descricao: form.querySelector('#task-descricao').value.trim(),
+                status: state.editandoTaskId ? state.crmTasks.find(t => t.id === state.editandoTaskId).status : 'A Fazer'
+            };
+
+            setSyncing(true);
+            try {
+                const { error } = state.editandoTaskId
+                    ? await supabase.from('crm_tasks').update(taskData).eq('id', state.editandoTaskId)
+                    : await supabase.from('crm_tasks').insert(taskData);
+
+                if (error) throw error;
+
+                showNotification(`Tarefa ${state.editandoTaskId ? 'atualizada' : 'criada'} com sucesso! ✅`, 'success');
+                closeModal(modal);
+                await fetchAllData(false);
+            } catch (error) {
+                console.error('Erro ao salvar tarefa:', error);
+                showNotification(`❌ Erro ao salvar tarefa: ${error.message}`, 'error');
+            } finally {
+                setSyncing(false);
+            }
+        };
+        
+        const openTaskModal = (id = null) => {
+            const { modal, form, formTitle, clientSelect, deleteBtn } = DOMElements.createTaskModal;
+            form.reset();
+            clearFormValidation(form);
+            state.editandoTaskId = null;
+
+            clientSelect.innerHTML = '<option value="">Nenhum cliente</option>' + 
+                state.clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+
+            if (id) {
+                const task = state.crmTasks.find(t => t.id === id);
+                if (task) {
+                    state.editandoTaskId = id;
+                    formTitle.textContent = "Editar Tarefa";
+                    form.querySelector('#task-id').value = task.id;
+                    form.querySelector('#task-titulo').value = task.titulo;
+                    form.querySelector('#task-cliente').value = task.cliente_id;
+                    form.querySelector('#task-data-vencimento').value = task.data_vencimento;
+                    form.querySelector('#task-prioridade').value = task.prioridade || 'Média';
+                    form.querySelector('#task-descricao').value = task.descricao;
+                    deleteBtn.style.display = 'inline-flex';
+                }
+            } else {
+                formTitle.textContent = "Criar Nova Tarefa";
+                deleteBtn.style.display = 'none';
+            }
+            openModal(modal);
+        };
+        
+        const handleEditTask = (id) => {
+            openTaskModal(id);
+        };
+
+        const handleDeleteTask = async () => {
+            const id = state.editandoTaskId;
+            if (!id) return;
+            const confirmed = await showConfirmation({ title: 'Excluir Tarefa', message: 'Tem certeza que deseja excluir esta tarefa?' });
+            if (confirmed) {
+                setSyncing(true);
+                try {
+                    const { error } = await supabase.from('crm_tasks').delete().eq('id', id);
+                    if (error) throw error;
+                    showNotification('Tarefa excluída com sucesso. 🗑️', 'success');
+                    closeModal(DOMElements.createTaskModal.modal);
+                    await fetchAllData(false);
+                } catch(error) {
+                    console.error('Erro ao excluir tarefa:', error);
+                    showNotification(`❌ Erro ao excluir: ${error.message}`, 'error');
                 } finally {
                     setSyncing(false);
                 }
@@ -3220,12 +3357,12 @@
             board.innerHTML = '';
             const columns = ['A Fazer', 'Em Andamento', 'Concluído'];
             
-            // Otimização: Crie um mapa de clientes para evitar buscas repetidas no loop
             const clientMap = new Map(state.clientes.map(c => [c.id, c.nome]));
 
             columns.forEach(status => {
                 const columnEl = document.createElement('div');
                 columnEl.className = 'kanban-column';
+                columnEl.dataset.status = status;
                 
                 const headerEl = document.createElement('div');
                 headerEl.className = 'kanban-column-header';
@@ -3241,6 +3378,7 @@
                     const priorityClass = `task-priority-${(task.prioridade || 'baixa').toLowerCase()}`;
                     cardEl.className = `kanban-card ${priorityClass}`;
                     cardEl.dataset.id = task.id;
+                    cardEl.draggable = true;
                     
                     const clienteNome = clientMap.get(task.cliente_id) || 'Sem cliente associado';
 
@@ -3275,13 +3413,30 @@
 
             setSyncing(true);
             try {
-                const { error } = await supabase.from('crm_interactions').insert(interactionData);
-                if (error) throw error;
+                const { error: interactionError } = await supabase.from('crm_interactions').insert(interactionData);
+                if (interactionError) throw interactionError;
+                
                 showNotification('Interação registrada com sucesso! 📞', 'success');
+
+                if (interactionData.data_proxima_acao) {
+                    const cliente = state.clientes.find(c => c.id === interactionData.cliente_id);
+                    const taskData = {
+                        cliente_id: interactionData.cliente_id,
+                        titulo: `Follow-up com ${cliente?.nome || 'Cliente'}`,
+                        descricao: `Referente à interação: ${interactionData.descricao || 'N/A'}`,
+                        data_vencimento: interactionData.data_proxima_acao,
+                        status: 'A Fazer',
+                        prioridade: 'Média'
+                    };
+                    const { error: taskError } = await supabase.from('crm_tasks').insert(taskData);
+                    if (taskError) throw taskError;
+                    showNotification('Tarefa de follow-up criada no Kanban! ✅', 'success');
+                }
+
                 form.reset();
                 await fetchAllData(false);
             } catch (error) {
-                console.error('Erro ao registrar interação:', error);
+                console.error('Erro ao registrar interação/tarefa:', error);
                 showNotification(`❌ Erro: ${error.message}`, 'error');
             } finally {
                 setSyncing(false);
@@ -3697,8 +3852,8 @@
                 
                  const updatedOrcamento = state.orcamentos.find(o => o.id === state.orcamentoSelecionado.id);
                  if (updatedOrcamento) {
-                      state.orcamentoSelecionado = updatedOrcamento;
-                      renderStatusActions();
+                       state.orcamentoSelecionado = updatedOrcamento;
+                       renderStatusActions();
                  } else {
                        closeModal(DOMElements.orcamentoDetailsModal.modal);
                  }
@@ -3860,7 +4015,6 @@
                 });
             });
             
-            // Renderiza as notificações
             if (notifications.length > 0) {
                 notificationBadge.textContent = notifications.length;
                 notificationBadge.style.display = 'flex';
@@ -3907,29 +4061,30 @@
 
                 const actionTarget = e.target.closest('[data-action]');
                 if (actionTarget) {
-                    e.preventDefault();
-                    const { action, id, tab, category, index } = actionTarget.dataset;
-                    switch (action) {
-                        case 'navigate': showTab(tab); break;
-                        case 'edit-cliente': handleEditCliente(id); break;
-                        case 'delete-cliente': handleDeleteCliente(id); break;
-                        case 'details-cliente': handleViewClientDetails(id); break;
-                        case 'edit-servico': handleEditServico(id); break;
-                        case 'delete-servico': handleDeleteServico(id); break;
-                        case 'remove-orc-item': handleRemoveOrcamentoItem(parseInt(actionTarget.closest('tr').dataset.index)); break;
-                        case 'view-orcamento': handleViewOrcamento(id); break;
-                        case 'delete-orcamento': handleDeleteOrcamento(id); break;
-                        case 'add-crm-template':
-                            state.configuracoes.crmTemplates[category].push({ title: 'Novo Template', text: 'Nova mensagem...' });
-                            saveConfig();
-                            populateCrmTemplatesConfig();
-                            break;
-                        case 'delete-crm-template':
-                            state.configuracoes.crmTemplates[category].splice(index, 1);
-                            saveConfig();
-                            populateCrmTemplatesConfig();
-                            break;
-                    }
+                        // Previne o clique em outros data-actions de propagar, se necessário
+                        e.preventDefault();
+                        const { action, id, tab, category, index } = actionTarget.dataset;
+                        switch (action) {
+                            case 'navigate': showTab(tab); break;
+                            case 'edit-cliente': handleEditCliente(id); break;
+                            case 'delete-cliente': handleDeleteCliente(id); break;
+                            case 'details-cliente': handleViewClientDetails(id); break;
+                            case 'edit-servico': handleEditServico(id); break;
+                            case 'delete-servico': handleDeleteServico(id); break;
+                            case 'remove-orc-item': handleRemoveOrcamentoItem(parseInt(actionTarget.closest('tr').dataset.index)); break;
+                            case 'view-orcamento': handleViewOrcamento(id); break;
+                            case 'delete-orcamento': handleDeleteOrcamento(id); break;
+                            case 'add-crm-template':
+                                state.configuracoes.crmTemplates[category].push({ title: 'Novo Template', text: 'Nova mensagem...' });
+                                saveConfig();
+                                populateCrmTemplatesConfig();
+                                break;
+                            case 'delete-crm-template':
+                                state.configuracoes.crmTemplates[category].splice(index, 1);
+                                saveConfig();
+                                populateCrmTemplatesConfig();
+                                break;
+                        }
                 }
                 
                 const agendaItem = e.target.closest('.agenda-card');
@@ -3940,7 +4095,7 @@
                 const whatsappBtn = e.target.closest('.whatsapp-link-btn');
                 if (whatsappBtn) {
                     const phone = whatsappBtn.dataset.phone;
-                    if (phone) { // Verificação adicionada
+                    if (phone && phone.replace(/\D/g, '').length > 10) {
                         window.open(`https://wa.me/55${phone.replace(/\D/g, '')}`, '_blank');
                     } else {
                         showNotification('Este cliente não possui um número de telefone válido.', 'error');
@@ -4061,6 +4216,17 @@
                 form.addEventListener('input', e => validateField(e.target));
                 form.addEventListener('focusout', e => validateField(e.target));
             });
+            
+            DOMElements.crm.createTaskBtn.addEventListener('click', () => openTaskModal());
+            DOMElements.createTaskModal.form.addEventListener('submit', handleTaskSubmit);
+            DOMElements.createTaskModal.deleteBtn.addEventListener('click', handleDeleteTask);
+            DOMElements.crm.tasksBoard.addEventListener('click', (e) => {
+                const card = e.target.closest('.kanban-card');
+                if (card) {
+                    handleEditTask(card.dataset.id);
+                }
+            });
+
 
             // Config Listeners
             DOMElements.config.logoUpload.addEventListener('change', (e) => handleImageUpload(e, 'logo'));
