@@ -756,6 +756,11 @@
             display: none; /* Hidden by default */
         }
 
+        /* CORREÇÃO BUG 2: Z-INDEX DO MODAL DE CONFIRMAÇÃO */
+        #confirmation-modal {
+            z-index: 1005;
+        }
+
         .modal-content {
             background-color: var(--bg-secondary);
             padding: var(--space-lg);
@@ -935,19 +940,21 @@
 
         .notification-badge {
             position: absolute;
-            top: -5px;
-            right: -8px;
+            top: -7px;
+            right: -10px;
             background-color: var(--primary-red);
             color: white;
             border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            width: 24px;
+            height: 24px;
+            font-size: 0.8rem;
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
             border: 2px solid var(--bg-secondary);
+            /* CORREÇÃO BUG 1: Animação adicionada */
+            animation: pulse-red 2s infinite;
         }
 
         .notification-panel {
@@ -1267,6 +1274,19 @@
             from { transform: translateX(0); opacity: 1; }
             to { transform: translateX(120%); opacity: 0; }
         }
+
+        /* CORREÇÃO BUG 1: Animação para o sino de notificação */
+        @keyframes pulse-red {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
         
         /* Accordion Styles */
         .accordion .accordion-item {
@@ -1441,7 +1461,7 @@
                     <div id="notification-panel" class="notification-panel">
                         <div class="notification-panel-header">Notificações do Dia</div>
                         <ul id="notification-list" class="data-list">
-                            </ul>
+                        </ul>
                     </div>
                 </div>
                 <button id="hamburger-menu" aria-label="Abrir menu" aria-expanded="false">
@@ -1516,7 +1536,7 @@
                         <button id="add-agendamento-btn" class="btn btn-primary"><i class="fas fa-plus"></i> Novo Agendamento</button>
                     </div>
                     <div id="agenda-grid-container" class="agenda-cards-container">
-                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -1714,7 +1734,7 @@
                         </div>
                     </div>
                     <div class="crm-actions">
-                         <button id="create-task-btn" class="btn btn-primary"><i class="fas fa-plus"></i> Criar Nova Tarefa</button>
+                       <button id="create-task-btn" class="btn btn-primary"><i class="fas fa-plus"></i> Criar Nova Tarefa</button>
                     </div>
                 </div>
                 <div class="kanban-container">
@@ -2033,7 +2053,7 @@
                 <button id="pdf-orcamento-btn" class="btn btn-primary"><i class="fas fa-file-pdf"></i> Gerar PDF</button>
             </div>
              <div id="orcamento-status-actions" class="status-actions" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px; display: flex; flex-wrap: wrap; gap: 8px;">
-                </div>
+            </div>
         </div>
     </div>
     
@@ -4076,7 +4096,7 @@
                        state.orcamentoSelecionado = updatedOrcamento;
                        renderStatusActions();
                  } else {
-                        closeModal(DOMElements.orcamentoDetailsModal.modal);
+                       closeModal(DOMElements.orcamentoDetailsModal.modal);
                  }
 
             } catch (error) {
