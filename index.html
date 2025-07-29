@@ -938,24 +938,23 @@
             position: relative;
         }
 
-        .notification-badge {
-            position: absolute;
-            top: -7px;
-            right: -10px;
-            background-color: var(--primary-red);
-            color: white;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid var(--bg-secondary);
-            /* CORREÇÃO BUG 1: Animação adicionada */
-            animation: pulse-red 2s infinite;
-        }
+.notification-badge {
+    position: absolute;
+    top: -7px;
+    right: -10px;
+    background-color: var(--primary-red);
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-secondary);
+    animation: pulse-red 2s infinite;
+}
 
         .notification-panel {
             position: fixed;
@@ -1454,11 +1453,11 @@
                     <span class="sync-text">Sincronizar</span>
                 </button>
                 <div id="notification-bell-container" class="notification-bell-container">
-                    <button id="notification-bell-btn" class="btn btn-icon" aria-label="Abrir notificações">
-                        <i class="fas fa-bell"></i>
-                        <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
-                    </button>
-                    <div id="notification-panel" class="notification-panel">
+    <button id="notification-bell-btn" class="btn btn-icon" aria-label="Abrir notificações">
+        <i class="fas fa-bell"></i>
+    </button>
+    <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
+    <div id="notification-panel" class="notification-panel">
                         <div class="notification-panel-header">Notificações do Dia</div>
                         <ul id="notification-list" class="data-list">
                         </ul>
@@ -2060,17 +2059,7 @@
     <aside id="client-details-panel" class="side-panel">
         <button class="panel-close-btn">&times;</button>
         <div class="panel-content">
-            <h2 id="client-details-name"></h2>
-            <p><i class="fas fa-phone"></i> <span id="client-details-phone"></span></p>
-            <p><i class="fas fa-car"></i> <span id="client-details-car"></span></p>
-            <p><i class="fas fa-id-card"></i> <span id="client-details-plate"></span></p>
-            <hr style="margin: 16px 0; border-color: var(--border-color);">
-            <h3>Histórico de Orçamentos</h3>
-            <ul id="client-details-orcamentos-list" class="data-list"></ul>
-            <hr style="margin: 16px 0; border-color: var(--border-color);">
-            <h3>Histórico de Contatos</h3>
-            <ul id="client-details-interactions-list" class="data-list"></ul>
-        </div>
+            </div>
     </aside>
 
     <div id="crm-bulk-modal" class="modal large">
@@ -2161,7 +2150,7 @@
 
     <script type="module">
         // R.M. Estética Automotiva PRO+
-        // Versão: 5.3.1 (Correção de Bugs: Agendamento e Notificações)
+        // Versão: 6.0 (Visão 360° do Cliente Simplificada)
         // Autor: Gemini
 
         // --- SUPABASE CLIENT SETUP ---
@@ -2322,12 +2311,7 @@
             clientDetailsPanel: {
                 panel: document.getElementById('client-details-panel'),
                 closeBtn: document.querySelector('#client-details-panel .panel-close-btn'),
-                name: document.getElementById('client-details-name'),
-                phone: document.getElementById('client-details-phone'),
-                car: document.getElementById('client-details-car'),
-                plate: document.getElementById('client-details-plate'),
-                orcamentosList: document.getElementById('client-details-orcamentos-list'),
-                interactionsList: document.getElementById('client-details-interactions-list'),
+                // NOTE: Os elementos internos agora são gerados dinamicamente
             },
             
             dashboard: {
@@ -2467,22 +2451,37 @@
         };
 
         // --- UTILITY FUNCTIONS ---
-        const closeModal = (modal, useOverlay = true) => {
-            if (!modal) return;
+const closeModal = (modal, useOverlay = true) => {
+    if (!modal) return;
 
-            if (modal.classList.contains('side-panel')) {
-                modal.classList.remove('open');
-            } else {
-                modal.style.display = 'none';
-            }
+    // --- Bloco Adicionado ---
+    // Verifica se existe um formulário dentro do modal e o limpa.
+    if (modal.querySelector('form')) {
+        const form = modal.querySelector('form');
+        form.reset();
+        clearFormValidation(form);
+        
+        // Lógica extra para resetar completamente os formulários de edição
+        if (form.id === 'cliente-form') resetClienteForm();
+        if (form.id === 'servico-form') resetServicoForm();
+        if (form.id === 'agendamento-form') state.editandoAgendamentoId = null;
+        if (form.id === 'create-task-form') state.editandoTaskId = null;
+    }
+    // --- Fim do Bloco Adicionado ---
 
-            const anyVisible = Array.from(document.querySelectorAll('.modal, .side-panel.open'))
-                .some(m => m.style.display === 'block' || m.classList.contains('open'));
+    if (modal.classList.contains('side-panel')) {
+        modal.classList.remove('open');
+    } else {
+        modal.style.display = 'none';
+    }
 
-            if (!anyVisible && useOverlay) {
-                DOMElements.modalOverlay.style.display = 'none';
-            }
-        };
+    const anyVisible = Array.from(document.querySelectorAll('.modal, .side-panel.open'))
+        .some(m => m.style.display === 'block' || m.classList.contains('open'));
+
+    if (!anyVisible && useOverlay) {
+        DOMElements.modalOverlay.style.display = 'none';
+    }
+};
 
         const openModal = (modal) => {
             DOMElements.modalOverlay.style.display = 'flex';
@@ -2584,6 +2583,122 @@
             }
         };
 
+        // --- INÍCIO: LÓGICA CDP 360° ---
+
+
+const calculateAndCacheInsightsForClient = (cliente) => {
+    if (!cliente) return {};
+
+    const orcamentosDoCliente = state.orcamentos.filter(o => o.cliente_id === cliente.id && ['Finalizado', 'Pago'].includes(o.status));
+    const interacoesDoCliente = state.crmInteractions.filter(i => i.cliente_id === cliente.id);
+
+    const insights = {
+        ticketMedio: calculateTicketMedio(orcamentosDoCliente),
+        frequenciaMedia: calculateFrequenciaMedia(orcamentosDoCliente),
+        scoreSatisfacao: calculateSatisfactionScore(interacoesDoCliente),
+        riscoChurn: calculateChurnRisk(cliente, orcamentosDoCliente),
+        proximoServicoSugerido: predictNextService(orcamentosDoCliente)
+    };
+
+    // Atualiza o objeto do cliente no estado principal e também o localStorage
+    cliente.insights = insights;
+    localStorage.setItem(`insights_${cliente.id}`, JSON.stringify(insights));
+    
+    return insights;
+};
+ const processAllCustomerInsights = () => {
+            if (!state.clientes || state.clientes.length === 0) return;
+
+            state.clientes.forEach(cliente => {
+                const orcamentosDoCliente = state.orcamentos.filter(o => o.cliente_id === cliente.id && ['Finalizado', 'Pago'].includes(o.status));
+                const interacoesDoCliente = state.crmInteractions.filter(i => i.cliente_id === cliente.id);
+
+                const ticketMedio = calculateTicketMedio(orcamentosDoCliente);
+                const frequenciaMedia = calculateFrequenciaMedia(orcamentosDoCliente);
+                const scoreSatisfacao = calculateSatisfactionScore(interacoesDoCliente);
+                const riscoChurn = calculateChurnRisk(cliente, orcamentosDoCliente);
+                const proximoServicoSugerido = predictNextService(orcamentosDoCliente);
+
+                cliente.insights = {
+                    ticketMedio,
+                    frequenciaMedia,
+                    scoreSatisfacao,
+                    riscoChurn,
+                    proximoServicoSugerido
+                };
+
+                localStorage.setItem(`insights_${cliente.id}`, JSON.stringify(cliente.insights));
+            });
+            console.log("Insights de todos os clientes processados e cacheados.");
+        };
+
+        function calculateTicketMedio(orcamentosFinalizados) {
+            if (orcamentosFinalizados.length === 0) return 0;
+            const totalGasto = orcamentosFinalizados.reduce((acc, o) => acc + o.valor_total, 0);
+            return totalGasto / orcamentosFinalizados.length;
+        }
+
+        function calculateFrequenciaMedia(orcamentosFinalizados) {
+            if (orcamentosFinalizados.length < 2) return 0;
+
+            const datas = orcamentosFinalizados
+                .map(o => new Date(o.created_at).getTime())
+                .sort((a, b) => a - b);
+
+            const diffs = [];
+            for (let i = 1; i < datas.length; i++) {
+                const diffMs = datas[i] - datas[i - 1];
+                diffs.push(diffMs / (1000 * 60 * 60 * 24));
+            }
+
+            const mediaDias = diffs.reduce((acc, diff) => acc + diff, 0) / diffs.length;
+            return Math.round(mediaDias);
+        }
+
+        function calculateSatisfactionScore(interacoes) {
+            const avaliacoes = interacoes
+                .map(i => i.satisfacao_declarada)
+                .filter(s => s !== null && s !== undefined);
+
+            if (avaliacoes.length === 0) return 5;
+            const media = avaliacoes.reduce((acc, s) => acc + s, 0) / avaliacoes.length;
+            return Math.round(media);
+        }
+
+        function calculateChurnRisk(cliente, orcamentosFinalizados) {
+            if (orcamentosFinalizados.length === 0) return 5;
+
+            const ultimoServico = new Date(orcamentosFinalizados.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0].created_at);
+            const hoje = new Date();
+            const diasSemServico = Math.round((hoje - ultimoServico) / (1000 * 60 * 60 * 24));
+            
+            if (diasSemServico > 120) return 10;
+            if (diasSemServico > 90) return 8;
+            if (diasSemServico > 60) return 6;
+            if (diasSemServico < 30) return 2;
+            return 4;
+        }
+
+        function predictNextService(orcamentosFinalizados) {
+            if (orcamentosFinalizados.length === 0) return "Primeiro serviço";
+            
+            const todosItens = state.orcamentoItens.filter(item => 
+                orcamentosFinalizados.some(o => o.id === item.orcamento_id)
+            );
+
+            if(todosItens.length === 0) return "N/A";
+
+            const contagemServicos = todosItens.reduce((acc, item) => {
+                acc[item.descricao_servico] = (acc[item.descricao_servico] || 0) + 1;
+                return acc;
+            }, {});
+            
+            return Object.keys(contagemServicos).reduce((a, b) => contagemServicos[a] > contagemServicos[b] ? a : b);
+        }
+        
+        // --- FIM: LÓGICA CDP 360° ---
+
+
         // --- SUPABASE INTEGRATION ---
         const fetchAllData = async (showOverlay = true) => {
             if (state.isSyncing) return;
@@ -2593,7 +2708,7 @@
                 const [
                     { data: clientes, error: e1 }, { data: servicos, error: e2 },
                     { data: orcamentos, error: e3 }, { data: orcamentoItens, error: e4 },
-                    { data: despesas, error: e5 }, { data: crmInteractions, error: e6 },
+                    { data: despesas, error: e5 }, { data: crmInteractions, error: e6 }, // Mantendo crm_interactions por enquanto
                     { data: crmTasks, error: e8 },
                     { data: agendamentos, error: e9 },
                 ] = await Promise.all([
@@ -2618,6 +2733,12 @@
                 state.crmInteractions = crmInteractions || [];
                 state.crmTasks = crmTasks || [];
                 state.agendamentos = agendamentos || [];
+                
+// --- INÍCIO: INTEGRAÇÃO CDP ---
+// Processa os insights do cliente após buscar todos os dados
+// processAllCustomerInsights(); // <<< LINHA COMENTADA/DESATIVADA
+// --- FIM: INTEGRAÇÃO CDP ---
+
 
                 await loadConfig(); // Carrega as configurações da nuvem
                 renderAllContent();
@@ -3316,39 +3437,67 @@
         };
         
         const handleViewClientDetails = (id) => {
-            const cliente = state.clientes.find(c => c.id === id);
-            if (!cliente) return;
+    const cliente = state.clientes.find(c => c.id === id);
+    if (!cliente) return;
 
-            const { panel, name, phone, car, plate, orcamentosList, interactionsList } = DOMElements.clientDetailsPanel;
-            
-            name.textContent = cliente.nome;
-            phone.textContent = cliente.telefone;
-            car.textContent = cliente.carro || 'N/A';
-            plate.textContent = cliente.placa;
+    // A MUDANÇA PRINCIPAL ESTÁ AQUI: O cálculo agora é feito sob demanda
+    const insights = calculateAndCacheInsightsForClient(cliente);
 
-            const clientOrcamentos = state.orcamentos.filter(o => o.cliente_id === id).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            orcamentosList.innerHTML = clientOrcamentos.length > 0 ? clientOrcamentos.map(o => `
-                <li data-action="view-orcamento" data-id="${o.id}" style="cursor:pointer;">
-                    <div class="list-item-main">
-                        <p class="item-title">${new Date(o.created_at).toLocaleDateString()} - ${formatCurrency(o.valor_total)}</p>
-                    </div>
-                    <span class="status-badge ${o.status?.toLowerCase()}">${o.status}</span>
-                </li>
-            `).join('') : '<li>Nenhum orçamento para este cliente.</li>';
+    const { panel } = DOMElements.clientDetailsPanel;
+    const panelContent = panel.querySelector('.panel-content');
+    panelContent.innerHTML = '';
 
-            const clientInteractions = state.crmInteractions.filter(i => i.cliente_id === id).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            interactionsList.innerHTML = clientInteractions.length > 0 ? clientInteractions.map(i => `
-                <li>
-                    <div class="list-item-main">
-                        <p class="item-title">${i.tipo_interacao} em ${new Date(i.created_at).toLocaleString()}</p>
-                        <p class="item-subtitle">${i.descricao || 'Nenhuma descrição.'}</p>
-                    </div>
-                </li>
-            `).join('') : '<li>Nenhuma interação registrada.</li>';
+    const riscoChurn = insights.riscoChurn || 0;
+    const corRisco = riscoChurn > 7 ? 'var(--danger-red)' : (riscoChurn > 4 ? 'var(--accent-orange)' : 'var(--accent-green)');
 
+    const dashboardHTML = `
+        <h2 id="client-details-name">${cliente.nome}</h2>
+        <p><i class="fas fa-id-card"></i> Placa: <span id="client-details-plate">${cliente.placa}</span></p>
+        <p><i class="fas fa-phone"></i> Telefone: <span id="client-details-phone">${cliente.telefone}</span></p>
+        
+        <div class="cliente-360-dashboard" style="margin-top: var(--space-lg); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: var(--space-md);">
+            <div class="cliente-scores" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); text-align: center;">
+                <div><p style="margin:0; font-size: 0.8rem; color: var(--text-muted);">Ticket Médio</p><p style="margin:0; font-weight: 600;">${formatCurrency(insights.ticketMedio || 0)}</p></div>
+                <div><p style="margin:0; font-size: 0.8rem; color: var(--text-muted);">Frequência</p><p style="margin:0; font-weight: 600;">${insights.frequenciaMedia || 'N/A'} dias</p></div>
+                <div><p style="margin:0; font-size: 0.8rem; color: var(--text-muted);">Satisfação</p><p style="margin:0; font-weight: 600;">${insights.scoreSatisfacao || 5}/10</p></div>
+                <div><p style="margin:0; font-size: 0.8rem; color: var(--text-muted);">Risco de Saída</p><p style="margin:0; font-weight: 600; color: ${corRisco};">${riscoChurn}/10</p></div>
+            </div>
+            <div class="cliente-insights" style="margin-top: var(--space-lg); background-color: var(--bg-primary); padding: var(--space-sm); border-radius: var(--border-radius-sm);">
+                <p style="margin:0; font-size: 0.9rem;">💡 <strong>Próximo serviço sugerido:</strong> ${insights.proximoServicoSugerido || 'Analisando...'}</p>
+            </div>
+        </div>
 
-            openModal(panel);
-        };
+        <hr style="margin: 16px 0; border-color: var(--border-color);">
+        <h3>Histórico de Orçamentos</h3>
+        <ul id="client-details-orcamentos-list" class="data-list"></ul>
+        <hr style="margin: 16px 0; border-color: var(--border-color);">
+        <h3>Histórico de Contatos</h3>
+        <ul id="client-details-interactions-list" class="data-list"></ul>
+    `;
+    panelContent.insertAdjacentHTML('beforeend', dashboardHTML);
+    
+    const clientOrcamentos = state.orcamentos.filter(o => o.cliente_id === id).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    panelContent.querySelector('#client-details-orcamentos-list').innerHTML = clientOrcamentos.length > 0 ? clientOrcamentos.map(o => `
+        <li data-action="view-orcamento" data-id="${o.id}" style="cursor:pointer;">
+            <div class="list-item-main">
+                <p class="item-title">${new Date(o.created_at).toLocaleDateString()} - ${formatCurrency(o.valor_total)}</p>
+            </div>
+            <span class="status-badge ${o.status?.toLowerCase()}">${o.status}</span>
+        </li>
+    `).join('') : '<li>Nenhum orçamento para este cliente.</li>';
+
+    const clientInteractions = state.crmInteractions.filter(i => i.cliente_id === id).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    panelContent.querySelector('#client-details-interactions-list').innerHTML = clientInteractions.length > 0 ? clientInteractions.map(i => `
+        <li>
+            <div class="list-item-main">
+                <p class="item-title">${i.tipo_interacao} em ${new Date(i.created_at).toLocaleString()}</p>
+                <p class="item-subtitle">${i.descricao || 'Nenhuma descrição.'}</p>
+            </div>
+        </li>
+    `).join('') : '<li>Nenhuma interação registrada.</li>';
+
+    openModal(panel);
+};
 
         const displayOrcamentoDetails = () => {
             const orcamento = state.orcamentoSelecionado;
@@ -3527,6 +3676,7 @@
 
             setSyncing(true);
             try {
+                // Mudar para a nova tabela 'interacoes_cliente' seria o ideal aqui
                 const { error: interactionError } = await supabase.from('crm_interactions').insert(interactionData);
                 if (interactionError) throw interactionError;
                 
@@ -4280,7 +4430,7 @@
             const { notificationBadge, notificationList } = DOMElements;
             const notifications = [];
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // Define 'hoje' como a meia-noite local para comparações seguras.
+            today.setHours(0, 0, 0, 0);
 
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -4300,7 +4450,6 @@
             // 2. Follow-ups (Tarefas) Vencidos ou Vencendo Hoje
             const tarefasPendentes = state.crmTasks.filter(t => {
                 if (t.status === 'Concluído' || !t.data_vencimento) return false;
-                // Converte a data da tarefa (que é uma string 'YYYY-MM-DD') para um objeto Date na meia-noite local
                 const taskDate = new Date(t.data_vencimento + 'T00:00:00');
                 return taskDate <= today;
             });
@@ -4312,6 +4461,22 @@
                     text: `Follow-up: ${t.titulo}`,
                     subtitle: `Cliente: ${cliente?.nome || 'N/A'}`
                 });
+            });
+            
+            // 3. Alertas de Churn (Clientes em Risco) - MODIFICAÇÃO CDP 360°
+            const clientesEmRisco = state.clientes.filter(c => c.insights?.riscoChurn >= 8);
+            clientesEmRisco.forEach(c => {
+                const orcamentosDoCliente = state.orcamentos.filter(o => o.cliente_id === c.id);
+                if (orcamentosDoCliente.length > 0) {
+                    const ultimoServico = orcamentosDoCliente.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+                    const diasSemRetorno = Math.round((new Date() - new Date(ultimoServico.created_at)) / (1000 * 60 * 60 * 24));
+
+                    notifications.push({
+                        icon: 'fa-user-clock',
+                        text: `Risco de Churn: ${c.nome}`,
+                        subtitle: `Sem retorno há ${diasSemRetorno} dias. Iniciar campanha!`
+                    });
+                }
             });
             
             // Renderiza as notificações
@@ -4440,9 +4605,17 @@
                 v = v.replace(/(\d{5})(\d)/, '$1-$2');
                 e.target.value = v.slice(0, 15);
             };
+const applyCnpjMask = (e) => {
+    let v = e.target.value.replace(/\D/g, '');
+    v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+    v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+    v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+    v = v.replace(/(\d{4})(\d)/, '$1-$2');
+    e.target.value = v.slice(0, 18);
+};
 
             DOMElements.clienteTelefoneInput.addEventListener('input', applyPhoneMask);
-            
+            DOMElements.config.cnpj.addEventListener('input', applyCnpjMask);
             DOMElements.clientePlacaInput.addEventListener('input', (e) => {
                 e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
             });
@@ -4497,17 +4670,13 @@
                 window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
             });
             
-            document.querySelectorAll('.modal-close-btn, .panel-close-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const modal = btn.closest('.modal, .side-panel');
-                    closeModal(modal);
-                    if(modal.querySelector('form')) {
-                        modal.querySelector('form').reset();
-                        clearFormValidation(modal.querySelector('form'));
-                    }
-                });
-            });
-            
+           // CÓDIGO NOVO - DEPOIS
+document.querySelectorAll('.modal-close-btn, .panel-close-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const modal = btn.closest('.modal, .side-panel');
+        closeModal(modal);
+    });
+});
             document.addEventListener('keydown', (e) => {
                 if (e.key === "Escape") {
                     document.querySelectorAll('.modal, .side-panel.open').forEach(modal => closeModal(modal));
@@ -4724,7 +4893,7 @@
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('R.M. Estética Automotiva PRO+ 5.3.1 inicializado.');
+            console.log('R.M. Estética Automotiva PRO+ 6.0 (Visão 360°) inicializado.');
             setupEventListeners();
             setupSupabaseListeners();
             fetchAllData(true);
